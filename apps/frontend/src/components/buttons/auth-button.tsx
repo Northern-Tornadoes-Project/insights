@@ -14,11 +14,12 @@ import {
 	LucideHome,
 	LucideLogOut,
 	LucideRotate3d,
-	LucideFileText,
 	LucideSettings,
 	LucideShare2,
 	LucideUser,
 	LucideX,
+	LucideCircleDotDashed,
+	Github,
 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { type Session } from 'next-auth';
@@ -62,36 +63,52 @@ export default function AuthButton(props: Props) {
 						</div>
 					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuLabel className="flex flex-row space-y-1 font-medium">
-						<span className="font-bold">NTP&nbsp;</span>Insights
-					</DropdownMenuLabel>
+
 					{sessionData.user.ntpAuthenticated ? (
-						<DropdownMenuGroup>
-							<DropdownMenuItem
-								onClick={() => {
-									void router.push('/social/dashboard');
-								}}
-							>
-								<LucideShare2 size={18} />
-								<span className="pl-2">Social</span>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => {
-									void router.push('/360/dashboard');
-								}}
-							>
-								<LucideRotate3d size={18} />
-								<span className="pl-2">360</span>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => {
-									void router.push('/lidar/dashboard');
-								}}
-							>
-								<LucideAxis3d size={18} />
-								<span className="pl-2">LiDAR</span>
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
+						<>
+							<DropdownMenuLabel className="flex flex-row space-y-1 font-medium">
+								<span className="font-bold">NTP&nbsp;</span>Tools
+							</DropdownMenuLabel>
+							<DropdownMenuGroup>
+								<DropdownMenuItem
+									onClick={() => {
+										void router.push('/social/dashboard');
+									}}
+								>
+									<LucideShare2 size={18} />
+									<span className="pl-2">Social</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => {
+										void router.push('/360/dashboard');
+									}}
+								>
+									<LucideRotate3d size={18} />
+									<span className="pl-2">360</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => {
+										void router.push('/lidar/dashboard');
+									}}
+								>
+									<LucideAxis3d size={18} />
+									<span className="pl-2">LiDAR</span>
+								</DropdownMenuItem>
+							</DropdownMenuGroup>
+							<DropdownMenuLabel className="flex flex-row space-y-1 font-medium">
+								<span className="font-bold">NHP&nbsp;</span>Tools
+							</DropdownMenuLabel>
+							<DropdownMenuGroup>
+								<DropdownMenuItem
+									onClick={() => {
+										void router.push('/hailgen/dashboard');
+									}}
+								>
+									<LucideCircleDotDashed size={18} />
+									<span className="pl-2">Hailgen</span>
+								</DropdownMenuItem>
+							</DropdownMenuGroup>
+						</>
 					) : (
 						<DropdownMenuLabel>
 							<div className="flex flex-row items-center justify-between">
@@ -106,22 +123,22 @@ export default function AuthButton(props: Props) {
 					)}
 					<DropdownMenuSeparator />
 					<DropdownMenuGroup>
-					<DropdownMenuItem
-						onClick={() => {
-							void router.push('/');
-						}}
-					>
-						<LucideHome size={18} />
-						<span className="pl-2">Home</span>
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() => {
-							void window.open('https://github.com/towner-10/ntp-insights/blob/main/README.md');
-						}}
-					>
-						<LucideFileText size={18} />
-						<span className="pl-2">Documentation 🡥</span>
-					</DropdownMenuItem>
+						<DropdownMenuItem
+							onClick={() => {
+								void router.push('/');
+							}}
+						>
+							<LucideHome size={18} />
+							<span className="pl-2">Home</span>
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onClick={() => {
+								void window.open('https://github.com/Northern-Tornadoes-Project/insights/blob/hailpad-analysis/README.md');
+							}}
+						>
+							<Github size={18} />
+							<span className="pl-2">Documentation 🡥</span>
+						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => {
 								void router.push('/auth/profile/settings');

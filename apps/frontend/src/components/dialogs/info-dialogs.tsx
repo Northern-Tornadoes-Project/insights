@@ -108,6 +108,23 @@ export function ScanInfo() {
 	)
 }
 
+export function HailScanInfo() {
+	return (
+		<Dialog>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Creating New Hailpad Scans</DialogTitle>
+					<DialogDescription>Additional information on uploading 3D hailpad scans</DialogDescription>
+				</DialogHeader>
+				<h2 className="font-medium">TODO</h2>
+			</DialogContent>
+			<DialogTrigger>
+				<LucideInfo size={16} />
+			</DialogTrigger>
+		</Dialog>
+	)
+}
+
 export function VRControls() {
 	return (
 		<Dialog>
@@ -117,15 +134,15 @@ export function VRControls() {
 					<DialogDescription>How to navigate the 360 view</DialogDescription>
 				</DialogHeader>
 				<h2 className="font-medium">Screen Controls</h2>
-					<div className="flex flex-row align-middle text-sm">
-						<div className='pr-2'><LucideChevronUp/><LucideChevronDown/></div><div className='pt-3.5 pr-10'>Next/Previous Image</div>
-						<div className='pr-2'><LucideChevronsUp/><LucideChevronsDown/></div><div className='pt-3.5'>Next/Previous 5 Images</div>
-					</div>
-					<div className="flex flex-row space-x-10 align-middle text-sm">
-						<div className='pr-2'><LucideNavigation2/></div>Recenter North
-						<div className='pr-2'><LucideExpand/></div>Enter Fullscreen
-						<div className='pr-2'><LucideGlasses/></div>Enter VR
-					</div>
+				<div className="flex flex-row align-middle text-sm">
+					<div className='pr-2'><LucideChevronUp /><LucideChevronDown /></div><div className='pt-3.5 pr-10'>Next/Previous Image</div>
+					<div className='pr-2'><LucideChevronsUp /><LucideChevronsDown /></div><div className='pt-3.5'>Next/Previous 5 Images</div>
+				</div>
+				<div className="flex flex-row space-x-10 align-middle text-sm">
+					<div className='pr-2'><LucideNavigation2 /></div>Recenter North
+					<div className='pr-2'><LucideExpand /></div>Enter Fullscreen
+					<div className='pr-2'><LucideGlasses /></div>Enter VR
+				</div>
 				<h2 className="font-medium">Keyboard Controls</h2>
 				<div className="flex flex-row space-x-10">
 					<div className="flex flex-col space-y-2">
@@ -156,7 +173,7 @@ export function VRControls() {
 					<div className="flex flex-col space-y-2">
 						<h2 className='font-medium text-sm'>Left Hand</h2>
 						<ul>
-						<li className='text-sm'>
+							<li className='text-sm'>
 								<code>Trigger</code> — Previous Image
 							</li>
 							<li className='text-sm'>
@@ -199,13 +216,13 @@ export function LiDARControls() {
 					<DialogDescription>How to navigate the LiDAR view</DialogDescription>
 				</DialogHeader>
 				<h2 className="font-medium">Screen Controls</h2>
-					<div className="flex flex-row align-middle text-sm">
-						<div className='pr-2'><MousePointer/></div>[Hold] Move Towards Location
-					</div>
-					<div className="flex flex-row space-x-10 align-middle text-sm">
-						<div className='pr-2'><LucideExpand/></div>Enter Fullscreen
-						<div className='pr-2'><LucideGlasses/></div>Enter VR
-					</div>
+				<div className="flex flex-row align-middle text-sm">
+					<div className='pr-2'><MousePointer /></div>[Hold] Move Towards Location
+				</div>
+				<div className="flex flex-row space-x-10 align-middle text-sm">
+					<div className='pr-2'><LucideExpand /></div>Enter Fullscreen
+					<div className='pr-2'><LucideGlasses /></div>Enter VR
+				</div>
 				<h2 className="font-medium">Keyboard Controls</h2>
 				<div className="flex flex-row space-x-10">
 					<div className="flex flex-col space-y-2">
@@ -265,6 +282,22 @@ export function LiDARControls() {
 						</ul>
 					</div>
 				</div>
+			</DialogContent>
+			<DialogTrigger>
+				<LucideInfo size={16} />
+			</DialogTrigger>
+		</Dialog>
+	);
+}
+
+export function HailgenControls() {
+	return (
+		<Dialog>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Using NHP Hailgen</DialogTitle>
+					<DialogDescription>How to navigate the Hailgen view</DialogDescription>
+				</DialogHeader>
 			</DialogContent>
 			<DialogTrigger>
 				<LucideInfo size={16} />

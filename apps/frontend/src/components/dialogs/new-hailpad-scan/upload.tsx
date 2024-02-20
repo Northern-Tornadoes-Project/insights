@@ -73,7 +73,7 @@ export const UploadDialogContent = (props: DialogContentProps) => {
 				formData.append('user_id', session.data.user.id);
 				if (data.folder_name !== '')
 					formData.append('folder_name', data.folder_name);
-				formData.append('pointcloud', file as File);
+				formData.append('mesh', file as File);
 
 				const result = await fetch(
 					`${env.NEXT_PUBLIC_BACKEND_URL}/api/upload/hailgen`,

@@ -49,6 +49,8 @@ model User {
   paths_updated    Path[]    @relation("Path Updated By")
   scans_created    Scan[]    @relation("Scan Created By")
   scans_updated    Scan[]    @relation("Scan Updated By")
+  hailpad_scans_created    HailpadScan[]    @relation("Scan Created By")
+  hailpad_scans_updated    HailpadScan[]    @relation("Scan Updated By")
   accounts         Account[]
   sessions         Session[]
 }
@@ -196,6 +198,23 @@ enum ScanStatusCodes {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model HailpadScan {
+  id            String          @id @unique @default(cuid())
+  name          String?
+  event_date    DateTime? 
+  date_taken    DateTime?
+  scan_location String
+  scan_size     BigInt
+  upload_status ScanStatusCodes @default(PROCESSING)
+  archived      Boolean         @default(false)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @default(now()) @updatedAt
+  created_by    User            @relation("Scan Created By", fields: [created_by_id], references: [id])
+  created_by_id String
+  updated_by    User            @relation("Scan Updated By", fields: [updated_by_id], references: [id])
+  updated_by_id String
 }
 
 enum ImageSource {

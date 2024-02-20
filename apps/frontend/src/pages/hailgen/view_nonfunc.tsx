@@ -69,29 +69,32 @@ const View: NextPage = () => {
                         <HailgenControls />
                     </div>
                     <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-2">
-                        <div
-                            className="relative row-span-3 h-[500px] overflow-hidden rounded-md lg:col-span-4 lg:h-[800px] border-[1px]" // Cursed but it works
-                        >
+                        <div className="row-span-2 overflow-hidden rounded-md lg:col-span-4 border-[1px]">
                             Depth map here
                         </div>
-                        <HailpadDetails
-                            map_size={/*scan.data?.scan_size*/ BigInt(1111111)}
-                            indent_count={57}
-                            min_width={1}
-                            max_width={10}
-                            avg_width={5}
-                            min_height={1}
-                            max_height={10}
-                            avg_height={5}
-                            min_depth={1}
-                            max_depth={10}
-                            avg_depth={5}
-                        />
-                        <IndentDetails indent_count={57} />
-                        <HailpadControls />
-                    </div>
-                    <div className="container flex flex-col items-center rounded-md justify-center mt-4 p-10 border-[1px]">
-                        Chart here
+                        <div className="col-span-2">
+                            <HailpadDetails
+                                map_size={/*scan.data?.scan_size*/ BigInt(1111111)}
+                                indent_count={57}
+                                min_len={1}
+                                max_len={10}
+                                avg_len={5}
+                                min_wid={2}
+                                max_wid={11}
+                                avg_wid={7}
+                                min_vol={1}
+                                max_vol={1000}
+                                avg_vol={625}
+                            />
+                        </div>
+                        <div className="col-span-2">
+                            <IndentDetails
+                                indent_count={57}
+                                len={5}
+                                wid={7}
+                                vol={625}
+                            />
+                        </div>
                     </div>
                 </div>
             </main>

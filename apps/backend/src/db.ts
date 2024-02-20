@@ -268,6 +268,25 @@ export const newScan = async ({
 	});
 };
 
+export const newHailpadScan = async ({
+	user_id,
+	scan_location,
+	scan_size
+}: {
+	user_id: string;
+	scan_location: string;
+	scan_size: number;
+}) => {
+	return await prisma.hailpadScan.create({
+		data: {
+			created_by_id: user_id,
+			updated_by_id: user_id,
+			scan_location: scan_location,
+			scan_size: scan_size
+		},
+	});
+};
+
 export const setScanStatus = async ({
 	scan_id,
 	status,
@@ -285,8 +304,36 @@ export const setScanStatus = async ({
 	});
 };
 
+export const setHailpadScanStatus = async ({
+	scan_id,
+	status,
+}: {
+	scan_id: string;
+	status: ScanStatusCodes;
+}) => {
+	return await prisma.hailpadScan.update({
+		where: {
+			id: scan_id,
+		},
+		data: {
+			upload_status: status,
+		},
+	});
+};
+
 export const getScanStatus = async (scan_id: string) => {
 	return await prisma.scan.findUnique({
+		where: {
+			id: scan_id,
+		},
+		select: {
+			upload_status: true,
+		},
+	});
+};
+
+export const getHailpadScanStatus = async (scan_id: string) => {
+	return await prisma.hailpadScan.findUnique({
 		where: {
 			id: scan_id,
 		},
@@ -313,7 +360,39 @@ export const updateScanLocation = async ({
 	});
 };
 
+export const updateHailpadScanLocation = async ({
+	scan_id,
+	location,
+}: {
+	scan_id: string;
+	location: string;
+}) => {
+	return await prisma.hailpadScan.update({
+		where: {
+			id: scan_id,
+		},
+		data: {
+			scan_location: location,
+		},
+	});
+};
+
 export const isScanFolderNameUnique = async (folder_name: string) => {
+	try {
+		const result = await prisma.scan.findFirst({
+			where: {
+				scan_location: folder_name,
+			}
+		});
+
+		if (!result) return true;
+		return false;
+	} catch (err) {
+		return true;
+	}
+}
+
+export const isHailpadScanFolderNameUnique = async (folder_name: string) => {
 	try {
 		const result = await prisma.scan.findFirst({
 			where: {

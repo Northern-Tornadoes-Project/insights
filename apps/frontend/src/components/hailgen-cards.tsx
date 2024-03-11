@@ -7,39 +7,78 @@ import {
 } from './ui/card';
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Histogram, BarSeries, XAxis, YAxis } from '@data-ui/histogram';
+
 import { Separator } from './ui/separator';
 
 import { cn } from '@/lib/utils';
-import { PropsWithChildren, type ReactNode } from 'react';
+import { PropsWithChildren, useRef, type ReactNode, useEffect } from 'react';
 import { Button } from './ui/button';
 import { CornerDownLeft } from 'lucide-react';
 
-// Props for hailpad details card
-type HailpadDetailsProps = {
-	map_size: bigint; // in bytes
-	indent_count: number;
-	min_len: number;
-	max_len: number;
-	avg_len: number;
-	min_wid: number;
-	max_wid: number;
-	avg_wid: number;
-	min_vol: number;
-	max_vol: number;
-	avg_vol: number;
+type HailpadMapProps = {
+	img_src: string;
+	centroids: Array<[number, number]>;
 };
 
-// Props for indent details card
+type HailpadDetailsProps = {
+	indent_count: number;
+	min_minor: number;
+	max_minor: number;
+	avg_minor: number;
+	min_major: number;
+	max_major: number;
+	avg_major: number;
+	min_volume: number;
+	max_volume: number;
+	avg_volume: number;
+	minors: number[];
+	majors: number[];
+	volumes: number[];
+};
+
 type IndentDetailsProps = {
 	indent_count: number;
-	len: number;
-	wid: number;
-	vol: number;
+	minor: number;
+	major: number;
+	volume: number;
 };
 
-// Props for hailpad controls card
 type HailpadControlsProps = {
 };
+
+export function HailpadMap(props: HailpadMapProps) {
+	const canvasRef = useRef(null);
+
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		const context = canvas.getContext('2d');
+
+		const img = new Image();
+		img.src = '../../dmap.png'; // TODO: replace with props.img_src
+
+		img.onload = () => {
+			context.drawImage(img, 0, 0, 1000, 1000);
+
+			// Render clickable centroids
+			props.centroids.forEach(([x, y]) => {
+				context.beginPath();
+				context.arc(x, y, 4, 0, 2 * Math.PI);
+				context.fillStyle = '#4c2e72';
+				context.fill();
+			});
+		};
+
+		img.onerror = (error) => {
+			console.error('Error loading depth map: ', error);
+		};
+
+		// TODO: Add event handler for clicking centroids
+
+	}, [props.centroids]);
+
+	return <canvas ref={canvasRef} width={1000} height={1000} />;
+}
 
 function DetailsRow(
 	props: PropsWithChildren<{ label: string; className?: string }>
@@ -55,6 +94,43 @@ function DetailsRow(
 }
 
 export function HailpadDetails(props: HailpadDetailsProps) {
+	const renderHistogram = (type: string) => {
+		let data = [];
+
+		if (type === "minor") {
+			data = props.minors;
+		} else if (type === "major") {
+			data = props.majors;
+		} else if (type === "volume") {
+			data = props.volumes;
+		}
+
+		// TODO
+		const rawData = Array(100).fill(30).map(Math.random);
+		// const rawData = data;
+
+		return (
+			<div className="rounded-sm bg-white border-2">
+				<Histogram
+					ariaLabel="Indent distribution histogram"
+					orientation="vertical"
+					binCount={5}
+					width={375}
+					height={300}
+					binType="numeric"
+				>
+					<BarSeries
+						fill="#4c2e72"
+						fillOpacity={1}
+						rawData={rawData}
+					/>
+					<XAxis numTicks={5}/>
+					<YAxis numTicks={10}/>
+				</Histogram>
+			</div>
+		);
+	};
+
 	return (
 		<>
 			{/* Hailpad details card */}
@@ -64,76 +140,76 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 					<CardDescription>About the current hailpad view</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<Tabs defaultValue="width">
+					<Tabs defaultValue="minor">
 						<TabsList>
-							<TabsTrigger value="length">Length</TabsTrigger>
-							<TabsTrigger value="width">Width</TabsTrigger>
+							<TabsTrigger value="minor">Minor Axis</TabsTrigger>
+							<TabsTrigger value="major">Major Axis</TabsTrigger>
 							<TabsTrigger value="volume">Volume</TabsTrigger>
 						</TabsList>
-						<TabsContent value="length">
+						<TabsContent value="minor">
 							<div className="flex flex-row justify-between pt-4">
 								<DetailsRow label="Minimum">
 									<p>
-										{`${props.min_len} mm`}
+										{`${Number(props.min_minor.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Maximum">
 									<p>
-										{`${props.max_len} mm`}
+										{`${Number(props.max_minor.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Average">
 									<p>
-										{`${props.avg_len} mm`}
+										{`${Number(props.avg_minor.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 							</div>
 							<div className="pt-4">
-								Length histogram here
+								{renderHistogram("minor")}
 							</div>
 						</TabsContent>
-						<TabsContent value="width">
-						<div className="flex flex-row justify-between pt-4">
+						<TabsContent value="major">
+							<div className="flex flex-row justify-between pt-4">
 								<DetailsRow label="Minimum">
 									<p>
-										{`${props.min_wid} mm`}
+										{`${Number(props.min_major.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Maximum">
 									<p>
-										{`${props.max_wid} mm`}
+										{`${Number(props.max_major.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Average">
 									<p>
-										{`${props.avg_wid} mm`}
+										{`${Number(props.avg_major.toFixed(2))} mm`}
 									</p>
 								</DetailsRow>
 							</div>
 							<div className="pt-4">
-								Width histogram here
+								{renderHistogram('major')}
 							</div>
 						</TabsContent>
 						<TabsContent value="volume">
-						<div className="flex flex-row justify-between pt-4">
+							<div className="flex flex-row justify-between pt-4">
 								<DetailsRow label="Minimum">
 									<p>
-										{`${props.min_vol} mm³`}
+										{`${Number(props.min_volume.toFixed(2))} mm³`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Maximum">
 									<p>
-										{`${props.max_vol} mm³`}
+										{`${Number(props.max_volume.toFixed(2))} mm³`}
 									</p>
 								</DetailsRow>
 								<DetailsRow label="Average">
 									<p>
-										{`${props.avg_vol} mm³`}
+										{`${Number(props.avg_volume.toFixed(2))} mm³`}
 									</p>
 								</DetailsRow>
 							</div>
 							<div className="pt-4">
-								Volume histogram here
+								{renderHistogram('volume')}
 							</div>
 						</TabsContent>
 					</Tabs>
@@ -147,7 +223,7 @@ export function IndentDetails(props: IndentDetailsProps) {
 	return (
 		<>
 			{/* Hailpad details card */}
-			<Card id="hailpad-details-card">
+			<Card id="hailpad-details-card" className="h-full">
 				<CardHeader>
 					<CardTitle>Indent Details</CardTitle>
 					<CardDescription>About the current indent</CardDescription>
@@ -161,22 +237,22 @@ export function IndentDetails(props: IndentDetailsProps) {
 						</p>
 					</div>
 					<div className="flex flex-row justify-between pt-4">
-								<DetailsRow label="Length">
-									<p>
-										{`${props.len} mm`}
-									</p>
-								</DetailsRow>
-								<DetailsRow label="Width">
-									<p>
-										{`${props.wid} mm`}
-									</p>
-								</DetailsRow>
-								<DetailsRow label="Volume">
-									<p>
-										{`${props.vol} mm`}
-									</p>
-								</DetailsRow>
-							</div>
+						<DetailsRow label="Minor Axis">
+							<p>
+								{`${Number(props.minor.toFixed(2))} mm`}
+							</p>
+						</DetailsRow>
+						<DetailsRow label="Major Axis">
+							<p>
+								{`${Number(props.major.toFixed(2))} mm`}
+							</p>
+						</DetailsRow>
+						<DetailsRow label="Volume">
+							<p>
+								{`${Number(props.volume.toFixed(2))} mm³`}
+							</p>
+						</DetailsRow>
+					</div>
 				</CardContent>
 			</Card>
 		</>
@@ -191,10 +267,10 @@ export function HailpadControls(props: HailpadControlsProps) {
 			<Card id="lidar-controls-card" className="bg-background/60 backdrop-blur">
 				<CardHeader>
 					<CardTitle>Indent Filters</CardTitle>
-					<CardDescription>Adjust the default filters for identified indents</CardDescription>
+					<CardDescription>Filter out identified indents</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col justify-around">
-					Filters for min/max area, min/max width, min/max height, min/max volume
+					Filters for minor/major axis, volume, etc.
 				</CardContent>
 				{/* TODO: TBD */}
 				{/* <div className="px-4">

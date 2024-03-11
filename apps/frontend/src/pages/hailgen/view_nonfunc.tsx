@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { Toaster } from '@/components/ui/toaster';
 import { api } from '@/utils/api';
 import { useEffect, useRef, useState } from 'react';
-import { HailpadControls, HailpadDetails, IndentDetails } from '@/components/hailgen-cards';
+import { HailpadControls, HailpadDetails, HailpadMap, IndentDetails } from '@/components/hailgen-cards';
 import { HailgenControls } from '@/components/dialogs/info-dialogs';
 
 const View: NextPage = () => {
@@ -46,6 +46,37 @@ const View: NextPage = () => {
     //     );
     // }
 
+    const conversionFactor = 1639.34426 / 1000; // px/mm
+    const [centroids, setCentroids] = useState<Array<[number, number]>>([]);
+    const [scanData, setScanData] = useState<{
+        indents: {
+            area: number;
+            major_axis: number;
+            minor_axis: number;
+            centroid: {
+                y: number;
+                x: number;
+            };
+            depth_at_centroid: number;
+            avg_depth: number;
+            max_depth: number;
+        }[];
+    }>({
+        indents: [],
+    });
+
+    // TODO: Replace with backend API call
+    useEffect(() => {
+        fetch('/output.json')
+            .then(response => response.json())
+            .then(data => {
+                const newCentroids = data.indents.map(indent => [indent.centroid.y, indent.centroid.x]);
+                setScanData(data);
+                setCentroids(newCentroids);
+            })
+            .catch(error => console.error('Error fetching centroids: ', error));
+    }, []);
+
     return (
         <>
             <Head>
@@ -68,32 +99,36 @@ const View: NextPage = () => {
                         <h2>{/*scan.data.name ||*/ 'Hailpad Scan Name'}</h2>
                         <HailgenControls />
                     </div>
-                    <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-2">
-                        <div className="row-span-2 overflow-hidden rounded-md lg:col-span-4 border-[1px]">
-                            Depth map here
+                    <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-3">
+                        <div className="row-span-2 object-fit overflow-hidden rounded-md lg:col-span-4 border-[1px]" style={{ aspectRatio: '1/1', display: 'flex' }}>
+                            <HailpadMap img_src="dmap.png" centroids={centroids} />
                         </div>
-                        <div className="col-span-2">
-                            <HailpadDetails
-                                map_size={/*scan.data?.scan_size*/ BigInt(1111111)}
-                                indent_count={57}
-                                min_len={1}
-                                max_len={10}
-                                avg_len={5}
-                                min_wid={2}
-                                max_wid={11}
-                                avg_wid={7}
-                                min_vol={1}
-                                max_vol={1000}
-                                avg_vol={625}
-                            />
-                        </div>
-                        <div className="col-span-2">
-                            <IndentDetails
-                                indent_count={57}
-                                len={5}
-                                wid={7}
-                                vol={625}
-                            />
+                        <div className="col-span-2 space-y-4">
+                            <div className="row-span-2">
+                                <HailpadDetails
+                                    indent_count={scanData.indents.length}
+                                    min_minor={scanData.indents.reduce((min, indent) => Math.min(min, indent.minor_axis), Infinity) / conversionFactor}
+                                    max_minor={scanData.indents.reduce((max, indent) => Math.max(max, indent.minor_axis), -Infinity) / conversionFactor}
+                                    avg_minor={scanData.indents.reduce((sum, indent) => sum + indent.minor_axis, 0) / scanData.indents.length / conversionFactor}
+                                    min_major={scanData.indents.reduce((min, indent) => Math.min(min, indent.major_axis), Infinity) / conversionFactor}
+                                    max_major={scanData.indents.reduce((max, indent) => Math.max(max, indent.major_axis), -Infinity) / conversionFactor}
+                                    avg_major={scanData.indents.reduce((sum, indent) => sum + indent.major_axis, 0) / scanData.indents.length / conversionFactor}
+                                    min_volume={0}
+                                    max_volume={0}
+                                    avg_volume={0}
+                                    minors={scanData.indents.map(indent => indent.minor_axis / conversionFactor)}
+                                    majors={scanData.indents.map(indent => indent.major_axis / conversionFactor)}
+                                    volumes={[0]}
+                                />
+                            </div>
+                            <div className="className=row-span-1">
+                                <IndentDetails
+                                    indent_count={scanData.indents.length}
+                                    minor={0 / conversionFactor}
+                                    major={0 / conversionFactor}
+                                    volume={0 / conversionFactor}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

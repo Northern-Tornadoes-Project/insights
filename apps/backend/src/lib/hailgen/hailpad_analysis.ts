@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import { spawn } from 'child_process';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 import formidable from 'formidable';
 import {
     newHailpadScan,
@@ -8,7 +8,7 @@ import {
     setScanStatus,
     updateHailpadScanLocation,
     updateScanLocation
-} from '../db';
+} from '../../db';
 import { ScanType } from 'database';
 import { Worker } from 'node:worker_threads';
 import path from 'path';

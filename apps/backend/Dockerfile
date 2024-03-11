@@ -8,6 +8,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 
 FROM base AS builder
 
+# Install Python
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+FROM base AS builder
+
 # Install dependencies for Ubuntu
 RUN apt-get install -y \
     libtiff-dev libgeotiff-dev libgdal-dev \
@@ -60,3 +65,6 @@ ENV NODE_ENV=production
 ENV LD_LIBRARY_PATH=/usr/local/lib:/app/potree
 
 CMD node ./apps/backend/dist/_app.js
+
+# Copy hailpad analysis Python executable
+COPY apps/backend/src/lib/hailgen/HailpadAnalysis.py /app/

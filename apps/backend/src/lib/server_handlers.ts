@@ -11,7 +11,7 @@ import {
 	userExists,
 } from '../db';
 import { handlePointCloudUpload } from './potree_converter';
-import { handleMeshUpload } from './hailpad_analysis';
+import { handleMeshUpload } from './hailgen/hailpad_analysis';
 
 const IMAGE_DIRECTORY = './images';
 

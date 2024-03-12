@@ -29,8 +29,10 @@ const View: NextPage = () => {
             avg_depth: number;
             max_depth: number;
         }[];
+        img: string;
     }>({
         indents: [],
+        img: '',
     });
 
     // TODO: Replace with backend API call
@@ -72,7 +74,7 @@ const View: NextPage = () => {
                             <HailpadMap
                                 index={currentIndex}
                                 onIndexChange={setCurrentIndex}
-                                img_src="dmap.png" centroids={centroids}
+                                imgData={scanData.img} centroids={centroids}
                             />
                         </div>
                         <div className="col-span-2 space-y-4">

@@ -7,6 +7,7 @@ import {
 } from './ui/card';
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Histogram, BarSeries, XAxis, YAxis } from '@data-ui/histogram';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
@@ -17,7 +18,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
 	index: number;
-	img_src: string;
+	imgData: string;
 	centroids: Array<[number, number]>;
 };
 
@@ -48,19 +49,18 @@ type IndentDetailsProps = {
 	volume: number;
 };
 
-type HailpadControlsProps = {
-};
-
 export function HailpadMap(props: HailpadMapProps) {
 	const canvasRef = useRef(null);
-	const radius = 20;
+	const radius = 25;
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const context = canvas.getContext('2d');
 
 		const img = new Image();
-		img.src = '../../dmap.png'; // TODO: replace with props.img_src
+
+		// Decode base64 image data
+		img.src = `data:image/png;base64,${props.imgData}`;
 
 		img.onload = () => {
 			context.drawImage(img, 0, 0, 1000, 1000);
@@ -69,7 +69,7 @@ export function HailpadMap(props: HailpadMapProps) {
 			props.centroids.forEach(([x, y], i) => {
 				if (i === props.index) {
 					// context.globalAlpha = 0.75;
-					
+
 					context.beginPath();
 					context.arc(x, y, radius, 0, 2 * Math.PI);
 					context.strokeStyle = '#4c2e72';
@@ -77,10 +77,10 @@ export function HailpadMap(props: HailpadMapProps) {
 					context.setLineDash([7, 5]);
 					context.stroke();
 
-					context.beginPath();
-					context.arc(x, y, 2, 0, 2 * Math.PI);
-					context.fillStyle = '#4c2e72';
-					context.fill();
+					// context.beginPath();
+					// context.arc(x, y, 2, 0, 2 * Math.PI);
+					// context.fillStyle = '#4c2e72';
+					// context.fill();
 
 					context.globalAlpha = 1;
 				}
@@ -93,22 +93,23 @@ export function HailpadMap(props: HailpadMapProps) {
 
 		// Event handler for clicking on a centroid to change index
 		// TODO: Fix coordinate mismatch
-        // canvas.addEventListener('click', (event) => {
-        //     const rect = canvas.getBoundingClientRect();
-        //     const x = event.clientX - rect.left;
-        //     const y = event.clientY - rect.top;
+		// canvas.addEventListener('click', (event) => {
+		//     const rect = canvas.getBoundingClientRect();
+		// 	console.log("RECT: " + rect.left, rect.right, rect.top, rect.bottom);
+		//     const x = event.clientX - rect.left;
+		//     const y = event.clientY - rect.top;
 
-        //     // Set index based on if a centroid was clicked within a certain radius
-        //     for (let i = 0; i < props.centroids.length; i++) {
-        //         const [centroidX, centroidY] = props.centroids[i];
-        //         const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
-		// 		console.log(x, centroidX, y, centroidY, distance, radius);
-        //         if (distance <= radius) {
-        //             props.onIndexChange(i);
-        //             break;
-        //         }
-        //     }
-        // });
+		//     // Set index based on if a centroid was clicked within a certain radius
+		//     for (let i = 0; i < props.centroids.length; i++) {
+		//         const [centroidX, centroidY] = props.centroids[i];
+		//         const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
+		// 		// console.log(x, centroidX, y, centroidY);
+		//         if (distance <= 20) {
+		//             props.onIndexChange(i);
+		//             break;
+		//         }
+		//     }
+		// });
 	}, [props.centroids, props.onIndexChange, props.index]);
 
 	return <canvas ref={canvasRef} width={1000} height={1000} />;
@@ -128,39 +129,27 @@ function DetailsRow(
 }
 
 export function HailpadDetails(props: HailpadDetailsProps) {
-	const renderHistogram = (type: string) => {
-		let data = [];
-
-		if (type === "minor") {
-			data = props.minors;
-		} else if (type === "major") {
-			data = props.majors;
-		} else if (type === "volume") {
-			data = props.volumes;
-		}
-
-		// TODO: Figure out why this is yelling 😭
-		const rawData = Array(100).fill(30).map(Math.random);
-		// const rawData = data;
-
+	const renderHistogram = (data: number[]) => {
 		return (
 			<div className="rounded-sm bg-white border-2">
-				<Histogram
-					ariaLabel="Indent distribution histogram"
-					orientation="vertical"
-					binCount={5}
-					width={375}
-					height={300}
-					binType="numeric"
-				>
-					<BarSeries
-						fill="#4c2e72"
-						fillOpacity={1}
-						rawData={rawData}
-					/>
-					<XAxis numTicks={5} />
-					<YAxis numTicks={10} />
-				</Histogram>
+				{data && data.length > 0 &&
+					<Histogram
+						ariaLabel="Indent distribution histogram"
+						orientation="vertical"
+						binCount={5}
+						width={375}
+						height={300}
+
+					>
+						<BarSeries
+							rawData={data}
+							fill="#4c2e72"
+							fillOpacity={1}
+						/>
+						<XAxis numTicks={5} min={0} max={100} />
+						<YAxis numTicks={10} />
+					</Histogram>
+				}
 			</div>
 		);
 	};
@@ -183,9 +172,42 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							<Button variant="outline" className="h-8 w-8 p-0.5 hover:text-green-500">
 								<FileSpreadsheet className="h-4" />
 							</Button>
-							<Button variant="outline" className="h-8 w-8 p-0.5">
-								<Filter className="h-4" />
-							</Button>
+							<Popover>
+								<PopoverTrigger>
+									<Button variant="outline" className="h-8 w-8 p-0.5">
+										<Filter className="h-4" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent>
+									<p className="font-semibold text-sm">
+										Filter Indents
+									</p>
+									<form className="mt-4 text-sm space-y-2">
+										<div className="flex flex-row justify-between items-center">
+											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<p>≤</p>
+											<p>Minor Axis (mm)</p>
+											<p>≤</p>
+											<Input type="text" placeholder="Max." className="w-14 h-8" />
+										</div>
+										<div className="flex flex-row justify-between items-center">
+											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<p>≤</p>
+											<p>Major Axis (mm)</p>
+											<p>≤</p>
+											<Input type="text" placeholder="Max." className="w-14 h-8" />
+										</div>
+										<div className="flex flex-row justify-between items-center">
+											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<p>≤</p>
+											<p>Volume (mm³)</p>
+											<p>≤</p>
+											<Input type="text" placeholder="Max." className="w-14 h-8" />
+										</div>
+									</form>
+								</PopoverContent>
+							</Popover>
+
 						</div>
 					</div>
 					<TabsContent value="minor">
@@ -207,7 +229,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{renderHistogram("minor")}
+							{props.minors && renderHistogram(props.minors)}
 						</div>
 					</TabsContent>
 					<TabsContent value="major">
@@ -229,7 +251,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{renderHistogram('major')}
+							{props.majors && renderHistogram(props.majors)}
 						</div>
 					</TabsContent>
 					<TabsContent value="volume">
@@ -251,7 +273,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{renderHistogram('volume')}
+							{props.volumes && renderHistogram(props.volumes)}
 						</div>
 					</TabsContent>
 				</Tabs>
@@ -342,34 +364,6 @@ export function IndentDetails(props: IndentDetailsProps) {
 						</DetailsRow>
 					</div>
 				</CardContent>
-			</Card>
-		</>
-	)
-}
-
-// TODO
-export function HailpadControls(props: HailpadControlsProps) {
-	return (
-		<>
-			{/* Hailpad Controls Card */}
-			<Card id="lidar-controls-card" className="bg-background/60 backdrop-blur">
-				<CardHeader>
-					<CardTitle>Indent Filters</CardTitle>
-					<CardDescription>Filter out identified indents</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-col justify-around">
-					Filters for minor/major axis, volume, etc.
-				</CardContent>
-				{/* TODO: TBD */}
-				{/* <div className="px-4">
-					<Separator />
-				</div>
-				<CardHeader>
-					<CardTitle>Advanced Controls</CardTitle>
-					<CardDescription>Change the depth map analysis</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-col justify-around">
-				</CardContent> */}
 			</Card>
 		</>
 	)

@@ -12,8 +12,11 @@ import { Histogram, BarSeries, XAxis, YAxis } from '@data-ui/histogram';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
 import { Button } from './ui/button';
-import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, Trash, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Trash, Trash2 } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+
+// import dynamic from 'next/dynamic';
+// const DynamicDataUI: any = dynamic(() => import('@data-ui/histogram').then(module => module.default), { ssr: false });
 
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
@@ -36,6 +39,8 @@ type HailpadDetailsProps = {
 	minors: number[];
 	majors: number[];
 	volumes: number[];
+	onFilterChange: (value: object) => void;
+	onDownload: (value: boolean) => void;
 };
 
 type IndentDetailsProps = {
@@ -93,23 +98,23 @@ export function HailpadMap(props: HailpadMapProps) {
 
 		// Event handler for clicking on a centroid to change index
 		// TODO: Fix coordinate mismatch
-		// canvas.addEventListener('click', (event) => {
-		//     const rect = canvas.getBoundingClientRect();
-		// 	console.log("RECT: " + rect.left, rect.right, rect.top, rect.bottom);
-		//     const x = event.clientX - rect.left;
-		//     const y = event.clientY - rect.top;
+		canvas.addEventListener('click', (event) => {
+		    const rect = canvas.getBoundingClientRect();
+			console.log("RECT: " + rect.left, rect.right, rect.top, rect.bottom);
+		    const x = event.clientX - rect.left;
+		    const y = event.clientY - rect.top;
 
-		//     // Set index based on if a centroid was clicked within a certain radius
-		//     for (let i = 0; i < props.centroids.length; i++) {
-		//         const [centroidX, centroidY] = props.centroids[i];
-		//         const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
-		// 		// console.log(x, centroidX, y, centroidY);
-		//         if (distance <= 20) {
-		//             props.onIndexChange(i);
-		//             break;
-		//         }
-		//     }
-		// });
+		    // Set index based on if a centroid was clicked within a certain radius
+		    for (let i = 0; i < props.centroids.length; i++) {
+		        const [centroidX, centroidY] = props.centroids[i];
+		        const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
+				// console.log(x, centroidX, y, centroidY);
+		        if (distance <= 20) {
+		            props.onIndexChange(i);
+		            break;
+		        }
+		    }
+		});
 	}, [props.centroids, props.onIndexChange, props.index]);
 
 	return <canvas ref={canvasRef} width={1000} height={1000} />;
@@ -154,6 +159,49 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 		);
 	};
 
+	type Inputs = {
+		minMinor: string;
+		maxMinor: string;
+		minMajor: string;
+		maxMajor: string;
+		minVolume: string;
+		maxVolume: string;
+	};
+
+	const {
+		register,
+		handleSubmit,
+		control,
+		reset,
+		formState: { errors }, // TODO
+	} = useForm<Inputs>();
+
+	const changeFilter = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		void (async () => {
+			await handleSubmit(((data) => {
+				props.onFilterChange({
+					minMinor: Number(data.minMinor),
+					maxMinor: Number(data.maxMinor),
+					minMajor: Number(data.minMajor),
+					maxMajor: Number(data.maxMajor),
+					minVolume: Number(data.minVolume),
+					maxVolume: Number(data.maxVolume),
+				});
+			}) as SubmitHandler<Inputs>)(event);
+		})();
+	};
+
+	// const submitIndentNo = (event: FormEvent<HTMLFormElement>) => {
+	// 	event.preventDefault();
+	// 	void (async () => {
+	// 		await handleSubmit(((data) => {
+	// 			props.onIndexChange(Number(data.indent) - 1);
+	// 			reset();
+	// 		}) as SubmitHandler<Inputs>)(event);
+	// 	})();
+	// };
+
 	return (
 		<Card id="hailpad-details-card">
 			<CardHeader>
@@ -169,40 +217,78 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							<TabsTrigger value="volume">Volume</TabsTrigger>
 						</TabsList>
 						<div className="flex flex-row space-x-4">
-							<Button variant="outline" className="h-8 w-8 p-0.5 hover:text-green-500">
+							<Button variant="outline" className="h-8 w-8 p-0.5 hover:text-green-500" onClick={() => props.onDownload(true)}>
 								<FileSpreadsheet className="h-4" />
 							</Button>
 							<Popover>
 								<PopoverTrigger>
-									<Button variant="outline" className="h-8 w-8 p-0.5">
-										<Filter className="h-4" />
+									<Button asChild variant="outline" className="h-8 w-8 p-[7px]">
+										<Filter className="h-2" />
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent>
 									<p className="font-semibold text-sm">
 										Filter Indents
 									</p>
-									<form className="mt-4 text-sm space-y-2">
+									<form className="mt-4 text-sm space-y-2" onSubmit={changeFilter}>
 										<div className="flex flex-row justify-between items-center">
-											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('minMinor', { required: false, min: 0, max: 'maxMinor' })}
+												placeholder="Min."
+												className="w-14 h-8"
+											/>
 											<p>≤</p>
 											<p>Minor Axis (mm)</p>
 											<p>≤</p>
-											<Input type="text" placeholder="Max." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('maxMinor', { required: false, min: 'minMinor' })}
+												placeholder="Max."
+												className="w-14 h-8"
+											/>
 										</div>
 										<div className="flex flex-row justify-between items-center">
-											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('minMajor', { required: false, min: 0, max: 'maxMajor' })}
+												placeholder="Min."
+												className="w-14 h-8"
+											/>
 											<p>≤</p>
 											<p>Major Axis (mm)</p>
 											<p>≤</p>
-											<Input type="text" placeholder="Max." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('maxMajor', { required: false, min: 'minMajor' })}
+												placeholder="Max."
+												className="w-14 h-8"
+											/>
 										</div>
 										<div className="flex flex-row justify-between items-center">
-											<Input type="text" placeholder="Min." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('minVolume', { required: false, min: 0, max: 'maxVolume' })}
+												placeholder="Min."
+												className="w-14 h-8"
+											/>
 											<p>≤</p>
 											<p>Volume (mm³)</p>
 											<p>≤</p>
-											<Input type="text" placeholder="Max." className="w-14 h-8" />
+											<Input
+												type="text"
+												{...register('maxVolume', { required: false, min: 'minVolume' })}
+												placeholder="Max."
+												className="w-14 h-8"
+											/>
+										</div>
+										<div className="flex flex-row justify-between pt-2">
+											<Button variant="outline" type="reset" className="h-8 w-8 p-0.5 hover:text-red-500">
+												<FilterX className="h-4" />
+											</Button>
+											<Button variant="secondary" type="submit" className="h-8 w-8 p-0.5">
+												<CornerDownLeft className="h-4" />
+											</Button>
 										</div>
 									</form>
 								</PopoverContent>

@@ -6,8 +6,10 @@ import { useRouter } from 'next/router';
 import { Toaster } from '@/components/ui/toaster';
 import { api } from '@/utils/api';
 import { useEffect, useRef, useState } from 'react';
-import { HailpadControls, HailpadDetails, HailpadMap, IndentDetails } from '@/components/hailgen-cards';
+import { HailpadDetails, HailpadMap, IndentDetails } from '@/components/hailgen-cards';
 import { HailgenControls } from '@/components/dialogs/info-dialogs';
+import { Button } from '@/components/ui/button';
+import { FileSpreadsheet } from 'lucide-react';
 
 const View: NextPage = () => {
     const session = useSession();
@@ -16,6 +18,8 @@ const View: NextPage = () => {
     const conversionFactor = 1639.34426 / 1000; // px/mm
     const [currentIndex, setCurrentIndex] = useState(0);
     const [centroids, setCentroids] = useState<Array<[number, number]>>([]);
+    const [download, setDownload] = useState(false);
+
     const [scanData, setScanData] = useState<{
         indents: {
             area: number;
@@ -35,6 +39,22 @@ const View: NextPage = () => {
         img: '',
     });
 
+    const [filters, setFilters] = useState<{
+        minMinor: number;
+        maxMinor: number;
+        minMajor: number;
+        maxMajor: number;
+        minVolume: number;
+        maxVolume: number;
+    }>({
+        minMinor: undefined,
+        maxMinor: undefined,
+        minMajor: undefined,
+        maxMajor: undefined,
+        minVolume: undefined,
+        maxVolume: undefined,
+    });
+
     // TODO: Replace with backend API call
     useEffect(() => {
         fetch('/output.json')
@@ -45,7 +65,56 @@ const View: NextPage = () => {
                 setCentroids(newCentroids);
             })
             .catch(error => console.error('Error fetching centroids: ', error));
-    }, []);
+
+        // Filter scanData indents and centroids (TODO: Volume filters)
+        if (filters.minMinor) {
+            setScanData(scanData => {
+                const newIndents = [...scanData.indents];
+                const filteredIndents = newIndents.filter(indent => indent.minor_axis >= filters.minMinor);
+                console.log(filteredIndents); // TODO: Remove
+                return { ...scanData, indents: filteredIndents };
+            });
+            setCentroids(centroids => centroids.filter((_, index) => scanData.indents[index].minor_axis >= filters.minMinor));
+        }
+
+        // TODO
+        // if (filters.max_minor) {
+
+        // }
+
+        // if (filters.min_major) {
+
+        // }
+
+        // if (filters.max_major) {
+
+        // }
+
+        console.log(download);
+
+        if (download) {
+            setDownload(false);
+            downloadCSV();
+        }
+
+    }, [filters.minMinor, filters.maxMinor, filters.minMajor, filters.maxMajor, filters.minVolume, filters.maxVolume, download]);
+
+    // Download CSV of scanData indents
+    const downloadCSV = () => {
+        const headers = ['Area', 'Major Axis', 'Minor Axis', 'Centroid X', 'Centroid Y', 'Depth at Centroid', 'Average Depth', 'Max Depth'];
+        const csvData = scanData.indents.map(indent => {
+            return `${indent.area},${indent.major_axis},${indent.minor_axis},${indent.centroid.x},${indent.centroid.y},${indent.depth_at_centroid},${indent.avg_depth},${indent.max_depth}`;
+        });
+        csvData.unshift(headers.join(',')); // Add headers at the start of the array
+        const csv = csvData.join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hailpad_data.csv';
+        a.click();
+    };
 
     return (
         <>
@@ -80,6 +149,8 @@ const View: NextPage = () => {
                         <div className="col-span-2 space-y-4">
                             <div className="row-span-2">
                                 <HailpadDetails
+                                    onFilterChange={setFilters}
+                                    onDownload={() => setDownload(true)}
                                     indent_count={scanData.indents.length}
                                     min_minor={scanData.indents.reduce((min, indent) => Math.min(min, indent.minor_axis), Infinity) / conversionFactor}
                                     max_minor={scanData.indents.reduce((max, indent) => Math.max(max, indent.minor_axis), -Infinity) / conversionFactor}

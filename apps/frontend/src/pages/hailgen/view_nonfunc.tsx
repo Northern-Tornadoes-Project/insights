@@ -5,11 +5,9 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { Toaster } from '@/components/ui/toaster';
 import { api } from '@/utils/api';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HailpadDetails, HailpadMap, IndentDetails } from '@/components/hailgen-cards';
 import { HailgenControls } from '@/components/dialogs/info-dialogs';
-import { Button } from '@/components/ui/button';
-import { FileSpreadsheet } from 'lucide-react';
 
 const View: NextPage = () => {
     const session = useSession();
@@ -63,34 +61,15 @@ const View: NextPage = () => {
                 const newCentroids = data.indents.map(indent => [indent.centroid.y, indent.centroid.x]);
                 setScanData(data);
                 setCentroids(newCentroids);
+
+                // Filter scanData indents and centroids (TODO: Volume filters and also write this in a less gross way)
+                if (filters.minMinor) {
+                    const filteredIndents = scanData.indents.filter(indent => indent.minor_axis >= filters.minMinor);
+                    setScanData({ ...scanData, indents: filteredIndents });
+                    setCentroids(centroids => centroids.filter((_, index) => scanData.indents[index].minor_axis >= filters.minMinor));
+                }
             })
             .catch(error => console.error('Error fetching centroids: ', error));
-
-        // Filter scanData indents and centroids (TODO: Volume filters)
-        if (filters.minMinor) {
-            setScanData(scanData => {
-                const newIndents = [...scanData.indents];
-                const filteredIndents = newIndents.filter(indent => indent.minor_axis >= filters.minMinor);
-                console.log(filteredIndents); // TODO: Remove
-                return { ...scanData, indents: filteredIndents };
-            });
-            setCentroids(centroids => centroids.filter((_, index) => scanData.indents[index].minor_axis >= filters.minMinor));
-        }
-
-        // TODO
-        // if (filters.max_minor) {
-
-        // }
-
-        // if (filters.min_major) {
-
-        // }
-
-        // if (filters.max_major) {
-
-        // }
-
-        console.log(download);
 
         if (download) {
             setDownload(false);
@@ -138,60 +117,56 @@ const View: NextPage = () => {
                         <h2>{/*scan.data.name ||*/ 'Hailpad Scan Name'}</h2>
                         <HailgenControls />
                     </div>
-                    <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-3">
-                        <div className="row-span-2 object-fit overflow-hidden rounded-md lg:col-span-4 border-[1px]" style={{ aspectRatio: '1/1', display: 'flex' }}>
+                    <div className="flex flex-col space-y-4 lg:flex-none lg:flex-row lg:space-y-0 lg:space-x-4">
+                        <div className="rounded-lg border-2 object-fit overflow-hidden">
                             <HailpadMap
                                 index={currentIndex}
                                 onIndexChange={setCurrentIndex}
                                 imgData={scanData.img} centroids={centroids}
                             />
                         </div>
-                        <div className="col-span-2 space-y-4">
-                            <div className="row-span-2">
-                                <HailpadDetails
-                                    onFilterChange={setFilters}
-                                    onDownload={() => setDownload(true)}
+                        <div className="flex flex-col space-y-4">
+                            <HailpadDetails
+                                onFilterChange={setFilters}
+                                onDownload={() => setDownload(true)}
+                                indent_count={scanData.indents.length}
+                                min_minor={scanData.indents.reduce((min, indent) => Math.min(min, indent.minor_axis), Infinity) / conversionFactor}
+                                max_minor={scanData.indents.reduce((max, indent) => Math.max(max, indent.minor_axis), -Infinity) / conversionFactor}
+                                avg_minor={scanData.indents.reduce((sum, indent) => sum + indent.minor_axis, 0) / scanData.indents.length / conversionFactor}
+                                min_major={scanData.indents.reduce((min, indent) => Math.min(min, indent.major_axis), Infinity) / conversionFactor}
+                                max_major={scanData.indents.reduce((max, indent) => Math.max(max, indent.major_axis), -Infinity) / conversionFactor}
+                                avg_major={scanData.indents.reduce((sum, indent) => sum + indent.major_axis, 0) / scanData.indents.length / conversionFactor}
+                                min_volume={0}
+                                max_volume={0}
+                                avg_volume={0}
+                                minors={scanData.indents.map(indent => indent.minor_axis / conversionFactor)}
+                                majors={scanData.indents.map(indent => indent.major_axis / conversionFactor)}
+                                volumes={[0]}
+                            />
+                            {scanData.indents[currentIndex] &&
+                                <IndentDetails
+                                    onNext={() => {
+                                        if (currentIndex + 1 < scanData.indents.length) {
+                                            setCurrentIndex(currentIndex + 1);
+                                        } else {
+                                            setCurrentIndex(0);
+                                        }
+                                    }}
+                                    onPrevious={() => {
+                                        if (currentIndex - 1 >= 0) {
+                                            setCurrentIndex(currentIndex - 1);
+                                        } else {
+                                            setCurrentIndex(scanData.indents.length - 1);
+                                        }
+                                    }}
+                                    index={currentIndex}
+                                    onIndexChange={setCurrentIndex}
                                     indent_count={scanData.indents.length}
-                                    min_minor={scanData.indents.reduce((min, indent) => Math.min(min, indent.minor_axis), Infinity) / conversionFactor}
-                                    max_minor={scanData.indents.reduce((max, indent) => Math.max(max, indent.minor_axis), -Infinity) / conversionFactor}
-                                    avg_minor={scanData.indents.reduce((sum, indent) => sum + indent.minor_axis, 0) / scanData.indents.length / conversionFactor}
-                                    min_major={scanData.indents.reduce((min, indent) => Math.min(min, indent.major_axis), Infinity) / conversionFactor}
-                                    max_major={scanData.indents.reduce((max, indent) => Math.max(max, indent.major_axis), -Infinity) / conversionFactor}
-                                    avg_major={scanData.indents.reduce((sum, indent) => sum + indent.major_axis, 0) / scanData.indents.length / conversionFactor}
-                                    min_volume={0}
-                                    max_volume={0}
-                                    avg_volume={0}
-                                    minors={scanData.indents.map(indent => indent.minor_axis / conversionFactor)}
-                                    majors={scanData.indents.map(indent => indent.major_axis / conversionFactor)}
-                                    volumes={[0]}
+                                    minor={scanData.indents[currentIndex].minor_axis / conversionFactor}
+                                    major={scanData.indents[currentIndex].major_axis / conversionFactor}
+                                    volume={0}
                                 />
-                            </div>
-                            <div className="className=row-span-1">
-                                {scanData.indents[currentIndex] &&
-                                    <IndentDetails
-                                        onNext={() => {
-                                            if (currentIndex + 1 < scanData.indents.length) {
-                                                setCurrentIndex(currentIndex + 1);
-                                            } else {
-                                                setCurrentIndex(0);
-                                            }
-                                        }}
-                                        onPrevious={() => {
-                                            if (currentIndex - 1 >= 0) {
-                                                setCurrentIndex(currentIndex - 1);
-                                            } else {
-                                                setCurrentIndex(scanData.indents.length - 1);
-                                            }
-                                        }}
-                                        index={currentIndex}
-                                        onIndexChange={setCurrentIndex}
-                                        indent_count={scanData.indents.length}
-                                        minor={scanData.indents[currentIndex].minor_axis / conversionFactor}
-                                        major={scanData.indents[currentIndex].major_axis / conversionFactor}
-                                        volume={0}
-                                    />
-                                }
-                            </div>
+                            }
                         </div>
                     </div>
                 </div>

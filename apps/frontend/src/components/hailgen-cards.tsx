@@ -8,7 +8,7 @@ import {
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Histogram, BarSeries, XAxis, YAxis } from '@data-ui/histogram';
+import { Histogram, BarSeries, XAxis, YAxis, Label } from '@data-ui/histogram';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
 import { Button } from './ui/button';
@@ -60,6 +60,8 @@ export function HailpadMap(props: HailpadMapProps) {
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
+		// canvas.width = 1000;
+		// canvas.height = 1000;
 		const context = canvas.getContext('2d');
 
 		const img = new Image();
@@ -82,11 +84,6 @@ export function HailpadMap(props: HailpadMapProps) {
 					context.setLineDash([7, 5]);
 					context.stroke();
 
-					// context.beginPath();
-					// context.arc(x, y, 2, 0, 2 * Math.PI);
-					// context.fillStyle = '#4c2e72';
-					// context.fill();
-
 					context.globalAlpha = 1;
 				}
 			});
@@ -97,10 +94,9 @@ export function HailpadMap(props: HailpadMapProps) {
 		};
 
 		// Event handler for clicking on a centroid to change index
-		// TODO: Fix coordinate mismatch
+		// TODO: Fix coordinate mismatch between the canvas and the image
 		canvas.addEventListener('click', (event) => {
 		    const rect = canvas.getBoundingClientRect();
-			console.log("RECT: " + rect.left, rect.right, rect.top, rect.bottom);
 		    const x = event.clientX - rect.left;
 		    const y = event.clientY - rect.top;
 
@@ -108,7 +104,6 @@ export function HailpadMap(props: HailpadMapProps) {
 		    for (let i = 0; i < props.centroids.length; i++) {
 		        const [centroidX, centroidY] = props.centroids[i];
 		        const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
-				// console.log(x, centroidX, y, centroidY);
 		        if (distance <= 20) {
 		            props.onIndexChange(i);
 		            break;
@@ -135,9 +130,11 @@ function DetailsRow(
 
 export function HailpadDetails(props: HailpadDetailsProps) {
 	const renderHistogram = (data: number[]) => {
+		const filteredData = data.filter(value => value <= 100);
+
 		return (
 			<div className="rounded-sm bg-white border-2">
-				{data && data.length > 0 &&
+				{filteredData && filteredData.length > 0 &&
 					<Histogram
 						ariaLabel="Indent distribution histogram"
 						orientation="vertical"
@@ -147,12 +144,12 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 
 					>
 						<BarSeries
-							rawData={data}
+							rawData={filteredData}
 							fill="#4c2e72"
 							fillOpacity={1}
 						/>
-						<XAxis numTicks={5} min={0} max={100} />
-						<YAxis numTicks={10} />
+						<XAxis numTicks={8} />
+						<YAxis numTicks={8} />
 					</Histogram>
 				}
 			</div>
@@ -315,7 +312,8 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{props.minors && renderHistogram(props.minors)}
+							{/* {props.minors && renderHistogram(props.minors)} */}
+							{renderHistogram(props.minors)}
 						</div>
 					</TabsContent>
 					<TabsContent value="major">
@@ -337,7 +335,8 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{props.majors && renderHistogram(props.majors)}
+							{/* {props.majors && renderHistogram(props.majors)} */}
+							{renderHistogram(props.majors)}
 						</div>
 					</TabsContent>
 					<TabsContent value="volume">
@@ -359,7 +358,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 							</DetailsRow>
 						</div>
 						<div className="pt-4">
-							{props.volumes && renderHistogram(props.volumes)}
+							{/* {props.volumes && renderHistogram(props.volumes)} */}
 						</div>
 					</TabsContent>
 				</Tabs>

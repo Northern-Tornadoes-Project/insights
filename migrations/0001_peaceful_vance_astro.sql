@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS "valid_emails" (
+	"email" text PRIMARY KEY NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

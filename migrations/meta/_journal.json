@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1710704633865,
+      "tag": "0000_wandering_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1714320943248,
+      "tag": "0001_peaceful_vance_astro",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1714323542009,
+      "tag": "0002_jittery_nico_minoru",
+      "breakpoints": true
+    }
+  ]
+}

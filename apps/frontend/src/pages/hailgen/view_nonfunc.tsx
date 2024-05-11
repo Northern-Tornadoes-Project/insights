@@ -164,7 +164,7 @@ const View: NextPage = () => {
                                     indent_count={scanData.indents.length}
                                     minor={scanData.indents[currentIndex].minor_axis / conversionFactor}
                                     major={scanData.indents[currentIndex].major_axis / conversionFactor}
-                                    volume={0}
+                                    volume={2400}
                                 />
                             }
                         </div>

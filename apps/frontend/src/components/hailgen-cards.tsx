@@ -8,7 +8,9 @@ import {
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Histogram, BarSeries, XAxis, YAxis, Label } from '@data-ui/histogram';
+// import { Histogram, BarSeries, XAxis, YAxis, Label } from '@data-ui/histogram';
+import "chart.js/auto";
+import { Bar } from 'react-chartjs-2';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
 import { Button } from './ui/button';
@@ -94,21 +96,20 @@ export function HailpadMap(props: HailpadMapProps) {
 		};
 
 		// Event handler for clicking on a centroid to change index
-		// TODO: Fix coordinate mismatch between the canvas and the image
 		canvas.addEventListener('click', (event) => {
-		    const rect = canvas.getBoundingClientRect();
-		    const x = event.clientX - rect.left;
-		    const y = event.clientY - rect.top;
+			const rect = canvas.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
 
-		    // Set index based on if a centroid was clicked within a certain radius
-		    for (let i = 0; i < props.centroids.length; i++) {
-		        const [centroidX, centroidY] = props.centroids[i];
-		        const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
-		        if (distance <= 20) {
-		            props.onIndexChange(i);
-		            break;
-		        }
-		    }
+			// Set index based on if a centroid was clicked within a certain radius
+			for (let i = 0; i < props.centroids.length; i++) {
+				const [centroidX, centroidY] = props.centroids[i];
+				const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
+				if (distance <= 20) {
+					props.onIndexChange(i);
+					break;
+				}
+			}
 		});
 	}, [props.centroids, props.onIndexChange, props.index]);
 
@@ -130,11 +131,86 @@ function DetailsRow(
 
 export function HailpadDetails(props: HailpadDetailsProps) {
 	const renderHistogram = (data: number[]) => {
-		const filteredData = data.filter(value => value <= 100);
+		// Filter anything over 100 TODO REMOVE
+		data = data.filter((val) => val <= 100);
+
+		// Place data into buckets of 5 mm increments TODO REMOVE
+		// const buckets = data.reduce((acc, val) => {
+		// 	const bucket = Math.floor(val / 5) * 5;
+		// 	const key = `[${bucket}, ${bucket + 5})`;
+		// 	if (!acc[key]) acc[key] = [];
+		// 	acc[key].push(val);
+		// 	return acc;
+		// }, {});
+
+		// Determine the minimum and maximum values in the data
+		const min = Math.floor(Math.min(...data) / 5) * 5;
+		const max = Math.floor(Math.max(...data) / 5) * 5;
+
+		// Create an array of bucket keys from min to max in increments of 5
+		const keys = Array.from({ length: (max - min) / 5 + 1 }, (_, i) => `[${min + i * 5}, ${min + (i + 1) * 5})`);
+
+		// Create the buckets object
+		const buckets = data.reduce((acc, val) => {
+			const bucket = Math.floor(val / 5) * 5;
+			const key = `[${bucket}, ${bucket + 5})`;
+			if (!acc[key]) acc[key] = [];
+			acc[key].push(val);
+			return acc;
+		}, Object.fromEntries(keys.map(key => [key, []])));
 
 		return (
-			<div className="rounded-sm bg-white border-2">
-				{filteredData && filteredData.length > 0 &&
+			<div className="rounded-sm bg-white border-2 p-2 w-[375px] h-[250px]">
+				<Bar
+					data={{
+						labels: Object.keys(buckets),
+						datasets: [
+							{
+								label: 'Dent Count',
+								data: Object.values(buckets).map((bucket: number[]) => bucket.length),
+								backgroundColor: '#4c2e72',
+								borderColor: '#4c2e72',
+								borderWidth: 1,
+							},
+						],
+					}}
+					options={{
+						indexAxis: 'y',
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: {
+							legend: {
+								display: false,
+							},
+						},
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Dent Count',
+								},
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Length (mm)',
+								},
+							},
+						},
+						layout: {
+							padding: {
+								left: 0,
+								right: 0,
+								top: 0,
+								bottom: 0,
+							},
+						},
+						barPercentage: 0.9,
+						categoryPercentage: 1,
+					}}
+				/>
+
+				{/* {data &&
 					<Histogram
 						ariaLabel="Indent distribution histogram"
 						orientation="vertical"
@@ -144,14 +220,14 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 
 					>
 						<BarSeries
-							rawData={filteredData}
+							rawData={data}
 							fill="#4c2e72"
 							fillOpacity={1}
 						/>
 						<XAxis numTicks={8} />
 						<YAxis numTicks={8} />
 					</Histogram>
-				}
+				} */}
 			</div>
 		);
 	};

@@ -8,7 +8,6 @@ import {
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-// import { Histogram, BarSeries, XAxis, YAxis, Label } from '@data-ui/histogram';
 import "chart.js/auto";
 import { Bar } from 'react-chartjs-2';
 import { cn } from '@/lib/utils';
@@ -16,9 +15,6 @@ import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 
 import { Button } from './ui/button';
 import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Trash, Trash2 } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-
-// import dynamic from 'next/dynamic';
-// const DynamicDataUI: any = dynamic(() => import('@data-ui/histogram').then(module => module.default), { ssr: false });
 
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
@@ -265,6 +261,22 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 		})();
 	};
 
+	const resetFilter = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		void (async () => {
+			await handleSubmit((() => {
+				props.onFilterChange({
+					minMinor: undefined,
+					maxMinor: undefined,
+					minMajor: undefined,
+					maxMajor: undefined,
+					minVolume: undefined,
+					maxVolume: undefined,
+				});
+			}) as SubmitHandler<Inputs>)(event);
+		})();
+	};
+
 	// const submitIndentNo = (event: FormEvent<HTMLFormElement>) => {
 	// 	event.preventDefault();
 	// 	void (async () => {
@@ -301,9 +313,9 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 								</PopoverTrigger>
 								<PopoverContent>
 									<p className="font-semibold text-sm">
-										Filter Indents
+										Filter Dents
 									</p>
-									<form className="mt-4 text-sm space-y-2" onSubmit={changeFilter}>
+									<form className="mt-4 text-sm space-y-2" onSubmit={changeFilter} onReset={resetFilter}>
 										<div className="flex flex-row justify-between items-center">
 											<Input
 												type="text"
@@ -473,8 +485,8 @@ export function IndentDetails(props: IndentDetailsProps) {
 				<CardHeader>
 					<div className="flex flex-row justify-between">
 						<div>
-							<CardTitle>Indent Details</CardTitle>
-							<CardDescription>About the current indent</CardDescription>
+							<CardTitle>Dent Details</CardTitle>
+							<CardDescription>About the current dent</CardDescription>
 						</div>
 						<div className="flex flex-row items-center space-x-2">
 							<Button variant="outline" className="h-8 w-8 p-0.5 mr-2 border-red hover:text-red-500">

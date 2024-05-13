@@ -13,11 +13,30 @@ const View: NextPage = () => {
     const session = useSession();
     const router = useRouter();
 
-    const conversionFactor = 1639.34426 / 1000; // px/mm
+    const conversionFactor = 1639.34426 / 1000; // px/mm TODO: Replace with actual conversion factor from backend
+
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [originalCentroids, setOriginalCentroids] = useState<Array<[number, number]>>([]);
     const [centroids, setCentroids] = useState<Array<[number, number]>>([]);
     const [download, setDownload] = useState(false);
-
+    const [originalData, setOriginalData] = useState<{
+        indents: {
+            area: number;
+            major_axis: number;
+            minor_axis: number;
+            centroid: {
+                y: number;
+                x: number;
+            };
+            depth_at_centroid: number;
+            avg_depth: number;
+            max_depth: number;
+        }[];
+        img: string;
+    }>({
+        indents: [],
+        img: '',
+    });
     const [scanData, setScanData] = useState<{
         indents: {
             area: number;
@@ -36,7 +55,6 @@ const View: NextPage = () => {
         indents: [],
         img: '',
     });
-
     const [filters, setFilters] = useState<{
         minMinor: number;
         maxMinor: number;
@@ -53,30 +71,69 @@ const View: NextPage = () => {
         maxVolume: undefined,
     });
 
-    // TODO: Replace with backend API call
+    // Fetch scan data  TODO: Replace with backend API call
     useEffect(() => {
         fetch('/output.json')
             .then(response => response.json())
             .then(data => {
                 const newCentroids = data.indents.map(indent => [indent.centroid.y, indent.centroid.x]);
+                setOriginalData(data);
                 setScanData(data);
+                setOriginalCentroids(newCentroids);
                 setCentroids(newCentroids);
-
-                // Filter scanData indents and centroids (TODO: Volume filters and also write this in a less gross way)
-                if (filters.minMinor) {
-                    const filteredIndents = scanData.indents.filter(indent => indent.minor_axis >= filters.minMinor);
-                    setScanData({ ...scanData, indents: filteredIndents });
-                    setCentroids(centroids => centroids.filter((_, index) => scanData.indents[index].minor_axis >= filters.minMinor));
-                }
             })
             .catch(error => console.error('Error fetching centroids: ', error));
 
+        // Download CSV on download state change (download button clicked)
         if (download) {
             setDownload(false);
             downloadCSV();
         }
 
-    }, [filters.minMinor, filters.maxMinor, filters.minMajor, filters.maxMajor, filters.minVolume, filters.maxVolume, download]);
+    }, [download]);
+
+    useEffect(() => {
+        // Reset scan data to original data on filter change (if any) to prepare for new filtering
+        setScanData(originalData);
+    }, [filters.minMinor, filters.maxMinor, filters.minMajor, filters.maxMajor, filters.minVolume, filters.maxVolume]);
+
+    useEffect(() => {
+        if (scanData === originalData) {
+            let filteredIndents = scanData.indents;
+            let filteredCentroids = originalCentroids;
+
+            // Iterate through filters and apply them to scanData
+            for (const [key, value] of Object.entries(filters)) {
+                // If the filter is not set, the value will be undefined and the filter will not be applied
+                if (value !== undefined && value !== 0) {
+                    let valueType: string;
+
+                    // Determine the type of value being filtered based on filter key
+                    if (key === 'minMinor' || key === 'maxMinor') {
+                        valueType = 'minor_axis';
+                    } else if (key === 'minMajor' || key === 'maxMajor') {
+                        valueType = 'major_axis';
+                    } else if (key === 'minVolume' || key === 'maxVolume') {
+                        valueType = 'volume';
+                    }
+
+                    console.log("Now filtering by: " + value + " and type: " + key + " and valueType: " + valueType); // TODO: Remove
+
+                    // Filter the indents based on the filter key and value
+                    const filterInPixels = value * conversionFactor;
+                    filteredIndents = filteredIndents.filter(indent => key.startsWith('min') ? indent[valueType] >= filterInPixels : indent[valueType] <= filterInPixels);
+                }
+            }
+
+            // Get the corresponding filtered centroids based on the final set of filtered indents
+            const indices = filteredIndents.map(indent => filteredIndents.indexOf(indent));
+            filteredCentroids = indices.map(index => filteredCentroids[index]);
+
+            // Update the scanData and centroids with the filtered data
+            setScanData({ ...scanData, indents: filteredIndents });
+            setCentroids(filteredCentroids);
+        }
+    }, [scanData, filters.minMinor, filters.maxMinor, filters.minMajor, filters.maxMajor, filters.minVolume, filters.maxVolume]);
 
     // Download CSV of scanData indents
     const downloadCSV = () => {
@@ -136,12 +193,12 @@ const View: NextPage = () => {
                                 min_major={scanData.indents.reduce((min, indent) => Math.min(min, indent.major_axis), Infinity) / conversionFactor}
                                 max_major={scanData.indents.reduce((max, indent) => Math.max(max, indent.major_axis), -Infinity) / conversionFactor}
                                 avg_major={scanData.indents.reduce((sum, indent) => sum + indent.major_axis, 0) / scanData.indents.length / conversionFactor}
-                                min_volume={0}
-                                max_volume={0}
-                                avg_volume={0}
+                                min_volume={NaN}
+                                max_volume={NaN}
+                                avg_volume={NaN}
                                 minors={scanData.indents.map(indent => indent.minor_axis / conversionFactor)}
                                 majors={scanData.indents.map(indent => indent.major_axis / conversionFactor)}
-                                volumes={[0]}
+                                volumes={[NaN]}
                             />
                             {scanData.indents[currentIndex] &&
                                 <IndentDetails
@@ -164,7 +221,7 @@ const View: NextPage = () => {
                                     indent_count={scanData.indents.length}
                                     minor={scanData.indents[currentIndex].minor_axis / conversionFactor}
                                     major={scanData.indents[currentIndex].major_axis / conversionFactor}
-                                    volume={2400}
+                                    volume={NaN}
                                 />
                             }
                         </div>

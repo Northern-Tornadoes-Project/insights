@@ -45,37 +45,35 @@ export default function Dashboard() {
 	const [path, setPath] = useState<Path | null>(null);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Paths</CardTitle>
-				<CardDescription>Explore the different paths available to you.</CardDescription>
-			</CardHeader>
-			<CardContent className="grid xl:grid-flow-col gap-4">
-				<DataTable
-					columns={columns}
-					data={data.paths.map((path) => {
-						return {
-							...path,
-							created: new Date(path.created),
-							modified: new Date(path.modified)
-						};
-					})}
-					onRowClick={(index) =>
-						setPath({
-							...data.paths[index],
-							created: new Date(data.paths[index].created),
-							modified: new Date(data.paths[index].modified)
-						})
-					}
-				/>
-				{path && (
-					<PathCard
-						path={path}
-						loggedIn={userContext ? true : false}
-						onClose={() => setPath(null)}
+		<div className="grid xl:grid-flow-col gap-4 min-w-0 min-h-0">
+			<Card className='min-w-0 h-min'>
+				<CardHeader>
+					<CardTitle>Paths</CardTitle>
+					<CardDescription>Explore the different paths available to you.</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<DataTable
+						columns={columns}
+						data={data.paths.map((path) => {
+							return {
+								...path,
+								created: new Date(path.created),
+								modified: new Date(path.modified)
+							};
+						})}
+						onRowClick={(index) =>
+							setPath({
+								...data.paths[index],
+								created: new Date(data.paths[index].created),
+								modified: new Date(data.paths[index].modified)
+							})
+						}
 					/>
-				)}
-			</CardContent>
-		</Card>
+				</CardContent>
+			</Card>
+			{path && (
+				<PathCard path={path} loggedIn={userContext ? true : false} onClose={() => setPath(null)} />
+			)}
+		</div>
 	);
 }

@@ -94,7 +94,7 @@ export default function Profile() {
 			<div className="text-center">
 				<h1 className="text-3xl font-bold">Profile</h1>
 				<p className="text-balance text-muted-foreground">
-					Edit your <b>Insights</b> profile details.
+					Edit your Insights profile details.
 				</p>
 			</div>
 			<Form method="post" id={form.id} onSubmit={form.onSubmit} className="grid gap-4">

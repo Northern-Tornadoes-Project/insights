@@ -31,7 +31,7 @@ export default function Layout() {
 	const data = useLoaderData<typeof loader>();
 
 	return (
-		<div className="bg-muted/40 h-screen">
+		<div className="bg-muted/40 min-h-screen">
 			<header className="sticky top-0 flex justify-between py-4 items-center gap-4 border-b bg-background px-4 md:px-6">
 				<div className="flex flex-row gap-4 items-center">
 					<Link to="/">

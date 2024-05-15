@@ -1,8 +1,16 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle
+} from '~/components/ui/card';
 import { Path } from './columns';
 import { Button } from '~/components/ui/button';
 import { LucideEdit, LucideX } from 'lucide-react';
 import { StatusBadge } from './status-badge';
+import { Link } from '@remix-run/react';
 
 export function PathCard({
 	path,
@@ -14,7 +22,7 @@ export function PathCard({
 	onClose: () => void;
 }) {
 	return (
-		<Card className="min-w-96">
+		<Card className="min-w-96 h-min">
 			<div className="flex flex-row justify-between items-center pr-6">
 				<CardHeader>
 					<CardTitle>{path.name}</CardTitle>
@@ -32,6 +40,11 @@ export function PathCard({
 				</div>
 			</div>
 			<CardContent></CardContent>
+			<CardFooter className="justify-end">
+				<Link to={`/360/${path.id}`} prefetch="none">
+					<Button>View</Button>
+				</Link>
+			</CardFooter>
 		</Card>
 	);
 }

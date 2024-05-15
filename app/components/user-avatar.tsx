@@ -38,7 +38,7 @@ export function UserAvatar(props: {
 			<DropdownMenuContent className="w-44">
 				<DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<Link to="/profile">
+				<Link to="/auth/profile">
 					<DropdownMenuItem>
 						<User className="mr-2 h-4 w-4" />
 						<span>Profile</span>

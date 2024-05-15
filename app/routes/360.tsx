@@ -1,13 +1,10 @@
 import { LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { LucideHome, LucideTornado } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
-import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
-import { Path, columns } from './columns';
-import { DataTable } from './data-table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { getUser } from '~/db/db.server';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - 360' }];
@@ -26,21 +23,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 					name: user.name,
 					imageUrl: user.imageUrl
 				}
-			: null,
-		paths: [
-			{
-				id: '1',
-				name: 'Didsbury',
-				size: 1254,
-				created: new Date(),
-				modified: new Date(),
-				status: 'archived'
-			}
-		] as Path[]
+			: null
 	});
 }
 
-export default function Dashboard() {
+export default function Layout() {
 	const data = useLoaderData<typeof loader>();
 
 	return (
@@ -59,24 +46,7 @@ export default function Dashboard() {
 				{data.user && <UserAvatar user={data.user} />}
 			</header>
 			<div className="mx-6 py-4">
-				<Card>
-					<CardHeader>
-						<CardTitle>Paths</CardTitle>
-						<CardDescription>Explore the different paths available to you.</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<DataTable
-							columns={columns}
-							data={data.paths.map((path) => {
-								return {
-									...path,
-									created: new Date(path.created),
-									modified: new Date(path.modified)
-								};
-							})}
-						/>
-					</CardContent>
-				</Card>
+				<Outlet />
 			</div>
 		</div>
 	);

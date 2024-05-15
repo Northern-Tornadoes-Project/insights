@@ -1,4 +1,10 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
+import {
+	ActionFunctionArgs,
+	LoaderFunctionArgs,
+	MetaFunction,
+	json,
+	redirect
+} from '@remix-run/node';
 import { useForm, getInputProps } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
@@ -18,6 +24,10 @@ const profileFormSchema = z.object({
 	name: z.string().min(3).max(255),
 	image_url: z.string().url().optional()
 });
+
+export const meta: MetaFunction = () => {
+	return [{ title: 'NTP Insights - Edit Profile' }];
+};
 
 export async function action({ request }: ActionFunctionArgs) {
 	const id = await authenticator.isAuthenticated(request);
@@ -83,7 +93,9 @@ export default function Profile() {
 		<div className="grid gap-6 w-[350px] mx-auto h-min">
 			<div className="text-center">
 				<h1 className="text-3xl font-bold">Profile</h1>
-				<p className="text-balance text-muted-foreground">Edit your <b>Insights</b> profile details.</p>
+				<p className="text-balance text-muted-foreground">
+					Edit your <b>Insights</b> profile details.
+				</p>
 			</div>
 			<Form method="post" id={form.id} onSubmit={form.onSubmit} className="grid gap-4">
 				<div className="grid gap-2">
@@ -111,8 +123,8 @@ export default function Profile() {
 						<Avatar>
 							<AvatarImage src={fields.image_url.value} alt="Profile Image" />
 							<AvatarFallback>
-                                <LucideUser size={24} />
-                            </AvatarFallback>
+								<LucideUser size={24} />
+							</AvatarFallback>
 						</Avatar>
 					</div>
 					{fields.image_url.errors && (

@@ -31,6 +31,10 @@ authenticator.use(
 				invalidEmail: 'Invalid email. Please try another.'
 			},
 			sendTOTP: async ({ email, code, magicLink }) => {
+				if (process.env.NODE_ENV === 'development') {
+					console.log('[Dev] TOTP Code:', code);
+				}
+
 				await sendCode({
 					to: email,
 					code,

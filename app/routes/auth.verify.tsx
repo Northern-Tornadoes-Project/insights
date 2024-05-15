@@ -19,6 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 	const session = await authSessionResolver.getSession(request.headers.get('cookie'));
 	const authEmail = session.get('auth:email');
+
 	const authError = session.get(authenticator.sessionErrorKey);
 	if (!authEmail) return redirect('/auth/login');
 

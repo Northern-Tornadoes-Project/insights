@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { LucideHome, LucideTornado } from 'lucide-react';
+import { LucideTornado } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
 import { authenticator } from '~/lib/auth.server';
@@ -46,7 +46,7 @@ export default function Layout() {
 				{data.user && <UserAvatar user={data.user} />}
 			</header>
 			<div className="mx-6 py-4">
-				<Outlet />
+				<Outlet context={data.user} />
 			</div>
 		</div>
 	);

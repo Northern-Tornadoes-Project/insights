@@ -121,7 +121,19 @@ export default function Profile() {
 							})}
 						/>
 						<Avatar>
-							<AvatarImage src={fields.image_url.value} alt="Profile Image" />
+							<AvatarImage
+								// Validate the image URL before rendering
+								src={
+									profileFormSchema
+										.pick({
+											image_url: true
+										})
+										.parse({
+											image_url
+										}).image_url || ''
+								}
+								alt="Profile Image"
+							/>
 							<AvatarFallback>
 								<LucideUser size={24} />
 							</AvatarFallback>

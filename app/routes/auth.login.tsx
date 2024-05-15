@@ -32,9 +32,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+	const url = new URL(request.url);
+	const currentPath = url.pathname;
+
 	await authenticator.authenticate('TOTP', request, {
 		successRedirect: '/auth/verify',
-		failureRedirect: '/auth/login'
+		failureRedirect: currentPath
 	});
 }
 

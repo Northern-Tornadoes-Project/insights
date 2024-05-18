@@ -1,11 +1,4 @@
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Path } from './columns';
 import { Button } from '~/components/ui/button';
 import { LucideEdit, LucideX } from 'lucide-react';
@@ -39,7 +32,9 @@ export function PathCard({
 					</Button>
 				</div>
 			</div>
-			<CardContent></CardContent>
+			<CardContent>
+				{path.status === 'processing' && <p>Fetching status from path service...</p>}
+			</CardContent>
 			<CardFooter className="justify-end">
 				<Link to={`/360/${path.id}`} prefetch="none">
 					<Button>View</Button>

@@ -4,6 +4,7 @@ import { DataTable } from './data-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { useState } from 'react';
 import { PathCard } from './path-card';
+import { motion } from 'framer-motion';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - 360' }];
@@ -28,7 +29,7 @@ export async function loader() {
 				captures: 123,
 				created: new Date(),
 				modified: new Date(),
-				status: 'completed'
+				status: 'processing'
 			}
 		] as Path[]
 	});
@@ -46,31 +47,33 @@ export default function Dashboard() {
 
 	return (
 		<div className="grid xl:grid-flow-col gap-4 min-w-0 min-h-0">
-			<Card className='min-w-0 h-min'>
-				<CardHeader>
-					<CardTitle>Paths</CardTitle>
-					<CardDescription>Explore the different paths available to you.</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<DataTable
-						columns={columns}
-						data={data.paths.map((path) => {
-							return {
-								...path,
-								created: new Date(path.created),
-								modified: new Date(path.modified)
-							};
-						})}
-						onRowClick={(index) =>
-							setPath({
-								...data.paths[index],
-								created: new Date(data.paths[index].created),
-								modified: new Date(data.paths[index].modified)
-							})
-						}
-					/>
-				</CardContent>
-			</Card>
+			<motion.div layout="size" className="min-w-0 h-min">
+				<Card>
+					<CardHeader>
+						<CardTitle>Paths</CardTitle>
+						<CardDescription>Explore the different paths available to you.</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<DataTable
+							columns={columns}
+							data={data.paths.map((path) => {
+								return {
+									...path,
+									created: new Date(path.created),
+									modified: new Date(path.modified)
+								};
+							})}
+							onRowClick={(index) =>
+								setPath({
+									...data.paths[index],
+									created: new Date(data.paths[index].created),
+									modified: new Date(data.paths[index].modified)
+								})
+							}
+						/>
+					</CardContent>
+				</Card>
+			</motion.div>
 			{path && (
 				<PathCard path={path} loggedIn={userContext ? true : false} onClose={() => setPath(null)} />
 			)}

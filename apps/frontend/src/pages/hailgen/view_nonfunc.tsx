@@ -83,13 +83,14 @@ const View: NextPage = () => {
                 setCentroids(newCentroids);
             })
             .catch(error => console.error('Error fetching centroids: ', error));
+    }, []);
 
+    useEffect(() => {
         // Download CSV on download state change (download button clicked)
         if (download) {
             setDownload(false);
             downloadCSV();
         }
-
     }, [download]);
 
     useEffect(() => {

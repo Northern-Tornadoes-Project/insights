@@ -13,8 +13,10 @@ import { Bar } from 'react-chartjs-2';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
 import { Button } from './ui/button';
-import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Trash, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Pencil, Settings, Trash, Trash2, X } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { Plus } from 'lucide-react';
+import { useToast } from './ui/use-toast';
 
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
@@ -53,13 +55,12 @@ type IndentDetailsProps = {
 };
 
 export function HailpadMap(props: HailpadMapProps) {
+	const { toast } = useToast();
 	const canvasRef = useRef(null);
 	const radius = 25;
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
-		// canvas.width = 1000;
-		// canvas.height = 1000;
 		const context = canvas.getContext('2d');
 
 		const img = new Image();
@@ -107,6 +108,28 @@ export function HailpadMap(props: HailpadMapProps) {
 				}
 			}
 		});
+
+		// Event handler for double-clicking on the depth map to copy x and y coordinates to clipboard
+		canvas.addEventListener('dblclick', async (event) => {
+			const rect = canvas.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+
+			// Copy x and y to clipboard
+			try {
+				await navigator.clipboard.writeText(`(${x}, ${y})`);
+				console.log(`Copied (${x}, ${y}) to clipboard`);
+			} catch (err) {
+				console.log('Failed to write to clipboard: ', err);
+			}
+
+			// Show toast notification
+			toast({
+				title: "Coordinates copied to clipboard",
+				description: `(${x}, ${y})`,
+			});
+		});
+
 	}, [props.centroids, props.onIndexChange, props.index]);
 
 	return <canvas ref={canvasRef} width={1000} height={1000} />;
@@ -228,7 +251,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 		);
 	};
 
-	type Inputs = {
+	type FilterInputs = {
 		minMinor: string;
 		maxMinor: string;
 		minMajor: string;
@@ -243,7 +266,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 		control,
 		reset,
 		formState: { errors }, // TODO
-	} = useForm<Inputs>();
+	} = useForm<FilterInputs>();
 
 	const changeFilter = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -257,7 +280,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 					minVolume: Number(data.minVolume),
 					maxVolume: Number(data.maxVolume),
 				});
-			}) as SubmitHandler<Inputs>)(event);
+			}) as SubmitHandler<FilterInputs>)(event);
 		})();
 	};
 
@@ -273,25 +296,32 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 					minVolume: undefined,
 					maxVolume: undefined,
 				});
-			}) as SubmitHandler<Inputs>)(event);
+			}) as SubmitHandler<FilterInputs>)(event);
 		})();
 	};
-
-	// const submitIndentNo = (event: FormEvent<HTMLFormElement>) => {
-	// 	event.preventDefault();
-	// 	void (async () => {
-	// 		await handleSubmit(((data) => {
-	// 			props.onIndexChange(Number(data.indent) - 1);
-	// 			reset();
-	// 		}) as SubmitHandler<Inputs>)(event);
-	// 	})();
-	// };
 
 	return (
 		<Card id="hailpad-details-card">
 			<CardHeader>
-				<CardTitle>Hailpad Details</CardTitle>
-				<CardDescription>About the current hailpad view</CardDescription>
+				<div className="flex flex-row justify-between">
+					<div>
+						<CardTitle>Hailpad Details</CardTitle>
+						<CardDescription>About the current hailpad view</CardDescription>
+					</div>
+					<div className="justify-end">
+						<Popover>
+							<PopoverTrigger>
+								<Button asChild variant="outline" className="h-8 w-8 p-[6px]">
+									<Settings className="h-4" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="w-60">
+								<div className="flex flex-row justify-between items-center">
+								</div>
+							</PopoverContent>
+						</Popover>
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent>
 				<Tabs defaultValue="minor">
@@ -299,10 +329,10 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 						<TabsList>
 							<TabsTrigger value="minor">Minor Axis</TabsTrigger>
 							<TabsTrigger value="major">Major Axis</TabsTrigger>
-							<TabsTrigger value="volume">Volume</TabsTrigger>
+							{/* <TabsTrigger value="volume">Volume</TabsTrigger> TODO */}
 						</TabsList>
-						<div className="flex flex-row space-x-4">
-							<Button variant="outline" className="h-8 w-8 p-0.5 hover:text-green-500" onClick={() => props.onDownload(true)}>
+						<div className="flex flex-row space-x-2">
+							<Button variant="secondary" className="h-8 w-8 p-0.5 hover:text-green-500" onClick={() => props.onDownload(true)}>
 								<FileSpreadsheet className="h-4" />
 							</Button>
 							<Popover>
@@ -378,7 +408,6 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 									</form>
 								</PopoverContent>
 							</Popover>
-
 						</div>
 					</div>
 					<TabsContent value="minor">
@@ -461,21 +490,71 @@ export function IndentDetails(props: IndentDetailsProps) {
 	};
 
 	const {
-		register,
-		handleSubmit,
-		control,
-		reset,
-		formState: { errors },
+		register: registerNo,
+		handleSubmit: handleSubmitNo,
+		control: controlNo,
+		reset: resetNo,
+		formState: { errors: errorsNo },
 	} = useForm<Inputs>();
 
-	// Handle manual indent number input
+	// Handle manual dent number input
 	const submitIndentNo = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		void (async () => {
-			await handleSubmit(((data) => {
+			await handleSubmitNo(((data) => {
 				props.onIndexChange(Number(data.indent) - 1);
-				reset();
+				resetNo();
 			}) as SubmitHandler<Inputs>)(event);
+		})();
+	};
+
+	const {
+		register: registerDent,
+		handleSubmit: handleSubmitDent,
+		control: controlDent,
+		reset: resetDent,
+		formState: { errors: errorsDent },
+	} = useForm<DentInputs>();
+
+	type DentInputs = {
+		minor: string;
+		major: string;
+		volume: string;
+		location: string;
+		// y: string;
+	};
+
+	const addNewDent = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		void (async () => {
+			await handleSubmitDent(((data) => {
+				console.log(data); // TODO
+				resetDent();
+			}) as SubmitHandler<DentInputs>)(event);
+		})();
+	};
+
+	type DentEditInputs = {
+		minor: string;
+		major: string;
+		volume: string;
+	};
+
+	const {
+		register: registerDentEdit,
+		handleSubmit: handleSubmitDentEdit,
+		control: controlDentEdit,
+		reset: resetDentEdit,
+		formState: { errors: errorsDentEdit },
+	} = useForm<DentEditInputs>();
+
+	const editDent = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		void (async () => {
+			await handleSubmitDentEdit(((data) => {
+				console.log(data); // TODO
+				resetDentEdit();
+			}) as SubmitHandler<DentEditInputs>)(event);
 		})();
 	};
 
@@ -488,27 +567,189 @@ export function IndentDetails(props: IndentDetailsProps) {
 							<CardTitle>Dent Details</CardTitle>
 							<CardDescription>About the current dent</CardDescription>
 						</div>
-						<div className="flex flex-row items-center space-x-2">
-							<Button variant="outline" className="h-8 w-8 p-0.5 mr-2 border-red hover:text-red-500">
-								<Trash2 className="h-4" />
-							</Button>
-							<Button variant="secondary" onClick={() => props.onPrevious?.()} className="h-8 w-8 p-0.5">
-								<ChevronLeft className="h-5" />
-							</Button>
-							<Button variant="secondary" onClick={() => props.onNext?.()} className="h-8 w-8 p-0.5">
-								<ChevronRight className="h-5" />
-							</Button>
+						<div className="flex flex-row items-center gap-4">
+							<div className="flex flex-row items-center space-x-2">
+								<Popover>
+									<PopoverTrigger>
+										<Button asChild variant="outline" className="h-8 w-8 p-[6px] hover:text-red-600">
+											<Trash2 className="h-4" />
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent className="w-60">
+										<div className="flex flex-row justify-between items-center">
+											<p className="font-semibold text-sm">
+												Delete Dent {props.index + 1}
+											</p>
+											<div className="flex flex-row space-x-2">
+												<Button variant="destructive" onClick={() => console.log("TODO")} className="h-8">
+													<p>Confirm</p>
+												</Button>
+											</div>
+										</div>
+									</PopoverContent>
+								</Popover>
+								<Popover>
+									<PopoverTrigger>
+										<Button asChild variant="outline" className="h-8 w-8 p-[6px]">
+											<Pencil />
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent>
+										<p className="font-semibold text-sm">
+											Edit Current Dent
+										</p>
+										<form className="mt-4 text-sm space-y-2" onSubmit={editDent} onReset={() => console.log("TODO")}>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Minor Axis
+												</p>
+												<div className="flex flex-row space-x-3 items-center">
+													<Input
+														type="text"
+														{...registerDentEdit('minor', { required: true, min: 0 })}
+														placeholder={String(props.minor.toFixed(5))}
+														className="w-28 h-8"
+													/>
+													<p>mm</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Major Axis
+												</p>
+												<div className="flex flex-row space-x-3 items-center">
+													<Input
+														type="text"
+														{...registerDentEdit('major', { required: true, min: 0 })}
+														placeholder={String(props.major.toFixed(5))}
+														className="w-28 h-8"
+													/>
+													<p>mm</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Volume
+												</p>
+												<div className="flex flex-row space-x-2 items-center">
+													<Input
+														type="text"
+														{...registerDentEdit('volume', { required: true })}
+														placeholder={String(props.volume.toFixed(5))}
+														className="w-28 h-8"
+													/>
+													<p>mm³</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-end pt-2 text-xs items-end">
+												<Button variant="secondary" type="submit" className="h-8 w-8 p-0.5">
+													<CornerDownLeft className="h-4" />
+												</Button>
+											</div>
+										</form>
+									</PopoverContent>
+								</Popover>
+								<Popover>
+									<PopoverTrigger>
+										<Button asChild variant="outline" className="h-8 w-8 p-[6px]">
+											<Plus />
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent>
+										<p className="font-semibold text-sm">
+											Add New Dent
+										</p>
+										<form className="mt-4 text-sm space-y-2" onSubmit={addNewDent} onReset={() => console.log("TODO")}>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Minor Axis
+												</p>
+												<div className="flex flex-row space-x-3 items-center">
+													<Input
+														type="text"
+														{...registerDent('minor', { required: true, min: 0 })}
+														placeholder="b"
+														className="w-28 h-8"
+													/>
+													<p>mm</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Major Axis
+												</p>
+												<div className="flex flex-row space-x-3 items-center">
+													<Input
+														type="text"
+														{...registerDent('major', { required: true, min: 0 })}
+														placeholder="a"
+														className="w-28 h-8"
+													/>
+													<p>mm</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Volume
+												</p>
+												<div className="flex flex-row space-x-2 items-center">
+													<Input
+														type="text"
+														{...registerDent('volume', { required: true })}
+														placeholder="V"
+														className="w-28 h-8"
+													/>
+													<p>mm³</p>
+												</div>
+											</div>
+											<div className="flex flex-row justify-between items-center">
+												<p>
+													Dent Location
+												</p>
+												<div className="flex flex-row space-x-2">
+													<Input
+														type="text"
+														{...registerDent('location', { required: true })}
+														placeholder="(x, y)"
+														className="w-[149px] h-8"
+													/>
+													{/* <Input
+														type="text"
+														{...registerDent('y', { required: false, min: 0, max: 'maxVolume' })}
+														placeholder="y"
+														className="w-[71px] h-8"
+													/> */}
+												</div>
+											</div>
+											<div className="flex flex-row justify-between space-x-4 pt-2 text-xs items-end">
+												<p><span className="font-bold mr-1">Note:</span>the dent location coordinates (centroid) can be copied to clipboard by double-clicking over the desired location in the hailpad view.</p>
+												<Button variant="secondary" type="submit" className="h-8 w-8 p-0.5">
+													<CornerDownLeft className="h-4" />
+												</Button>
+											</div>
+										</form>
+									</PopoverContent>
+								</Popover>
+							</div>
+							<div className="flex flex-row items-center space-x-2">
+								<Button variant="secondary" onClick={() => props.onPrevious?.()} className="h-8 w-8 p-0.5">
+									<ChevronLeft className="h-5" />
+								</Button>
+								<Button variant="secondary" onClick={() => props.onNext?.()} className="h-8 w-8 p-0.5">
+									<ChevronRight className="h-5" />
+								</Button>
+							</div>
 						</div>
 					</div>
 				</CardHeader>
 				<CardContent className="flex flex-col justify-around">
 					<form onSubmit={submitIndentNo}>
-						<CardDescription>Indent</CardDescription>
+						<CardDescription>Dent</CardDescription>
 						<div className="flex flex-row mt-1">
 							<Input
 								className='w-12 h-8 p-0.5 mr-2 text-center text-base'
 								type="string"
-								{...register('indent', { required: true, max: props.indent_count, min: 1 })}
+								{...registerNo('indent', { required: true, max: props.indent_count, min: 1 })}
 								placeholder={String(props.index + 1)}
 							/>
 							<p className="mt-1">

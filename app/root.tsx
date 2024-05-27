@@ -36,7 +36,7 @@ export function App() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
 				<Links />
 			</head>
-			<body className="bg-muted/40 min-h-screen">
+			<body className="min-h-screen h-screen">
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />

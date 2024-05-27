@@ -4,10 +4,10 @@ import { env } from '~/env.server';
 export default {
 	schema: './app/db/schema.ts',
 	out: 'migrations',
-	driver: 'pg',
+	dialect: 'postgresql',
 	dbCredentials: {
-		connectionString: env.DATABASE_URL
+		url: env.DATABASE_URL
 	},
-	verbose: true,
+	verbose: process.env.NODE_ENV === 'development',
 	strict: true
 } satisfies Config;

@@ -36,7 +36,7 @@ export default function Support() {
 	const data = useLoaderData<typeof loader>();
 
 	return (
-		<>
+		<main className="bg-muted/40 h-full">
 			<Header title="Support" user={data.user} />
 			<div className="flex justify-center w-full py-4">
 				<div className="flex flex-col gap-4 max-w-6xl">
@@ -78,6 +78,6 @@ export default function Support() {
 					</Card>
 				</div>
 			</div>
-		</>
+		</main>
 	);
 }

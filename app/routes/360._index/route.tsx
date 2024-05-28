@@ -35,7 +35,7 @@ export async function loader() {
 	});
 }
 
-export default function Dashboard() {
+export default function () {
 	const data = useLoaderData<typeof loader>();
 	const userContext = useOutletContext<{
 		id: string;

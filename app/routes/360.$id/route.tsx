@@ -9,12 +9,12 @@ export function loader({ params }: LoaderFunctionArgs) {
 	};
 }
 
-export default function View360() {
-    const { id } = useLoaderData<typeof loader>();
+export default function () {
+	const { id } = useLoaderData<typeof loader>();
 
-    return (
-        <div>
-            <h1>360 View {id}</h1>
-        </div>
-    );
+	return (
+		<div>
+			<h1>360 View {id}</h1>
+		</div>
+	);
 }

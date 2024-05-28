@@ -1,26 +1,12 @@
 {
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1710704633865,
-      "tag": "0000_wandering_chronomancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1714320943248,
-      "tag": "0001_peaceful_vance_astro",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1714323542009,
-      "tag": "0002_jittery_nico_minoru",
+      "version": "6",
+      "when": 1716864360210,
+      "tag": "0000_pink_pete_wisdom",
       "breakpoints": true
     }
   ]

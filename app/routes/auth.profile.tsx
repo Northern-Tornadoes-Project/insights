@@ -7,7 +7,7 @@ import {
 } from '@remix-run/node';
 import { useForm, getInputProps } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import { authenticator } from '~/lib/auth.server';
 import { db } from '~/db/db.server';
 import { eq } from 'drizzle-orm';
@@ -18,11 +18,11 @@ import { Input } from '~/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { LucideUser } from 'lucide-react';
+import { LucideArrowLeft, LucideUser } from 'lucide-react';
 
 const profileFormSchema = z.object({
 	name: z.string().min(3).max(255),
-	image_url: z.string().url().optional()
+	image_url: z.string().url().optional().nullable()
 });
 
 export const meta: MetaFunction = () => {
@@ -90,66 +90,71 @@ export default function Profile() {
 	});
 
 	return (
-		<div className="grid gap-6 w-[350px] mx-auto h-min">
-			<div className="text-center">
-				<h1 className="text-3xl font-bold">Profile</h1>
-				<p className="text-balance text-muted-foreground">
-					Edit your Insights profile details.
-				</p>
-			</div>
-			<Form method="post" id={form.id} onSubmit={form.onSubmit} className="grid gap-4">
-				<div className="grid gap-2">
-					<Label htmlFor="name">Name</Label>
-					<Input
-						{...getInputProps(fields.name, {
-							type: 'text'
-						})}
-					/>
-					{fields.name.errors && (
-						<Alert variant="destructive">
-							<AlertTitle>Error!</AlertTitle>
-							<AlertDescription>{fields.name.errors}</AlertDescription>
-						</Alert>
-					)}
+		<main>
+			<Link to="/" className="m-4 absolute top-0 left-0">
+				<Button variant="link" className='gap-2 items-center'>
+					<LucideArrowLeft /> Back
+				</Button>
+			</Link>
+			<div className="grid gap-6 w-[350px] mx-auto h-min grow">
+				<div className="text-center">
+					<h1 className="text-3xl font-bold">Profile</h1>
+					<p className="text-balance text-muted-foreground">Edit your Insights profile details.</p>
 				</div>
-				<div className="grid gap-2">
-					<Label htmlFor="image_url">Image</Label>
-					<div className="flex flex-row gap-4 items-center">
+				<Form method="post" id={form.id} onSubmit={form.onSubmit} className="grid gap-4">
+					<div className="grid gap-2">
+						<Label htmlFor="name">Name</Label>
 						<Input
-							{...getInputProps(fields.image_url, {
+							{...getInputProps(fields.name, {
 								type: 'text'
 							})}
 						/>
-						<Avatar>
-							<AvatarImage
-								// Validate the image URL before rendering
-								src={
-									profileFormSchema
-										.pick({
-											image_url: true
-										})
-										.parse({
-											image_url
-										}).image_url || ''
-								}
-								alt="Profile Image"
-							/>
-							<AvatarFallback>
-								<LucideUser size={24} />
-							</AvatarFallback>
-						</Avatar>
+						{fields.name.errors && (
+							<Alert variant="destructive">
+								<AlertTitle>Error!</AlertTitle>
+								<AlertDescription>{fields.name.errors}</AlertDescription>
+							</Alert>
+						)}
 					</div>
-					{fields.image_url.errors && (
-						<Alert variant="destructive">
-							<AlertTitle>Error!</AlertTitle>
-							<AlertDescription>{fields.image_url.errors}</AlertDescription>
-						</Alert>
-					)}
-				</div>
-				<Button type="submit" className="w-full">
-					Save
-				</Button>
-			</Form>
-		</div>
+					<div className="grid gap-2">
+						<Label htmlFor="image_url">Image</Label>
+						<div className="flex flex-row gap-4 items-center">
+							<Input
+								{...getInputProps(fields.image_url, {
+									type: 'text'
+								})}
+							/>
+							<Avatar>
+								<AvatarImage
+									// Validate the image URL before rendering
+									src={
+										profileFormSchema
+											.pick({
+												image_url: true
+											})
+											.parse({
+												image_url
+											}).image_url || ''
+									}
+									alt="Profile Image"
+								/>
+								<AvatarFallback>
+									<LucideUser size={24} />
+								</AvatarFallback>
+							</Avatar>
+						</div>
+						{fields.image_url.errors && (
+							<Alert variant="destructive">
+								<AlertTitle>Error!</AlertTitle>
+								<AlertDescription>{fields.image_url.errors}</AlertDescription>
+							</Alert>
+						)}
+					</div>
+					<Button type="submit" className="w-full">
+						Save
+					</Button>
+				</Form>
+			</div>
+		</main>
 	);
 }

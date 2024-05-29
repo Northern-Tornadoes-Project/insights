@@ -8,7 +8,8 @@ export const env = createEnv({
 		RESEND_KEY: z.string(),
 		RESEND_EMAIL: z.string(),
 		AUTH_SECRET: z.string(),
-		COOKIE_SECRET: z.string()
+		COOKIE_SECRET: z.string(),
+		PATH_DIRECTORY: z.string()
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true

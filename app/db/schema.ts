@@ -41,6 +41,7 @@ export const validEmails = pgTable('valid_emails', {
 });
 
 export const imageSource = pgEnum('image_source', ['NTP', 'Google', 'Unknown']);
+export const pathInitializationStatus = pgEnum('path_initialization_status', ['framepos', 'uploading', 'processing', 'complete', 'failed']);
 
 export const paths = pgTable('paths', {
 	id: uuid('id').defaultRandom().primaryKey(),

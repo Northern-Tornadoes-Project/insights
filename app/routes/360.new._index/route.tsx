@@ -4,6 +4,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/nod
 import { Form, useActionData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { mkdir } from 'node:fs/promises';
 import { Button } from '~/components/ui/button';
 import {
 	Card,
@@ -40,8 +41,7 @@ function createSchema(options?: { isFolderNameUnique: (folder_name: string) => P
 				message: 'Folder name must be between 3 and 255 characters.'
 			})
 			.regex(/^[a-z0-9_-]+$/, {
-				message:
-					'Must only contain lowercase letters, numbers, hyphens, and underscores.'
+				message: 'Must only contain lowercase letters, numbers, hyphens, and underscores.'
 			})
 			.pipe(
 				z.string().superRefine((folder_name, ctx) => {
@@ -118,14 +118,20 @@ export async function action({ request }: ActionFunctionArgs) {
 			updatedBy: userId
 		})
 		.returning({
-			id: paths.id
+			id: paths.id,
+			folder_name: paths.folder_name
 		});
 
 	if (path.length != 1) {
 		throw new Error('Error creating path.');
 	}
 
-	return redirect(`/360/upload/${path[0].id}`);
+	// Create folder in the PATH_DIRECTORY
+	await mkdir(`${process.env.PATH_DIRECTORY}/${path[0].folder_name}`, {
+		recursive: true
+	});
+
+	return redirect(`/360/new/${path[0].id}/framepos`);
 }
 
 export default function () {

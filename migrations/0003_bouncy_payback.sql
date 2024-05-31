@@ -1,0 +1,1 @@
+ALTER TABLE "paths" ADD COLUMN "status" "path_initialization_status" DEFAULT 'framepos' NOT NULL;

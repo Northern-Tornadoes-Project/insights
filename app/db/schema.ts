@@ -41,14 +41,22 @@ export const validEmails = pgTable('valid_emails', {
 });
 
 export const imageSource = pgEnum('image_source', ['NTP', 'Google', 'Unknown']);
-export const pathInitializationStatus = pgEnum('path_initialization_status', ['framepos', 'uploading', 'processing', 'complete', 'failed']);
+export const pathInitializationStatus = pgEnum('path_initialization_status', [
+	'framepos',
+	'uploading',
+	'processing',
+	'complete',
+	'failed'
+]);
 
 export const paths = pgTable('paths', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	name: text('name').unique().notNull(),
 	folder_name: text('folder_name').unique().notNull(),
 	event_date: timestamp('event_date').notNull(),
+	frame_pos_data: json('frame_pos_data').array(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
+	status: pathInitializationStatus('status').default('framepos').notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()
 		.notNull()

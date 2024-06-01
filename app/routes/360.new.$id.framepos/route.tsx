@@ -8,7 +8,13 @@ import {
 	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+import {
+	Form,
+	isRouteErrorResponse,
+	useActionData,
+	useLoaderData,
+	useRouteError
+} from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -26,9 +32,13 @@ import { paths } from '~/db/schema';
 import { authenticator } from '~/lib/auth.server';
 
 const schema = z.object({
-	framepos: z.instanceof(File, {
-		message: 'Please upload a file.'
-	})
+	framepos: z
+		.instanceof(File, {
+			message: 'Please select a framepos file.'
+		})
+		.refine((file) => {
+			return file.name.endsWith('_framepos.txt') || file.name.endsWith('_framepos.csv');
+		}, "File name should end with '_framepos.txt' or '_framepos.csv'")
 });
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -76,7 +86,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const submission = parseWithZod(formData, { schema });
 
 	if (submission.status !== 'success') {
-		return submission.reply();
+		return json(submission.reply());
 	}
 
 	const file = formData.get('framepos');
@@ -87,19 +97,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const text = await (file as Blob).text();
 
-	type FrameposLine = {
-		systemtime_sec: number;
-		frame_index: number;
-		lat: number;
-		lon: number;
-		altitude: number;
-		distance: number;
-		heading: number;
-		pitch: number;
-		roll: number;
-		track: number;
-		jpeg_filename: string;
-	};
+	const frameposSchema = z
+		.object({
+			systemtime_sec: z.number(),
+			frame_index: z.number(),
+			lat: z.number(),
+			lon: z.number(),
+			altitude: z.number(),
+			distance: z.number(),
+			heading: z.number(),
+			pitch: z.number(),
+			roll: z.number(),
+			track: z.number(),
+			jpeg_filename: z.string().optional(),
+			png_filename: z.string().optional()
+		})
+		.refine((data) => {
+			// Either jpeg or png filename should be present but not both
+			return !data.jpeg_filename != !data.png_filename;
+		});
 
 	if (!text) {
 		throw new Error('Empty file.');
@@ -117,7 +133,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Invalid file.');
 	}
 
-	const framepos: FrameposLine[] = [];
+	// Check if it uses png or jpeg
+	const filenameHeader = header[10].split('_')[0];
+
+	const framepos: z.infer<typeof frameposSchema>[] = [];
 
 	for (let i = 1; i < lines.length; i++) {
 		// Skip empty lines
@@ -130,7 +149,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			throw new Error('Invalid file.');
 		}
 
-		framepos.push({
+		const data = frameposSchema.parse({
 			systemtime_sec: Number(line[0]),
 			frame_index: Number(line[1]),
 			lat: Number(line[2]),
@@ -141,14 +160,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			pitch: Number(line[7]),
 			roll: Number(line[8]),
 			track: Number(line[9]),
-			jpeg_filename: line[10]
+			png_filename: filenameHeader === 'png' ? line[10] : undefined,
+			jpeg_filename: filenameHeader === 'jpeg' ? line[10] : undefined
 		});
+
+		framepos.push(data);
 	}
 
 	await db
 		.update(paths)
 		.set({
-			frame_pos_data: framepos,
+			framepos_data: framepos,
 			updatedBy: id,
 			status: 'uploading'
 		})
@@ -159,10 +181,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 export default function () {
 	const path = useLoaderData<typeof loader>();
+	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({
+		lastResult,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema });
-		}
+		},
+		shouldValidate: 'onBlur',
+		shouldRevalidate: 'onInput'
 	});
 
 	return (
@@ -172,15 +198,71 @@ export default function () {
 					<CardTitle>{path.name}</CardTitle>
 					<CardDescription>Upload the framepos.</CardDescription>
 				</CardHeader>
-				<Form method="post" encType="multipart/form-data">
+				<Form
+					method="post"
+					encType="multipart/form-data"
+					id={form.id}
+					onSubmit={form.onSubmit}
+					noValidate
+				>
 					<CardContent className="grid gap-2">
-						<Input type="file" id="framepos" name="framepos" required />
+						<Input
+							type="file"
+							key={fields.framepos.key}
+							name={fields.framepos.name}
+							accept=".txt,.csv"
+							required
+						/>
+						<p className="text-primary/60 text-sm">{fields.framepos.errors}</p>
 					</CardContent>
 					<CardFooter>
-						<Button type="submit">Next</Button>
+						<Button type="submit" disabled={!!fields.framepos.errors}>
+							Next
+						</Button>
 					</CardFooter>
 				</Form>
 			</Card>
 		</main>
 	);
+}
+
+export function ErrorBoundary() {
+	const error = useRouteError();
+
+	if (isRouteErrorResponse(error)) {
+		return (
+			<main className="flex justify-center items-center h-full">
+				<Card className="sm:min-w-[500px]">
+					<CardHeader>
+						<CardTitle>
+							{error.status} {error.statusText}
+						</CardTitle>
+						<CardDescription>{error.data}</CardDescription>
+					</CardHeader>
+				</Card>
+			</main>
+		);
+	} else if (error instanceof Error) {
+		return (
+			<main className="flex justify-center items-center h-full">
+				<Card className="sm:min-w-[500px]">
+					<CardHeader>
+						<CardTitle>Error</CardTitle>
+						<CardDescription>{error.message}</CardDescription>
+					</CardHeader>
+				</Card>
+			</main>
+		);
+	} else {
+		return (
+			<main className="flex justify-center items-center h-full">
+				<Card className="sm:min-w-[500px]">
+					<CardHeader>
+						<CardTitle>Error</CardTitle>
+						<CardDescription>An unknown error has occurred...</CardDescription>
+					</CardHeader>
+				</Card>
+			</main>
+		);
+	}
 }

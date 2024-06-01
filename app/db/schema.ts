@@ -54,7 +54,7 @@ export const paths = pgTable('paths', {
 	name: text('name').unique().notNull(),
 	folder_name: text('folder_name').unique().notNull(),
 	event_date: timestamp('event_date').notNull(),
-	frame_pos_data: json('frame_pos_data').array(),
+	framepos_data: json('framepos_data').array(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
 	updatedAt: timestamp('updated_at')

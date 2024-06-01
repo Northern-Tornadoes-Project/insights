@@ -1,6 +1,6 @@
 import { FormProvider, useForm } from '@conform-to/react';
 import { conformZodMessage, parseWithZod } from '@conform-to/zod';
-import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -103,7 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	});
 
 	if (submission.status !== 'success') {
-		return submission.reply();
+		return json(submission.reply());
 	}
 
 	const { name, folder_name, event_date } = submission.value;

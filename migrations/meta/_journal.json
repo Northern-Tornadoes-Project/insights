@@ -29,6 +29,13 @@
       "when": 1717184354108,
       "tag": "0003_bouncy_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1717199230375,
+      "tag": "0004_peaceful_hercules",
+      "breakpoints": true
     }
   ]
 }

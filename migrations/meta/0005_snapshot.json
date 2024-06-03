@@ -1,6 +1,6 @@
 {
-  "id": "de689f19-99e9-41a3-b63f-d8574b4cd470",
-  "prevId": "9e834272-73fd-4289-baa5-76a61dc432a8",
+  "id": "29e0b909-5190-4227-8997-6834ea1664f9",
+  "prevId": "de689f19-99e9-41a3-b63f-d8574b4cd470",
   "version": "6",
   "dialect": "postgresql",
   "tables": {
@@ -27,7 +27,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Unknown'"
+          "default": "'unknown'"
         },
         "size": {
           "name": "size",
@@ -103,6 +103,123 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.path": {
+      "name": "path",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "folder_name": {
+          "name": "folder_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_date": {
+          "name": "event_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "framepos_data": {
+          "name": "framepos_data",
+          "type": "jsonb[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "path_initialization_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'framepos'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "path_created_by_user_id_fk": {
+          "name": "path_created_by_user_id_fk",
+          "tableFrom": "path",
+          "tableTo": "user",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "path_updated_by_user_id_fk": {
+          "name": "path_updated_by_user_id_fk",
+          "tableFrom": "path",
+          "tableTo": "user",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "path_name_unique": {
+          "name": "path_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        },
+        "path_folder_name_unique": {
+          "name": "path_folder_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "folder_name"
+          ]
+        }
+      }
+    },
     "public.path_segments": {
       "name": "path_segments",
       "schema": "",
@@ -122,19 +239,19 @@
         },
         "path_id": {
           "name": "path_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "capture_id": {
           "name": "capture_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "street_view_id": {
           "name": "street_view_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -162,10 +279,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "path_segments_path_id_paths_id_fk": {
-          "name": "path_segments_path_id_paths_id_fk",
+        "path_segments_path_id_path_id_fk": {
+          "name": "path_segments_path_id_path_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "paths",
+          "tableTo": "path",
           "columnsFrom": [
             "path_id"
           ],
@@ -205,125 +322,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.paths": {
-      "name": "paths",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "folder_name": {
-          "name": "folder_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event_date": {
-          "name": "event_date",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "framepos_data": {
-          "name": "framepos_data",
-          "type": "json[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "status": {
-          "name": "status",
-          "type": "path_initialization_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'framepos'"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "serial",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_by": {
-          "name": "updated_by",
-          "type": "serial",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "paths_created_by_users_id_fk": {
-          "name": "paths_created_by_users_id_fk",
-          "tableFrom": "paths",
-          "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "paths_updated_by_users_id_fk": {
-          "name": "paths_updated_by_users_id_fk",
-          "tableFrom": "paths",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "paths_name_unique": {
-          "name": "paths_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        },
-        "paths_folder_name_unique": {
-          "name": "paths_folder_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "folder_name"
-          ]
-        }
-      }
-    },
-    "public.sessions": {
-      "name": "sessions",
+    "public.session": {
+      "name": "session",
       "schema": "",
       "columns": {
         "id": {
@@ -350,8 +350,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.users": {
-      "name": "users",
+    "public.user": {
+      "name": "user",
       "schema": "",
       "columns": {
         "id": {
@@ -397,8 +397,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "user_email_unique": {
+          "name": "user_email_unique",
           "nullsNotDistinct": false,
           "columns": [
             "email"
@@ -406,8 +406,8 @@
         }
       }
     },
-    "public.valid_emails": {
-      "name": "valid_emails",
+    "public.valid_email": {
+      "name": "valid_email",
       "schema": "",
       "columns": {
         "email": {
@@ -428,9 +428,9 @@
       "name": "image_source",
       "schema": "public",
       "values": [
-        "NTP",
-        "Google",
-        "Unknown"
+        "ntp",
+        "google",
+        "unknown"
       ]
     },
     "public.path_initialization_status": {

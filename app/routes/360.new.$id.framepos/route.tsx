@@ -160,8 +160,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			pitch: Number(line[7]),
 			roll: Number(line[8]),
 			track: Number(line[9]),
-			png_filename: filenameHeader === 'png' ? line[10] : undefined,
-			jpeg_filename: filenameHeader === 'jpeg' ? line[10] : undefined
+			png_filename: filenameHeader === 'png' ? line[10].trim() : undefined,
+			jpeg_filename: filenameHeader === 'jpeg' ? line[10].trim() : undefined
 		});
 
 		framepos.push(data);

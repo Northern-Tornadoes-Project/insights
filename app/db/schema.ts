@@ -1,6 +1,8 @@
 import { SessionData } from '@remix-run/node';
+import { relations } from 'drizzle-orm';
 import {
 	json,
+	jsonb,
 	pgTable,
 	serial,
 	text,
@@ -40,7 +42,7 @@ export const validEmails = pgTable('valid_emails', {
 	email: text('email').primaryKey()
 });
 
-export const imageSource = pgEnum('image_source', ['NTP', 'Google', 'Unknown']);
+export const imageSource = pgEnum('image_source', ['ntp', 'google', 'unknown']);
 export const pathInitializationStatus = pgEnum('path_initialization_status', [
 	'framepos',
 	'uploading',
@@ -54,25 +56,25 @@ export const paths = pgTable('paths', {
 	name: text('name').unique().notNull(),
 	folder_name: text('folder_name').unique().notNull(),
 	event_date: timestamp('event_date').notNull(),
-	framepos_data: json('framepos_data').array(),
+	framepos_data: jsonb('framepos_data').array(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()
 		.notNull()
 		.$onUpdateFn(() => new Date()),
-	createdBy: serial('created_by')
+	createdBy: integer('created_by')
 		.references(() => users.id)
 		.notNull(),
-	updatedBy: serial('updated_by')
+	updatedBy: integer('updated_by')
 		.references(() => users.id)
 		.notNull()
 });
 
-export const capture = pgTable('captures', {
+export const captures = pgTable('captures', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	file_name: text('file_name').notNull(),
-	source: imageSource('source').default('Unknown').notNull(),
+	source: imageSource('source').default('unknown').notNull(),
 	size: integer('size').notNull(),
 	takenAt: timestamp('created_at').defaultNow().notNull(),
 	uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
@@ -86,16 +88,16 @@ export const capture = pgTable('captures', {
 	track: decimal('track')
 });
 
-export const pathSegment = pgTable('path_segments', {
+export const pathSegments = pgTable('path_segments', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	index: integer('index').notNull(),
 	pathId: uuid('path_id')
 		.references(() => paths.id)
 		.notNull(),
 	captureId: uuid('capture_id')
-		.references(() => capture.id)
+		.references(() => captures.id)
 		.notNull(),
-	streetViewId: uuid('street_view_id').references(() => capture.id),
+	streetViewId: uuid('street_view_id').references(() => captures.id),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updateAt: timestamp('updated_at')
 		.defaultNow()
@@ -103,3 +105,45 @@ export const pathSegment = pgTable('path_segments', {
 		.$onUpdateFn(() => new Date()),
 	hidden: boolean('hidden').default(false).notNull()
 });
+
+// Relationships
+export const userRelations = relations(users, ({ many }) => ({
+	createdPaths: many(paths, {
+		relationName: 'author'
+	}),
+	editedPaths: many(paths, {
+		relationName: 'editor'
+	})
+}));
+
+export const pathRelations = relations(paths, ({ one, many }) => ({
+	author: one(users, {
+		fields: [paths.createdBy],
+		references: [users.id],
+		relationName: 'author'
+	}),
+	editor: one(users, {
+		fields: [paths.updatedBy],
+		references: [users.id],
+		relationName: 'editor'
+	}),
+	segments: many(pathSegments)
+}));
+
+export const segmentRelations = relations(pathSegments, ({ one }) => ({
+	path: one(paths, {
+		fields: [pathSegments.pathId],
+		references: [paths.id],
+		relationName: 'path'
+	}),
+	capture: one(captures, {
+		fields: [pathSegments.captureId],
+		references: [captures.id],
+		relationName: 'ntpCaptures'
+	}),
+	streetView: one(captures, {
+		fields: [pathSegments.streetViewId],
+		references: [captures.id],
+		relationName: 'googleCaptures'
+	})
+}));

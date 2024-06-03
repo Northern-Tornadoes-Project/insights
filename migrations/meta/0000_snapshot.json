@@ -1,5 +1,5 @@
 {
-  "id": "1dac5f9d-0e08-45e0-8434-eed430f93584",
+  "id": "3df8ab13-2661-4fb9-9adc-d4e960160cca",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "6",
   "dialect": "postgresql",
@@ -27,7 +27,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Unknown'"
+          "default": "'unknown'"
         },
         "size": {
           "name": "size",
@@ -234,12 +234,26 @@
           "primaryKey": false,
           "notNull": true
         },
+        "framepos_data": {
+          "name": "framepos_data",
+          "type": "jsonb[]",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "path_initialization_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'framepos'"
         },
         "updated_at": {
           "name": "updated_at",
@@ -250,13 +264,13 @@
         },
         "created_by": {
           "name": "created_by",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "updated_by": {
           "name": "updated_by",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
@@ -414,9 +428,20 @@
       "name": "image_source",
       "schema": "public",
       "values": [
-        "NTP",
-        "Google",
-        "Unknown"
+        "ntp",
+        "google",
+        "unknown"
+      ]
+    },
+    "public.path_initialization_status": {
+      "name": "path_initialization_status",
+      "schema": "public",
+      "values": [
+        "framepos",
+        "uploading",
+        "processing",
+        "complete",
+        "failed"
       ]
     }
   },

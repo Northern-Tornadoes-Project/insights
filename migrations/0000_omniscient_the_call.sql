@@ -1,5 +1,11 @@
 DO $$ BEGIN
- CREATE TYPE "public"."image_source" AS ENUM('NTP', 'Google', 'Unknown');
+ CREATE TYPE "public"."image_source" AS ENUM('ntp', 'google', 'unknown');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "public"."path_initialization_status" AS ENUM('framepos', 'uploading', 'processing', 'complete', 'failed');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -7,7 +13,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS "captures" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"file_name" text NOT NULL,
-	"source" "image_source" DEFAULT 'Unknown' NOT NULL,
+	"source" "image_source" DEFAULT 'unknown' NOT NULL,
 	"size" integer NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"uploaded_at" timestamp DEFAULT now() NOT NULL,
@@ -37,10 +43,12 @@ CREATE TABLE IF NOT EXISTS "paths" (
 	"name" text NOT NULL,
 	"folder_name" text NOT NULL,
 	"event_date" timestamp NOT NULL,
+	"framepos_data" jsonb[],
 	"created_at" timestamp DEFAULT now() NOT NULL,
+	"status" "path_initialization_status" DEFAULT 'framepos' NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"created_by" serial NOT NULL,
-	"updated_by" serial NOT NULL,
+	"created_by" integer NOT NULL,
+	"updated_by" integer NOT NULL,
 	CONSTRAINT "paths_name_unique" UNIQUE("name"),
 	CONSTRAINT "paths_folder_name_unique" UNIQUE("folder_name")
 );

@@ -6,7 +6,6 @@ import {
 	NodeOnDiskFile,
 	json,
 	redirect,
-	unstable_createFileUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { rm } from 'node:fs/promises';
@@ -26,8 +25,8 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
-import { env } from '~/env.server';
-import { authenticator } from '~/lib/auth.server';
+import { protectedRoute } from '~/lib/auth.server';
+import { buildHandler } from './uploader.server';
 
 const schema = z.object({
 	// Can't be empty and must be smaller than 50MB
@@ -46,11 +45,7 @@ const schema = z.object({
 });
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-	const userId = await authenticator.isAuthenticated(request);
-
-	if (!userId) {
-		return redirect('/auth/login');
-	}
+	await protectedRoute(request);
 
 	if (!params.id) {
 		return redirect('/360');
@@ -76,6 +71,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return redirect('/360');
 	}
 
+	await protectedRoute(request);
+
 	const path = await db.query.paths.findFirst({
 		where: eq(paths.id, params.id)
 	});
@@ -84,22 +81,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Path not found');
 	}
 
-	const userId = await authenticator.isAuthenticated(request);
-
-	if (!userId) {
-		return redirect('/auth/login');
-	}
-
-	const handler = unstable_createFileUploadHandler({
-		directory: `${env.PATH_DIRECTORY}/${path.folder_name}`,
-		maxPartSize: 50 * 1024 * 1024,
-		filter: async (file) => {
-			if (!file.contentType) return false;
-			return file.contentType === 'image/jpeg' || file.contentType === 'image/png';
-		}
-	});
-
-	const formData = await unstable_parseMultipartFormData(request, handler);
+	const formData = await unstable_parseMultipartFormData(request, buildHandler(path));
 	const submission = parseWithZod(formData, { schema });
 
 	if (submission.status !== 'success') {
@@ -119,15 +101,10 @@ export default function () {
 	const path = useLoaderData<typeof loader>();
 	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({
-		// Sync the result of last submission
 		lastResult,
-
-		// Reuse the validation logic on the client
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema });
 		},
-
-		// Validate the form on blur event triggered
 		shouldValidate: 'onBlur',
 		shouldRevalidate: 'onInput'
 	});

@@ -8,13 +8,7 @@ import {
 	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
-import {
-	Form,
-	isRouteErrorResponse,
-	useActionData,
-	useLoaderData,
-	useRouteError
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -29,7 +23,7 @@ import {
 import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
-import { authenticator } from '~/lib/auth.server';
+import { authenticator, protectedRoute } from '~/lib/auth.server';
 
 const schema = z.object({
 	framepos: z
@@ -42,11 +36,7 @@ const schema = z.object({
 });
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-	const userId = await authenticator.isAuthenticated(request);
-
-	if (!userId) {
-		return redirect('/auth/login');
-	}
+	await protectedRoute(request);
 
 	if (!params.id) {
 		return redirect('/360');
@@ -170,7 +160,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	await db
 		.update(paths)
 		.set({
-			framepos_data: framepos,
+			frameposData: framepos,
 			updatedBy: id,
 			status: 'uploading'
 		})
@@ -224,45 +214,4 @@ export default function () {
 			</Card>
 		</main>
 	);
-}
-
-export function ErrorBoundary() {
-	const error = useRouteError();
-
-	if (isRouteErrorResponse(error)) {
-		return (
-			<main className="flex justify-center items-center h-full">
-				<Card className="sm:min-w-[500px]">
-					<CardHeader>
-						<CardTitle>
-							{error.status} {error.statusText}
-						</CardTitle>
-						<CardDescription>{error.data}</CardDescription>
-					</CardHeader>
-				</Card>
-			</main>
-		);
-	} else if (error instanceof Error) {
-		return (
-			<main className="flex justify-center items-center h-full">
-				<Card className="sm:min-w-[500px]">
-					<CardHeader>
-						<CardTitle>Error</CardTitle>
-						<CardDescription>{error.message}</CardDescription>
-					</CardHeader>
-				</Card>
-			</main>
-		);
-	} else {
-		return (
-			<main className="flex justify-center items-center h-full">
-				<Card className="sm:min-w-[500px]">
-					<CardHeader>
-						<CardTitle>Error</CardTitle>
-						<CardDescription>An unknown error has occurred...</CardDescription>
-					</CardHeader>
-				</Card>
-			</main>
-		);
-	}
 }

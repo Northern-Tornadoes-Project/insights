@@ -19,10 +19,10 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
-import { authenticator } from '~/lib/auth.server';
+import { authenticator, protectedRoute } from '~/lib/auth.server';
 
 // Instead of sharing a schema, prepare a schema creator
-function createSchema(options?: { isFolderNameUnique: (folder_name: string) => Promise<boolean> }) {
+function createSchema(options?: { isFolderNameUnique: (folderName: string) => Promise<boolean> }) {
 	return z.object({
 		name: z
 			.string()
@@ -32,7 +32,7 @@ function createSchema(options?: { isFolderNameUnique: (folder_name: string) => P
 			.max(255, {
 				message: 'Name must be between 3 and 255 characters.'
 			}),
-		folder_name: z
+		folderName: z
 			.string()
 			.min(3, {
 				message: 'Folder name must be at least 3 characters.'
@@ -44,7 +44,7 @@ function createSchema(options?: { isFolderNameUnique: (folder_name: string) => P
 				message: 'Must only contain lowercase letters, numbers, hyphens, and underscores.'
 			})
 			.pipe(
-				z.string().superRefine((folder_name, ctx) => {
+				z.string().superRefine((folderName, ctx) => {
 					// This makes Conform to fallback to server validation
 					// by indicating that the validation is not defined
 					if (typeof options?.isFolderNameUnique !== 'function') {
@@ -58,7 +58,7 @@ function createSchema(options?: { isFolderNameUnique: (folder_name: string) => P
 
 					// If it reaches here, then it must be validating on the server
 					// Return the result as a promise so Zod knows it's async instead
-					return options.isFolderNameUnique(folder_name).then((isUnique) => {
+					return options.isFolderNameUnique(folderName).then((isUnique) => {
 						if (!isUnique) {
 							ctx.addIssue({
 								code: 'custom',
@@ -68,33 +68,23 @@ function createSchema(options?: { isFolderNameUnique: (folder_name: string) => P
 					});
 				})
 			),
-		event_date: z.date()
+		eventDate: z.date()
 	});
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	const userId = await authenticator.isAuthenticated(request);
-
-	if (!userId) {
-		return redirect('/auth/login');
-	}
-
+	await protectedRoute(request);
 	return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-	const userId = await authenticator.isAuthenticated(request);
-
-	if (!userId) {
-		return redirect('/auth/login');
-	}
-
+	const userId = await protectedRoute(request);
 	const formData = await request.formData();
 	const submission = await parseWithZod(formData, {
 		schema: createSchema({
-			async isFolderNameUnique(folder_name) {
+			async isFolderNameUnique(folderName) {
 				const path = await db.query.paths.findFirst({
-					where: eq(paths.folder_name, folder_name)
+					where: eq(paths.folderName, folderName)
 				});
 				return !path;
 			}
@@ -106,20 +96,20 @@ export async function action({ request }: ActionFunctionArgs) {
 		return json(submission.reply());
 	}
 
-	const { name, folder_name, event_date } = submission.value;
+	const { name, folderName, eventDate } = submission.value;
 
 	const path = await db
 		.insert(paths)
 		.values({
 			name,
-			folder_name,
-			event_date,
+			folderName,
+			eventDate,
 			createdBy: userId,
 			updatedBy: userId
 		})
 		.returning({
 			id: paths.id,
-			folder_name: paths.folder_name
+			folderName: paths.folderName
 		});
 
 	if (path.length != 1) {
@@ -127,7 +117,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	// Create folder in the PATH_DIRECTORY
-	await mkdir(`${process.env.PATH_DIRECTORY}/${path[0].folder_name}`, {
+	await mkdir(`${process.env.PATH_DIRECTORY}/${path[0].folderName}`, {
 		recursive: true
 	});
 
@@ -166,19 +156,19 @@ export default function () {
 								<p className="text-primary/60 text-sm">{fields.name.errors}</p>
 							</div>
 							<div>
-								<Label htmlFor={fields.folder_name.id}>Folder Name</Label>
+								<Label htmlFor={fields.folderName.id}>Folder Name</Label>
 								<Input
-									key={fields.folder_name.key}
-									name={fields.folder_name.name}
-									defaultValue={fields.folder_name.initialValue}
+									key={fields.folderName.key}
+									name={fields.folderName.name}
+									defaultValue={fields.folderName.initialValue}
 									placeholder="Folder Name"
 								/>
-								<p className="text-primary/60 text-sm">{fields.folder_name.errors}</p>
+								<p className="text-primary/60 text-sm">{fields.folderName.errors}</p>
 							</div>
 							<div>
-								<Label htmlFor={fields.event_date.id}>Event Date</Label>
-								<DatePickerConform meta={fields.event_date} />
-								<p className="text-primary/60 text-sm">{fields.event_date.errors}</p>
+								<Label htmlFor={fields.eventDate.id}>Event Date</Label>
+								<DatePickerConform meta={fields.eventDate} />
+								<p className="text-primary/60 text-sm">{fields.eventDate.errors}</p>
 							</div>
 						</CardContent>
 						<CardFooter>

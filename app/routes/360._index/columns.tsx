@@ -1,42 +1,45 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { formatDate } from '~/lib/utils';
 import { StatusBadge } from './status-badge';
+import { paths } from '~/db/schema';
+import { DataTableColumnHeader } from './column-header';
 
 export type Path = {
-	id: string; // UUID
-	size: number; // MB
-	captures: number; // Number of images
+	id: string;
 	name: string;
-	status: 'processing' | 'completed' | 'failed' | 'archived';
-	created: Date;
-	modified: Date;
+	eventDate: Date;
+	createdAt: Date;
+	updatedAt: Date;
+	status: (typeof paths.$inferSelect)['status'];
+	captures: number;
+	size: number;
 };
 
 export const columns: ColumnDef<Path>[] = [
 	{
-		header: 'Name',
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
 		accessorKey: 'name'
 	},
 	{
-		header: 'Size (MB)',
+		header: ({ column }) => <DataTableColumnHeader column={column} title='Size (MB)' />,
 		accessorKey: 'size'
 	},
 	{
-		header: 'Captures',
+		header: ({ column }) => <DataTableColumnHeader column={column} title='Captures' />,
 		accessorKey: 'captures'
 	},
 	{
-		header: 'Status',
+		header: ({ column }) => <DataTableColumnHeader column={column} title='Status' />,
 		accessorKey: 'status',
 		cell: (cell) => <StatusBadge status={cell.getValue() as Path['status']} />
 	},
 	{
-		header: 'Created',
+		header: ({ column }) => <DataTableColumnHeader column={column} title='Created' />,
 		accessorKey: 'created',
 		cell: (cell) => formatDate(cell.getValue() as Date)
 	},
 	{
-		header: 'Modified',
+		header: ({ column }) => <DataTableColumnHeader column={column} title='Modified' />,
 		accessorKey: 'modified',
 		cell: (cell) => formatDate(cell.getValue() as Date)
 	}

@@ -61,3 +61,15 @@ authenticator.use(
 		}
 	)
 );
+
+export const protectedRoute = async (request: Request) => {
+	const userId = await authenticator.isAuthenticated(request);
+
+	if (!userId) {
+		throw new Response("Unauthorized", {
+			status: 401
+		});
+	}
+
+	return userId;
+};

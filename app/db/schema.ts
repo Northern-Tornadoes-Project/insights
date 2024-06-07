@@ -54,11 +54,11 @@ export const pathInitializationStatus = pgEnum('path_initialization_status', [
 export const paths = pgTable('paths', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	name: text('name').unique().notNull(),
-	folder_name: text('folder_name').unique().notNull(),
-	event_date: timestamp('event_date').notNull(),
-	framepos_data: jsonb('framepos_data').array(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
+	folderName: text('folder_name').unique().notNull(),
+	eventDate: timestamp('event_date').notNull(),
+	frameposData: jsonb('framepos_data').array(),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()
 		.notNull()

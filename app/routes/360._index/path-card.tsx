@@ -23,7 +23,17 @@ export function PathCard({
 				</CardHeader>
 				<div className="flex flex-row items-center gap-2">
 					{loggedIn && (
-						<Button variant="secondary" size="icon">
+						<Button
+							variant="secondary"
+							size="icon"
+							onClick={() => {
+								if (path.status === 'framepos')
+									window.location.href = `/360/new/framepos/${path.id}`;
+								else if (path.status === 'uploading')
+									window.location.href = `/360/new/upload/${path.id}`;
+								else window.location.href = `/360/${path.id}`;
+							}}
+						>
 							<LucideEdit />
 						</Button>
 					)}

@@ -93,7 +93,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return json(submission.reply());
 	}
 
-	return redirect(`/360/new/${path.id}/google`);
+	return redirect(`/360/new/google/${path.id}`);
 }
 
 export default function () {

@@ -166,7 +166,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		})
 		.where(eq(paths.id, params.id));
 
-	return redirect(`/360/new/${params.id}/images`);
+	return redirect(`/360/new/upload/${params.id}`);
 }
 
 export default function () {

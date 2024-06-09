@@ -16,6 +16,7 @@ const View: NextPage = () => {
     const conversionFactor = 1639.34426 / 1000; // px/mm TODO: Replace with actual conversion factor from backend
 
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [showCentroids, setShowCentroids] = useState(false);
     const [originalCentroids, setOriginalCentroids] = useState<Array<[number, number]>>([]);
     const [centroids, setCentroids] = useState<Array<[number, number]>>([]);
     const [download, setDownload] = useState(false);
@@ -180,12 +181,14 @@ const View: NextPage = () => {
                             <HailpadMap
                                 index={currentIndex}
                                 onIndexChange={setCurrentIndex}
+                                showCentroids={showCentroids}
                                 imgData={scanData.img} centroids={centroids}
                             />
                         </div>
                         <div className="flex flex-col space-y-4">
                             <HailpadDetails
                                 onFilterChange={setFilters}
+                                onShowCentroids={() => setShowCentroids(!showCentroids)}
                                 onDownload={() => setDownload(true)}
                                 indent_count={scanData.indents.length}
                                 min_minor={scanData.indents.reduce((min, indent) => Math.min(min, indent.minor_axis), Infinity) / conversionFactor}

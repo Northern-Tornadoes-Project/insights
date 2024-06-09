@@ -8,21 +8,25 @@ import {
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Checkbox } from "@/components/ui/checkbox"
 import "chart.js/auto";
 import { Bar } from 'react-chartjs-2';
 import { cn } from '@/lib/utils';
 import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
 import { Button } from './ui/button';
-import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Pencil, Settings, Trash, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Pencil, ScanLine, Settings, Trash, Trash2, X } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import { useToast } from './ui/use-toast';
+import { Separator } from './ui/separator';
+import { Slider } from './ui/slider';
 
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
 	index: number;
 	imgData: string;
 	centroids: Array<[number, number]>;
+	showCentroids: boolean;
 };
 
 type HailpadDetailsProps = {
@@ -40,6 +44,7 @@ type HailpadDetailsProps = {
 	majors: number[];
 	volumes: number[];
 	onFilterChange: (value: object) => void;
+	onShowCentroids: (value: boolean) => void;
 	onDownload: (value: boolean) => void;
 };
 
@@ -84,6 +89,13 @@ export function HailpadMap(props: HailpadMapProps) {
 					context.stroke();
 
 					context.globalAlpha = 1;
+				}
+				
+				if (props.showCentroids) {
+					context.beginPath();
+					context.arc(x, y, 2, 0, 2 * Math.PI);
+					context.fillStyle = '#4c2e72';
+					context.fill();
 				}
 			});
 		};
@@ -130,7 +142,7 @@ export function HailpadMap(props: HailpadMapProps) {
 			});
 		});
 
-	}, [props.centroids, props.onIndexChange, props.index]);
+	}, [props.centroids, props.onIndexChange, props.index, props.showCentroids]);
 
 	return <canvas ref={canvasRef} width={1000} height={1000} />;
 }
@@ -316,7 +328,93 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent className="w-60">
-								<div className="flex flex-row justify-between items-center">
+								<div className="mb-4">
+									<p className="font-semibold text-sm">
+										Hailpad View Settings
+									</p>
+									<div className="flex flex-row items-center text-sm mt-4 space-x-2">
+										<Checkbox id="show-centroids" onCheckedChange={props.onShowCentroids} />
+										<label
+											htmlFor="show-centroids"
+											className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Show centroids
+										</label>
+									</div>
+									<form className="mt-4 text-sm" onSubmit={changeFilter} onReset={resetFilter}>
+										<div className="flex flex-row justify-between items-center">
+											<p>Box-fit length</p>
+											<Input
+												type="text"
+												{...register('boxLength', { required: true, min: 0 })}
+												placeholder="mm"
+												className="w-14 h-8"
+											/>
+											<Button variant="secondary" type="submit" className="h-8 w-8 p-0.5">
+												<CornerDownLeft className="h-4" />
+											</Button>
+										</div>
+									</form>
+								</div>
+								<Separator />
+								<div className="mt-4">
+									<p className="font-semibold text-sm">
+										Hailpad Analysis Settings
+									</p>
+									<div className="flex flex-row text-sm justify-between items-center mt-4">
+										<p className=" ">Shallow depth threshold</p>
+										<p>TODO</p>
+									</div>
+									<div className="flex flex-row items-center text-sm mt-3 space-x-2">
+										<Slider
+											defaultValue={[50]}
+											max={100}
+											step={1}
+											{...props}
+										/>
+									</div>
+									<div className="flex flex-row text-sm justify-between items-center mt-4">
+										<p className=" ">Shallow depth alpha</p>
+										<p>TODO</p>
+									</div>
+									<div className="flex flex-row items-center text-sm mt-3 space-x-2">
+										<Slider
+											defaultValue={[50]}
+											max={100}
+											step={1}
+											{...props}
+										/>
+									</div>
+									<div className="flex flex-row text-sm justify-between items-center mt-4">
+										<p className=" ">Overall alpha</p>
+										<p>TODO</p>
+									</div>
+									<div className="flex flex-row items-center text-sm mt-3 space-x-2">
+										<Slider
+											defaultValue={[50]}
+											max={100}
+											step={1}
+											{...props}
+										/>
+									</div>
+									<div className="flex flex-row items-center text-sm mt-6 space-x-2">
+										<Checkbox id="overwrite-dents" />
+										<label
+											htmlFor="show-centroids"
+											className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Overwrite manual dents
+										</label>
+									</div>
+									<div className="flex flex-row mt-4">
+										<Button variant="destructive" onClick={() => console.log("TODO")} className="h-8 w-full">
+											<div className="flex flex-row justify-between items-center space-x-2">
+												<p className="mb-0.5">Perform new analysis</p>
+												<ScanLine className="h-4 w-4" />
+											</div>
+										</Button>
+									</div>
+
 								</div>
 							</PopoverContent>
 						</Popover>

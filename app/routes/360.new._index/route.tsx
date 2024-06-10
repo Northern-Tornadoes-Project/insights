@@ -121,7 +121,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		recursive: true
 	});
 
-	return redirect(`/360/new/framepos/${path[0].id}`);
+	return redirect(`/360/new/${path[0].id}/framepos`);
 }
 
 export default function () {

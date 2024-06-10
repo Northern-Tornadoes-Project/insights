@@ -24,6 +24,7 @@ import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
+import { FrameposSchema } from '~/lib/framepos';
 
 const schema = z.object({
 	framepos: z
@@ -87,26 +88,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const text = await (file as Blob).text();
 
-	const frameposSchema = z
-		.object({
-			systemtime_sec: z.number(),
-			frame_index: z.number(),
-			lat: z.number(),
-			lon: z.number(),
-			altitude: z.number(),
-			distance: z.number(),
-			heading: z.number(),
-			pitch: z.number(),
-			roll: z.number(),
-			track: z.number(),
-			jpeg_filename: z.string().optional(),
-			png_filename: z.string().optional()
-		})
-		.refine((data) => {
-			// Either jpeg or png filename should be present but not both
-			return !data.jpeg_filename != !data.png_filename;
-		});
-
 	if (!text) {
 		throw new Error('Empty file.');
 	}
@@ -126,7 +107,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// Check if it uses png or jpeg
 	const filenameHeader = header[10].split('_')[0];
 
-	const framepos: z.infer<typeof frameposSchema>[] = [];
+	const framepos: z.infer<typeof FrameposSchema>[] = [];
 
 	for (let i = 1; i < lines.length; i++) {
 		// Skip empty lines
@@ -139,7 +120,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			throw new Error('Invalid file.');
 		}
 
-		const data = frameposSchema.parse({
+		const data = FrameposSchema.parse({
 			systemtime_sec: Number(line[0]),
 			frame_index: Number(line[1]),
 			lat: Number(line[2]),
@@ -166,7 +147,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		})
 		.where(eq(paths.id, params.id));
 
-	return redirect(`/360/new/upload/${params.id}`);
+	return redirect(`/360/new/${params.id}/images`, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export default function () {

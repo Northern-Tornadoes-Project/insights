@@ -58,6 +58,7 @@ export const paths = pgTable('paths', {
 	eventDate: timestamp('event_date').notNull(),
 	frameposData: jsonb('framepos_data').array(),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
+	size: integer('size'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()
@@ -76,7 +77,6 @@ export const captures = pgTable('captures', {
 	file_name: text('file_name').notNull(),
 	source: imageSource('source').default('unknown').notNull(),
 	size: integer('size').notNull(),
-	takenAt: timestamp('created_at').defaultNow().notNull(),
 	uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
 	lng: decimal('lng').notNull(),
 	lat: decimal('lat').notNull(),

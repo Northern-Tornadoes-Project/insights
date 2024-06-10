@@ -113,9 +113,9 @@ function ErrorBody() {
 							<Link to="/">
 								<Button>Back to safety</Button>
 							</Link>
-							<Link to="/auth/login">
-								<Button variant="outline">Login</Button>
-							</Link>
+								<Button variant="outline" onClick={() => window.location.reload()}>
+									Reload
+								</Button>
 						</CardFooter>
 					</Card>
 				</main>

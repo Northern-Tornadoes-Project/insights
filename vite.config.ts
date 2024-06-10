@@ -6,5 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 installGlobals();
 
 export default defineConfig({
+	// Enable debug in dev
+	logLevel: 'info',
 	plugins: [remix(), tsconfigPaths()]
 });

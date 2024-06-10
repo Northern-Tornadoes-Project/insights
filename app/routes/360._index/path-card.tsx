@@ -28,9 +28,9 @@ export function PathCard({
 							size="icon"
 							onClick={() => {
 								if (path.status === 'framepos')
-									window.location.href = `/360/new/framepos/${path.id}`;
+									window.location.href = `/360/new/${path.id}/framepos`;
 								else if (path.status === 'uploading')
-									window.location.href = `/360/new/upload/${path.id}`;
+									window.location.href = `/360/new/${path.id}/images`;
 								else window.location.href = `/360/${path.id}`;
 							}}
 						>

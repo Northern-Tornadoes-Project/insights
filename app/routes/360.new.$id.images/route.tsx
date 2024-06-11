@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
+	NodeOnDiskFile,
 	json,
 	redirect,
 	unstable_parseMultipartFormData
@@ -20,9 +21,11 @@ import {
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
+import { resolve } from 'node:path';
 import { captures, pathSegments, paths } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
 import { buildUploadHandler, clearUploads } from './uploader.server';
+import { env } from '~/env.server';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	await protectedRoute(request);
@@ -36,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	});
 
 	if (!path) {
-		console.log('test 0')
+		console.log('test 0');
 		throw new Error('Path not found');
 	}
 
@@ -156,6 +159,23 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			status: 'processing'
 		})
 		.where(eq(paths.id, path.id));
+
+	const imageFiles: string[] = files.map(
+		(file) => (file as NodeOnDiskFile).getFilePath().split('/').pop()!
+	);
+
+	// Send files to microservice
+	await fetch(`${process.env.SERVICE_360_URL}/process_images`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			input_directory: resolve(env.PATH_DIRECTORY, path.folderName),
+			event_id: path.id,
+			file_list: imageFiles
+		})
+	});
 
 	return redirect(`/360/new/${path.id}/google`);
 }

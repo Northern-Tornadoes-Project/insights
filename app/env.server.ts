@@ -9,6 +9,7 @@ export const env = createEnv({
 		RESEND_EMAIL: z.string(),
 		AUTH_SECRET: z.string(),
 		COOKIE_SECRET: z.string(),
+		SERVICE_360_URL: z.string().url(),
 		PATH_DIRECTORY: z.string()
 	},
 	runtimeEnv: process.env,

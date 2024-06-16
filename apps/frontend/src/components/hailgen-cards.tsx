@@ -105,14 +105,8 @@ export function HailpadMap(props: HailpadMapProps) {
 
 					let a = dent.minor_axis / 2;
 					let b = dent.major_axis / 2;
-
-					// TODO
-					// if (a < 10 || b == 10) {
-					// 	a *= 1.5;
-					// 	b *= 1.5;
-					// }
 					
-					context.ellipse(x, y, a, b, dent.angle, 0, 2 * Math.PI);
+					context.ellipse(x, y, a * 1.5, b * 1.5, dent.angle, 0, 2 * Math.PI);
 					context.strokeStyle = '#4c2e72';
 					context.lineWidth = 3;
 					context.setLineDash([7, 5]);
@@ -127,6 +121,7 @@ export function HailpadMap(props: HailpadMapProps) {
 					context.arc(x, y, 2, 0, 2 * Math.PI);
 					context.fillStyle = '#4c2e72';
 					context.fill();
+					context.globalAlpha = 1;
 				}
 			});
 		};
@@ -374,12 +369,12 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 											Show centroids
 										</label>
 									</div>
-									<form className="mt-4 text-sm" onSubmit={changeFilter} onReset={resetFilter}>
+									<form className="mt-4 text-sm">
 										<div className="flex flex-row justify-between items-center">
 											<p>Box-fit length</p>
 											<Input
 												type="text"
-												{...register('boxLength', { required: true, min: 0 })}
+												// {...register('boxLength', { required: true, min: 0 })}
 												placeholder="mm"
 												className="w-14 h-8"
 											/>

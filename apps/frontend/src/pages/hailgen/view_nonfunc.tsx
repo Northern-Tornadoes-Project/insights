@@ -23,6 +23,7 @@ const View: NextPage = () => {
     const [originalData, setOriginalData] = useState<{
         indents: {
             area: number;
+            angle: number;
             major_axis: number;
             minor_axis: number;
             centroid: {
@@ -41,6 +42,7 @@ const View: NextPage = () => {
     const [scanData, setScanData] = useState<{
         indents: {
             area: number;
+            angle: number;
             major_axis: number;
             minor_axis: number;
             centroid: {
@@ -182,7 +184,9 @@ const View: NextPage = () => {
                                 index={currentIndex}
                                 onIndexChange={setCurrentIndex}
                                 showCentroids={showCentroids}
-                                imgData={scanData.img} centroids={centroids}
+                                scanData={scanData} // TODO: Clean up this mess
+                                imgData={scanData.img}
+                                centroids={centroids}
                             />
                         </div>
                         <div className="flex flex-col space-y-4">

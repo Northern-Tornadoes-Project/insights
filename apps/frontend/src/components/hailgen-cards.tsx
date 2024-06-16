@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import "chart.js/auto";
 import { Bar } from 'react-chartjs-2';
 import { cn } from '@/lib/utils';
-import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent } from 'react';
+import { PropsWithChildren, useRef, type ReactNode, useEffect, FormEvent, useState } from 'react';
 import { Button } from './ui/button';
 import { ChevronLeft, ChevronRight, CornerDownLeft, FileSpreadsheet, Filter, FilterX, Pencil, ScanLine, Settings, Trash, Trash2, X } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -20,10 +20,27 @@ import { Plus } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { Separator } from './ui/separator';
 import { Slider } from './ui/slider';
+import { boolean } from 'zod';
 
 type HailpadMapProps = {
 	onIndexChange: (value: number) => void;
 	index: number;
+	scanData: {
+		indents: {
+			area: number;
+			angle: number;
+			major_axis: number;
+			minor_axis: number;
+			centroid: {
+				y: number;
+				x: number;
+			};
+			depth_at_centroid: number;
+			avg_depth: number;
+			max_depth: number;
+		}[];
+		img: string;
+	}; // TODO: Clean up this mess
 	imgData: string;
 	centroids: Array<[number, number]>;
 	showCentroids: boolean;
@@ -77,21 +94,35 @@ export function HailpadMap(props: HailpadMapProps) {
 			context.drawImage(img, 0, 0, 1000, 1000);
 
 			// Render clickable centroids
-			props.centroids.forEach(([x, y], i) => {
-				if (i === props.index) {
-					// context.globalAlpha = 0.75;
+			props.scanData.indents.forEach((dent, i) => {
+				const x = dent.centroid.y;
+				const y = dent.centroid.x;
 
+				if (i === props.index) {
+					context.globalAlpha = 1;
 					context.beginPath();
-					context.arc(x, y, radius, 0, 2 * Math.PI);
+					console.log(dent.angle)
+
+					let a = dent.minor_axis / 2;
+					let b = dent.major_axis / 2;
+
+					// TODO
+					// if (a < 10 || b == 10) {
+					// 	a *= 1.5;
+					// 	b *= 1.5;
+					// }
+					
+					context.ellipse(x, y, a, b, dent.angle, 0, 2 * Math.PI);
 					context.strokeStyle = '#4c2e72';
 					context.lineWidth = 3;
 					context.setLineDash([7, 5]);
 					context.stroke();
 
-					context.globalAlpha = 1;
+					
 				}
-				
+
 				if (props.showCentroids) {
+					context.globalAlpha = 0.5;
 					context.beginPath();
 					context.arc(x, y, 2, 0, 2 * Math.PI);
 					context.fillStyle = '#4c2e72';
@@ -161,6 +192,8 @@ function DetailsRow(
 }
 
 export function HailpadDetails(props: HailpadDetailsProps) {
+	const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
+
 	const renderHistogram = (data: number[]) => {
 		// Filter anything over 100 TODO REMOVE
 		data = data.filter((val) => val <= 100);
@@ -333,7 +366,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 										Hailpad View Settings
 									</p>
 									<div className="flex flex-row items-center text-sm mt-4 space-x-2">
-										<Checkbox id="show-centroids" onCheckedChange={props.onShowCentroids} />
+										<Checkbox id="show-centroids" checked={isShowCentroidChecked} onClick={() => setIsShowCentroidChecked(!isShowCentroidChecked)} onCheckedChange={props.onShowCentroids} />
 										<label
 											htmlFor="show-centroids"
 											className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -407,7 +440,7 @@ export function HailpadDetails(props: HailpadDetailsProps) {
 										</label>
 									</div>
 									<div className="flex flex-row mt-4">
-										<Button variant="destructive" onClick={() => console.log("TODO")} className="h-8 w-full">
+										<Button variant="secondary" onClick={() => console.log("TODO")} className="h-8 w-full">
 											<div className="flex flex-row justify-between items-center space-x-2">
 												<p className="mb-0.5">Perform new analysis</p>
 												<ScanLine className="h-4 w-4" />

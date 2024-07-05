@@ -171,7 +171,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			input_directory: resolve(env.PATH_DIRECTORY, path.folderName),
+			input_directory: `${env.SERVICE_360_DIRECTORY}/${path.folderName}`,
 			event_id: path.id,
 			file_list: imageFiles
 		})

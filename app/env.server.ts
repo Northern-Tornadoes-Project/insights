@@ -10,6 +10,8 @@ export const env = createEnv({
 		AUTH_SECRET: z.string(),
 		COOKIE_SECRET: z.string(),
 		SERVICE_360_URL: z.string().url(),
+		SERVICE_360_DIRECTORY: z.string(),
+		SERVICE_360_KEY: z.string(),
 		PATH_DIRECTORY: z.string()
 	},
 	runtimeEnv: process.env,

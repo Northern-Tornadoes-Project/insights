@@ -19,7 +19,7 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
-import { authenticator, protectedRoute } from '~/lib/auth.server';
+import { protectedRoute } from '~/lib/auth.server';
 
 // Instead of sharing a schema, prepare a schema creator
 function createSchema(options?: { isFolderNameUnique: (folderName: string) => Promise<boolean> }) {

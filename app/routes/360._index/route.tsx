@@ -1,16 +1,16 @@
+import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
+import { count, eq, or } from 'drizzle-orm';
+import { motion } from 'framer-motion';
+import { LucidePlus } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { db } from '~/db/db.server';
+import { captures, pathSegments, paths } from '~/db/schema';
 import { Path, columns } from './columns';
 import { DataTable } from './data-table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { useState } from 'react';
 import { PathCard } from './path-card';
-import { motion } from 'framer-motion';
-import { Button } from '~/components/ui/button';
-import { LucidePlus } from 'lucide-react';
-import { db } from '~/db/db.server';
-import { LoaderFunctionArgs } from '@remix-run/node';
-import { captures, pathSegments, paths } from '~/db/schema';
-import { count, eq, or } from 'drizzle-orm';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - 360' }];

@@ -1,5 +1,5 @@
 import { NodeOnDiskFile, UploadHandler } from '@remix-run/node';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { createWriteStream } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
@@ -11,26 +11,46 @@ import { db } from '~/db/db.server';
 import { captures, pathSegments, paths } from '~/db/schema';
 import { env } from '~/env.server';
 import { FrameposSchema } from '~/lib/framepos';
+import { PanoramaSchema } from '~/lib/panorama';
 
 export const clearUploads = async (folderName: string, pathId: string) => {
-	await rm(`${env.PATH_DIRECTORY}/${folderName}`, { recursive: true }).catch(() => {});
-
-	const deleted = await db.delete(pathSegments).where(eq(pathSegments.pathId, pathId)).returning({
-		captureId: pathSegments.captureId,
-		streetViewId: pathSegments.streetViewId
+	// Get all street view uploads
+	const segments = await db.query.pathSegments.findMany({
+		where: and(isNotNull(pathSegments.streetViewId), eq(pathSegments.pathId, pathId))
 	});
 
-	if (!deleted) {
-		throw new Error('Could not delete segments');
-	}
-
+	// Get all capture and street view ids
 	const captureIds = [
-		...deleted.map((segment) => segment.captureId),
-		...deleted.map((segment) => segment.streetViewId).filter((id) => id !== null)
+		...segments.map((segment) => segment.streetViewId).filter((id) => id !== null)
 	];
 
-	if (captureIds.length > 0)
-		await db.delete(captures).where(inArray(captures.id, captureIds as string[]));
+	// Get all capture filenames
+	if (captureIds.length > 0) {
+		const captureFileNames = await db.query.captures.findMany({
+			where: inArray(captures.id, captureIds),
+			columns: {
+				id: true,
+				file_name: true
+			}
+		});
+
+		for (const capture of captureFileNames) {
+			await deletePanoramaFile(`${env.PATH_DIRECTORY}/${folderName}/${capture.file_name}`);
+			await db
+				.update(pathSegments)
+				.set({ streetViewId: null })
+				.where(eq(pathSegments.streetViewId, capture.id));
+			await db.delete(captures).where(eq(captures.id, capture.id));
+		}
+	}
+};
+
+export const deletePanoramaFile = async (filePath: string) => {
+	try {
+		await rm(filePath);
+	} catch (error) {
+		console.error('Could not delete panorama file', error);
+	}
 };
 
 export const buildUploadHandler = ({
@@ -58,13 +78,19 @@ export const buildUploadHandler = ({
 
 		// Verify the JSON using the FrameposSchema
 		const framepos = z.array(FrameposSchema).safeParse(path.frameposData);
+		const panoramas = z.record(z.string(), PanoramaSchema).safeParse(path.panoramaData);
 
 		if (!framepos.success) {
 			console.error(framepos.error.errors);
 			return undefined;
 		}
 
-		const fileNames = framepos.data.map((frame) => frame.jpeg_filename || frame.png_filename);
+		if (!panoramas.success) {
+			console.error(panoramas.error.errors);
+			return undefined;
+		}
+
+		const fileNames = Object.keys(panoramas.data).map((pano) => `${pano}.jpg`);
 
 		if (!fileNames.includes(filename)) {
 			console.error('Invalid filename');
@@ -100,7 +126,7 @@ export const buildUploadHandler = ({
 			await promisify(finished)(writeStream);
 
 			if (deleteFile) {
-				await rm(filePath);
+				await deletePanoramaFile(filePath);
 			}
 		}
 
@@ -108,12 +134,11 @@ export const buildUploadHandler = ({
 			return undefined;
 		}
 
-		const match = framepos.data.find(
-			(frame) => frame.jpeg_filename === filename || frame.png_filename === filename
-		);
+		const panoramaData = panoramas.data[filename.split('.')[0]];
 
-		if (!match) {
+		if (!panoramaData) {
 			console.error('Invalid filename');
+			await deletePanoramaFile(filePath);
 			return undefined;
 		}
 
@@ -124,38 +149,35 @@ export const buildUploadHandler = ({
 				file_name: uniqueFilename,
 				size,
 				uploadedAt: new Date(),
-				lng: match.lon.toString(),
-				lat: match.lat.toString(),
-				altitude: match.altitude.toString(),
-				heading: match.heading.toString(),
-				distance: match.distance.toString(),
-				pitch: match.pitch.toString(),
-				roll: match.roll.toString(),
-				track: match.track.toString(),
-				source: 'ntp'
+				lng: panoramaData.lon.toString(),
+				lat: panoramaData.lat.toString(),
+				altitude: panoramaData.elevation ? panoramaData.elevation.toString() : null,
+				heading: panoramaData.heading ? panoramaData.heading.toString() : null,
+				distance: null,
+				pitch: panoramaData.pitch ? panoramaData.pitch.toString() : null,
+				roll: panoramaData.roll ? panoramaData.roll.toString() : null,
+				track: null,
+				source: 'google'
 			})
 			.returning({
 				id: captures.id
 			});
 
 		if (!capture) {
+			await deletePanoramaFile(filePath);
 			throw new Error('Could not save capture');
 		}
 
-		const segment = await db
-			.insert(pathSegments)
-			.values({
-				captureId: capture[0].id,
-				pathId: path.id,
-				index: match.frame_index
-			})
-			.returning({
-				id: pathSegments.id
-			});
+		const frameIndices = framepos.data
+			.filter((frame) => frame.pano_id === filename.split('.')[0])
+			.map((frame) => frame.frame_index);
 
-		if (!segment) {
-			throw new Error('Could not save segment');
-		}
+		await db
+			.update(pathSegments)
+			.set({
+				streetViewId: capture[0].id
+			})
+			.where(and(eq(pathSegments.pathId, path.id), inArray(pathSegments.index, frameIndices)));
 
 		return new NodeOnDiskFile(filePath, contentType) as File;
 	};

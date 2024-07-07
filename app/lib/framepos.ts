@@ -12,6 +12,7 @@ export const FrameposSchema = z
 		pitch: z.number(),
 		roll: z.number(),
 		track: z.number(),
+		pano_id: z.string().nullable(),
 		jpeg_filename: z.string().optional(),
 		png_filename: z.string().optional()
 	})
@@ -19,3 +20,5 @@ export const FrameposSchema = z
 		// Either jpeg or png filename should be present but not both
 		return !data.jpeg_filename != !data.png_filename;
 	});
+
+export type Framepos = z.infer<typeof FrameposSchema>;

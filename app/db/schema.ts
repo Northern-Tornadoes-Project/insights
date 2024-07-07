@@ -1,16 +1,16 @@
 import { SessionData } from '@remix-run/node';
 import { relations } from 'drizzle-orm';
 import {
+	boolean,
+	decimal,
+	integer,
 	json,
 	jsonb,
+	pgEnum,
 	pgTable,
 	serial,
 	text,
 	timestamp,
-	integer,
-	decimal,
-	boolean,
-	pgEnum,
 	uuid
 } from 'drizzle-orm/pg-core';
 
@@ -57,6 +57,7 @@ export const paths = pgTable('paths', {
 	folderName: text('folder_name').unique().notNull(),
 	eventDate: timestamp('event_date').notNull(),
 	frameposData: jsonb('framepos_data').array(),
+	panoramaData: jsonb('panorama_data'),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
 	size: integer('size'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),

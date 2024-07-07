@@ -1,26 +1,25 @@
 import '~/tailwind.css';
 
-import clsx from 'clsx';
+import { LoaderFunctionArgs } from '@remix-run/node';
 import {
+	Link,
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	isRouteErrorResponse,
 	useLoaderData,
 	useRouteError,
-	isRouteErrorResponse,
-	Link,
 	useRouteLoaderData
 } from '@remix-run/react';
-import { themeSessionResolver } from '~/lib/sessions.server';
+import clsx from 'clsx';
+import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from 'remix-themes';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Toaster } from '~/components/ui/sonner';
-import { LoaderFunctionArgs } from '@remix-run/node';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '~/components/ui/card';
-import { PreventFlashOnWrongTheme, Theme, ThemeProvider, useTheme } from 'remix-themes';
+import { themeSessionResolver } from '~/lib/sessions.server';
 import { Header } from './components/header';
 import { Button } from './components/ui/button';
-import { useEffect, useState } from 'react';
 
 // Return the theme from the session storage using the loader
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -113,9 +112,9 @@ function ErrorBody() {
 							<Link to="/">
 								<Button>Back to safety</Button>
 							</Link>
-								<Button variant="outline" onClick={() => window.location.reload()}>
-									Reload
-								</Button>
+							<Button variant="outline" onClick={() => window.location.reload()}>
+								Reload
+							</Button>
 						</CardFooter>
 					</Card>
 				</main>

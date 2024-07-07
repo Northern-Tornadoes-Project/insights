@@ -11,5 +11,9 @@ export function StatusBadge({ status }: { status: Path['status'] }) {
 					? 'destructive'
 					: 'outline';
 
-	return <Badge className='w-min' variant={variant}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
+	return (
+		<Badge className="w-min" variant={variant}>
+			{status.charAt(0).toUpperCase() + status.slice(1)}
+		</Badge>
+	);
 }

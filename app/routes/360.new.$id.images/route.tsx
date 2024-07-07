@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -9,6 +8,7 @@ import {
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { eq, inArray, sum } from 'drizzle-orm';
+import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import {
 	Card,
@@ -21,11 +21,10 @@ import {
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
-import { resolve } from 'node:path';
 import { captures, pathSegments, paths } from '~/db/schema';
+import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { buildUploadHandler, clearUploads } from './uploader.server';
-import { env } from '~/env.server';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	await protectedRoute(request);
@@ -39,7 +38,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	});
 
 	if (!path) {
-		console.log('test 0');
 		throw new Error('Path not found');
 	}
 
@@ -70,7 +68,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	});
 
 	if (!path) {
-		console.log('test');
 		throw new Error('Path not found');
 	}
 
@@ -86,13 +83,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// Clear the uploads if the number of files does not match the number of segments
 	await clearUploads(path.folderName, path.id);
 
-	const segments: string[] = [];
-
 	const formData = await unstable_parseMultipartFormData(
 		request,
 		buildUploadHandler({
 			path,
-			segmentCallback: (segment) => segments.push(segment),
 			maxFileSize: 50 * 1024 * 1024
 		})
 	);
@@ -135,20 +129,39 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			console.error(error);
 		}
 
-		return json({
-			status: 'error',
-			error: {
-				files: 'Invalid number of files'
+		return json(
+			{
+				status: 'error',
+				error: {
+					files: 'Invalid number of files'
+				}
+			},
+			{
+				status: 400
 			}
-		});
+		);
 	}
 
+	// Get the total size of the images
+	const savedSegments = await db.query.pathSegments.findMany({
+		where: eq(pathSegments.pathId, path.id),
+		columns: {
+			id: true
+		}
+	});
+
+	// Get the total size of the images
 	const result = await db
 		.select({
 			size: sum(captures.size)
 		})
 		.from(captures)
-		.where(inArray(captures.id, segments));
+		.where(
+			inArray(
+				captures.id,
+				savedSegments.map((segment) => segment.id)
+			)
+		);
 
 	const size = Number(result[0].size);
 
@@ -165,17 +178,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	);
 
 	// Send files to microservice
-	await fetch(`${process.env.SERVICE_360_URL}/process_images`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			input_directory: `${env.SERVICE_360_DIRECTORY}/${path.folderName}`,
-			event_id: path.id,
-			file_list: imageFiles
-		})
-	});
+	if (env.SERVICE_360_ENABLED)
+		await fetch(`${process.env.SERVICE_360_URL}/process_images`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				input_directory: `${env.SERVICE_360_DIRECTORY}/${path.folderName}`,
+				event_id: path.id,
+				file_list: imageFiles
+			})
+		});
+	else console.log('Service 360 is disabled');
 
 	return redirect(`/360/new/${path.id}/google`);
 }

@@ -1,3 +1,5 @@
+import { Link } from '@remix-run/react';
+import { Github, LifeBuoy, LogOut, User } from 'lucide-react';
 import { useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
@@ -8,8 +10,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from './ui/dropdown-menu';
-import { Github, LifeBuoy, LogOut, User } from 'lucide-react';
-import { Link } from '@remix-run/react';
 
 export function UserAvatar(props: {
 	user: {

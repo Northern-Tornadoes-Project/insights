@@ -1,6 +1,6 @@
 {
-	"id": "a13f4c44-69a2-4f01-b675-1d5e6477f91f",
-	"prevId": "232c1375-3e04-4f0e-8fc0-505559409290",
+	"id": "208acc9a-6417-41e7-81b2-7857cb17b272",
+	"prevId": "a13f4c44-69a2-4f01-b675-1d5e6477f91f",
 	"version": "6",
 	"dialect": "postgresql",
 	"tables": {
@@ -218,6 +218,12 @@
 				"framepos_data": {
 					"name": "framepos_data",
 					"type": "jsonb[]",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"panorama_data": {
+					"name": "panorama_data",
+					"type": "jsonb",
 					"primaryKey": false,
 					"notNull": false
 				},

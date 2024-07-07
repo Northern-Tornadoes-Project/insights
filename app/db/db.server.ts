@@ -1,8 +1,8 @@
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as schema from '~/db/schema';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { env } from '~/env.server';
-import { eq } from 'drizzle-orm';
 
 const pool = new pg.Pool({
 	connectionString: env.DATABASE_URL

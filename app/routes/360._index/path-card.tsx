@@ -1,9 +1,9 @@
+import { Link } from '@remix-run/react';
+import { LucideEdit, LucideX } from 'lucide-react';
+import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Path } from './columns';
-import { Button } from '~/components/ui/button';
-import { LucideEdit, LucideX } from 'lucide-react';
 import { StatusBadge } from './status-badge';
-import { Link } from '@remix-run/react';
 
 export function PathCard({
 	path,

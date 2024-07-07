@@ -1,9 +1,9 @@
-import { env } from '~/env.server';
 import { Resend } from 'resend';
+import { env } from '~/env.server';
 
 const resend = new Resend(env.RESEND_KEY);
 
-export async function sendCode(body: { to: string; code: string, magicLink: string }) {
+export async function sendCode(body: { to: string; code: string; magicLink: string }) {
 	await resend.emails.send({
 		from: `NTP Insights <${env.RESEND_EMAIL}>`,
 		to: body.to,

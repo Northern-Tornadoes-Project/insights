@@ -1,11 +1,11 @@
+import { eq } from 'drizzle-orm';
 import { Authenticator } from 'remix-auth';
-import { authSessionResolver } from './sessions.server';
-import { users, validEmails } from '~/db/schema';
 import { TOTPStrategy } from 'remix-auth-totp';
+import { db } from '~/db/db.server';
+import { users, validEmails } from '~/db/schema';
 import { env } from '~/env.server';
 import { sendCode } from './email.server';
-import { db } from '~/db/db.server';
-import { eq } from 'drizzle-orm';
+import { authSessionResolver } from './sessions.server';
 
 export const authenticator = new Authenticator<typeof users.$inferSelect.id>(authSessionResolver);
 
@@ -33,13 +33,13 @@ authenticator.use(
 			sendTOTP: async ({ email, code, magicLink }) => {
 				if (process.env.NODE_ENV === 'development') {
 					console.log('[Dev] TOTP Code:', code);
+				} else {
+					await sendCode({
+						to: email,
+						code,
+						magicLink
+					});
 				}
-
-				await sendCode({
-					to: email,
-					code,
-					magicLink
-				});
 			}
 		},
 		async ({ email }) => {
@@ -66,7 +66,7 @@ export const protectedRoute = async (request: Request) => {
 	const userId = await authenticator.isAuthenticated(request);
 
 	if (!userId) {
-		throw new Response("Unauthorized", {
+		throw new Response('Unauthorized', {
 			status: 401
 		});
 	}

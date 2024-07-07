@@ -3,12 +3,12 @@ import tornado from '~/assets/bnr-tornado.jpg';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Link, json, useLoaderData } from '@remix-run/react';
 import { Axis3D, CloudHail, LucideLifeBuoy, Rotate3D } from 'lucide-react';
-import { Button } from '~/components/ui/button';
 import { version } from '~/../package.json';
-import { authenticator } from '~/lib/auth.server';
-import { getUser } from '~/db/db.server';
+import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
 import { WesternEngineeringLogo } from '~/components/western-eng-logo';
+import { getUser } from '~/db/db.server';
+import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - Home' }];
@@ -55,7 +55,7 @@ export default function Index() {
 					) : (
 						<div className="flex flex-row gap-2">
 							<Link to="/support">
-								<Button variant="secondary" className='gap-2' size='icon'>
+								<Button variant="secondary" className="gap-2" size="icon">
 									<LucideLifeBuoy />
 								</Button>
 							</Link>

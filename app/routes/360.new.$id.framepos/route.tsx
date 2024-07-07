@@ -8,7 +8,7 @@ import {
 	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -24,7 +24,9 @@ import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
-import { FrameposSchema } from '~/lib/framepos';
+import { Framepos, FrameposSchema } from '~/lib/framepos';
+import { getStreetViewImage } from '~/lib/google.server';
+import { Panorama, PanoramaSchema } from '~/lib/panorama';
 
 const schema = z.object({
 	framepos: z
@@ -131,16 +133,48 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			pitch: Number(line[7]),
 			roll: Number(line[8]),
 			track: Number(line[9]),
+			pano_id: null,
 			png_filename: filenameHeader === 'png' ? line[10].trim() : undefined,
 			jpeg_filename: filenameHeader === 'jpeg' ? line[10].trim() : undefined
-		});
+		} as Framepos);
 
 		framepos.push(data);
 	}
 
+	// Create batches of 10
+	const frameposBatches = [];
+	const batchSize = 10;
+
+	for (let i = 0; i < framepos.length; i += batchSize) {
+		frameposBatches.push(framepos.slice(i, i + batchSize));
+	}
+
+	const panoramas: {
+		[key: string]: Panorama;
+	} = {};
+
+	for (const batch of frameposBatches) {
+		const response = await Promise.all(
+			batch.map(async (data) => await getStreetViewImage({ lat: data.lat, lng: data.lon }))
+		);
+
+		for (let i = 0; i < batch.length; i++) {
+			const panorama = response[i];
+			if (panorama === null) framepos[batch[i].frame_index].pano_id = null;
+			else {
+				panoramas[panorama.pano_id] = panorama;
+				framepos[batch[i].frame_index].pano_id = panorama.pano_id;
+			}
+		}
+	}
+
+	// Validate the panoramas
+	PanoramaSchema.array().parse(Object.values(panoramas));
+
 	await db
 		.update(paths)
 		.set({
+			panoramaData: panoramas,
 			frameposData: framepos,
 			updatedBy: id,
 			status: 'uploading'
@@ -151,6 +185,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function () {
+	const navigation = useNavigation();
 	const path = useLoaderData<typeof loader>();
 	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({
@@ -183,11 +218,15 @@ export default function () {
 							name={fields.framepos.name}
 							accept=".txt,.csv"
 							required
+							disabled={navigation.state === 'submitting'}
 						/>
 						<p className="text-primary/60 text-sm">{fields.framepos.errors}</p>
 					</CardContent>
 					<CardFooter>
-						<Button type="submit" disabled={!!fields.framepos.errors}>
+						<Button
+							type="submit"
+							disabled={!!fields.framepos.errors || navigation.state === 'submitting'}
+						>
 							Next
 						</Button>
 					</CardFooter>

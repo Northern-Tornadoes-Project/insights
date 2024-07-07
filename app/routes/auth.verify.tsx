@@ -1,12 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, useLoaderData } from '@remix-run/react';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
 import { authenticator } from '~/lib/auth.server';
 import { authSessionResolver } from '~/lib/sessions.server';
-import { Button } from '~/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - Verify' }];

@@ -1,3 +1,5 @@
+import { getInputProps, useForm } from '@conform-to/react';
+import { parseWithZod } from '@conform-to/zod';
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -5,20 +7,18 @@ import {
 	json,
 	redirect
 } from '@remix-run/node';
-import { useForm, getInputProps } from '@conform-to/react';
-import { parseWithZod } from '@conform-to/zod';
 import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/lib/auth.server';
-import { db } from '~/db/db.server';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import { users } from '~/db/schema';
-import { Label } from '~/components/ui/label';
-import { Input } from '~/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { LucideArrowLeft, LucideUser } from 'lucide-react';
+import { z } from 'zod';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { db } from '~/db/db.server';
+import { users } from '~/db/schema';
+import { authenticator } from '~/lib/auth.server';
 
 const profileFormSchema = z.object({
 	name: z.string().min(3).max(255),
@@ -92,7 +92,7 @@ export default function Profile() {
 	return (
 		<main>
 			<Link to="/" className="m-4 absolute top-0 left-0">
-				<Button variant="link" className='gap-2 items-center'>
+				<Button variant="link" className="gap-2 items-center">
 					<LucideArrowLeft /> Back
 				</Button>
 			</Link>

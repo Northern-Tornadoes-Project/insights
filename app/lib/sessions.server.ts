@@ -1,9 +1,9 @@
 import { createCookieSessionStorage, createSessionStorage } from '@remix-run/node';
+import { eq } from 'drizzle-orm';
 import { createThemeSessionResolver } from 'remix-themes';
+import { sessions } from '~/db/schema';
 import { env } from '~/env.server';
 import { db } from '../db/db.server';
-import { sessions } from '~/db/schema';
-import { eq } from 'drizzle-orm';
 
 const isProduction = process.env.NODE_ENV === 'production';
 

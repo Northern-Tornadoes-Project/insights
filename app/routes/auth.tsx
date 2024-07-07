@@ -1,7 +1,7 @@
 import tornado from '~/assets/bnr-tornado.jpg';
 
-import { Outlet } from "@remix-run/react";
-import { WesternEngineeringLogo } from "~/components/western-eng-logo";
+import { Outlet } from '@remix-run/react';
+import { WesternEngineeringLogo } from '~/components/western-eng-logo';
 
 export default function Auth() {
 	return (

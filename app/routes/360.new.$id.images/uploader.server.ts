@@ -124,6 +124,7 @@ export const buildUploadHandler = ({
 				file_name: uniqueFilename,
 				size,
 				uploadedAt: new Date(),
+				takenAt: new Date(match.systemtime_sec * 1000),
 				lng: match.lon.toString(),
 				lat: match.lat.toString(),
 				altitude: match.altitude.toString(),

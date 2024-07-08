@@ -1,11 +1,21 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { and, eq } from 'drizzle-orm';
+import { ClientOnly } from 'remix-utils/client-only';
 import { z } from 'zod';
-import { Viewer360 } from '~/components/viewer-360';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle
+} from '~/components/ui/card';
 import { db } from '~/db/db.server';
 import { pathSegments, paths } from '~/db/schema';
 import { env } from '~/env.server';
+import { FramePicker } from './frame-picker';
+import { Viewer360 } from './viewer-360';
 
 const JUMP_SIZE = 5;
 
@@ -82,50 +92,124 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	};
 }
 
+function CaptureDetail({ label, value }: { label: string; value: string }) {
+	return (
+		<div className="flex flex-col">
+			<p className="text-sm text-muted-foreground">{label}</p>
+			<p>{value}</p>
+		</div>
+	);
+}
+
 export default function () {
 	const navigate = useNavigate();
 	const data = useLoaderData<typeof loader>();
 
 	return (
-		<div>
-			<h1>{data.path.name}</h1>
-			<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-2">
-				<Viewer360
-					capture={{
-						...data.capture,
-						uploadedAt: new Date(data.capture.uploadedAt)
-					}}
-					captureURL={data.captureURL}
-					currentState={data.currentState}
-					pathProgress={data.pathProgress}
-					onCurrentStateChange={(state) => {
-						navigate({
-							search: `?index=${data.index}&state=${state}`
-						});
-					}}
-					onNext={() => {
-						navigate({
-							search: `?index=${data.index + 1}&state=${data.currentState}`
-						});
-					}}
-					onPrevious={() => {
-						navigate({
-							search: `?index=${data.index - 1}&state=${data.currentState}`
-						});
-					}}
-					onJumpNext={() => {
-						navigate({
-							search: `?index=${data.index + JUMP_SIZE}&state=${data.currentState}`
-						});
-					}}
-					onJumpPrevious={() => {
-						navigate({
-							search: `?index=${data.index - JUMP_SIZE}&state=${data.currentState}`
-						});
-					}}
-					className="relative row-span-2 h-[500px] overflow-hidden rounded-md lg:col-span-4 lg:h-[505px]"
-				/>
-			</div>
+		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
+			<Card className="row-span-2 lg:col-span-2">
+				<CardHeader>
+					<CardTitle>360 Viewer</CardTitle>
+					<CardDescription>View the path in 360 with before and after imagery.</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<ClientOnly
+						fallback={
+							<div className="relative h-[500px] overflow-hidden rounded-md lg:h-[505px]">
+								<div className="flex h-full flex-col items-center justify-center">
+									<div className="text-2xl font-bold">Loading</div>
+								</div>
+							</div>
+						}
+					>
+						{() => (
+							<Viewer360
+								capture={{
+									...data.capture,
+									uploadedAt: new Date(data.capture.uploadedAt),
+									takenAt: new Date(data.capture.takenAt)
+								}}
+								captureURL={data.captureURL}
+								currentState={data.currentState}
+								pathProgress={data.pathProgress}
+								onCurrentStateChange={(state) => {
+									navigate({
+										search: `?index=${data.index}&state=${state}`
+									});
+								}}
+								onNext={() => {
+									navigate({
+										search: `?index=${data.index + 1}&state=${data.currentState}`
+									});
+								}}
+								onPrevious={() => {
+									navigate({
+										search: `?index=${data.index - 1}&state=${data.currentState}`
+									});
+								}}
+								onJumpNext={() => {
+									navigate({
+										search: `?index=${data.index + JUMP_SIZE}&state=${data.currentState}`
+									});
+								}}
+								onJumpPrevious={() => {
+									navigate({
+										search: `?index=${data.index - JUMP_SIZE}&state=${data.currentState}`
+									});
+								}}
+								className="relative h-[500px] overflow-hidden rounded-md lg:h-[550px]"
+							/>
+						)}
+					</ClientOnly>
+				</CardContent>
+			</Card>
+			<Card>
+				<CardHeader>
+					<CardTitle>Capture Details</CardTitle>
+					<CardDescription>About the current 360 view.</CardDescription>
+				</CardHeader>
+				<CardContent className="grid grid-cols-2 gap-4">
+					<CaptureDetail
+						label="Event date"
+						value={new Intl.DateTimeFormat('en-CA', { dateStyle: 'long' }).format(
+							new Date(data.path.eventDate)
+						)}
+					/>
+					<CaptureDetail
+						label="Capture date"
+						value={new Intl.DateTimeFormat('en-CA', { dateStyle: 'long' }).format(
+							new Date(data.capture.takenAt)
+						)}
+					/>
+					<CaptureDetail
+						label="Location"
+						value={`${Number(data.capture.lat).toFixed(4)}, ${Number(data.capture.lng).toFixed(4)}`}
+					/>
+					<CaptureDetail
+						label="Altitude"
+						value={data.capture.altitude ? `${Number(data.capture.altitude).toFixed(2)} m` : 'N/A'}
+					/>
+					<CaptureDetail
+						label="Distance (from start)"
+						value={data.capture.distance ? `${Number(data.capture.distance).toFixed(2)} m` : 'N/A'}
+					/>
+					<CaptureDetail
+						label="Size"
+						value={`${(data.capture.size / 1024 / 1024).toFixed(2)} MB`}
+					/>
+				</CardContent>
+				<CardFooter>
+					<FramePicker
+						index={data.index + 1}
+						length={data.path.frameposData?.length}
+						onJump={(index) => {
+							navigate({
+								search: `?index=${index}&state=${data.currentState}`
+							});
+						}}
+					/>
+				</CardFooter>
+			</Card>
 		</div>
 	);
 }

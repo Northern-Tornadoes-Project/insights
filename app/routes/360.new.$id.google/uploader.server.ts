@@ -149,6 +149,7 @@ export const buildUploadHandler = ({
 				file_name: uniqueFilename,
 				size,
 				uploadedAt: new Date(),
+				takenAt: panoramaData.date ? panoramaData.date : new Date(),
 				lng: panoramaData.lon.toString(),
 				lat: panoramaData.lat.toString(),
 				altitude: panoramaData.elevation ? panoramaData.elevation.toString() : null,

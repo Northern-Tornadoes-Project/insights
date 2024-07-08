@@ -1,5 +1,5 @@
-import { CameraControls, Html, useProgress, useTexture } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { CameraControls, Html, useProgress } from '@react-three/drei';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { VRButton, XR, useController, useXR } from '@react-three/xr';
 import {
 	LucideChevronDown,
@@ -7,7 +7,6 @@ import {
 	LucideChevronsDown,
 	LucideChevronsUp,
 	LucideExpand,
-	LucideEye,
 	LucideGlasses,
 	LucideNavigation2,
 	LucideShrink
@@ -77,7 +76,11 @@ function Loader() {
 
 function StreetViewImage({ image, startingAngle }: { image: string; startingAngle: number }) {
 	const meshRef = useRef<THREE.Mesh>(null);
-	const texture = useTexture(`${image}`);
+
+	let texture: THREE.Texture | null = null;
+	texture = useLoader(THREE.TextureLoader, image);
+
+	if (!texture) return null;
 
 	useEffect(() => {
 		texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -340,7 +343,7 @@ export function Viewer360({
 						}} // B (After)
 					/>
 					<Suspense fallback={<Loader />}>
-						<StreetViewImage startingAngle={degToRad(startingAngle)} image={captureURL} />
+						<StreetViewImage image={captureURL} startingAngle={degToRad(startingAngle)} />
 					</Suspense>
 				</XR>
 			</Canvas>

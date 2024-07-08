@@ -2,7 +2,7 @@ import tornado from '~/assets/bnr-tornado.jpg';
 
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Link, json, useLoaderData } from '@remix-run/react';
-import { Axis3D, CloudHail, LucideLifeBuoy, Rotate3D } from 'lucide-react';
+import { Axis3D, CloudHail, Droplet, LucideLifeBuoy, Rotate3D } from 'lucide-react';
 import { version } from '~/../package.json';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
@@ -70,22 +70,31 @@ export default function Index() {
 						<b>NTP</b> Insights
 					</h1>
 					<h3 className="text-2xl font-semibold">v{version}</h3>
-					<nav className="flex flex-row gap-4">
-						<Link to="/360">
-							<Button className="gap-2">
-								<Rotate3D /> 360
-							</Button>
-						</Link>
-						<Link to="/lidar">
-							<Button className="gap-2">
-								<Axis3D /> LiDAR
-							</Button>
-						</Link>
-						<Link to="/hail-gen">
-							<Button className="gap-2">
-								<CloudHail /> HailGen
-							</Button>
-						</Link>
+					<nav className="flex flex-col gap-2">
+						<div className="flex flex-row gap-2">
+							<Link to="/360">
+								<Button className="gap-2">
+									<Rotate3D /> 360
+								</Button>
+							</Link>
+							<Link to="/lidar">
+								<Button className="gap-2">
+									<Axis3D /> LiDAR
+								</Button>
+							</Link>
+							<Link to="/hail-gen">
+								<Button className="gap-2">
+									<CloudHail /> HailGen
+								</Button>
+							</Link>
+						</div>
+						<div className="flex flex-row gap-2">
+							<Link to="https://raindrop.ntpinsights.ca/">
+								<Button className="gap-2" variant="secondary">
+									<Droplet /> Raindrop
+								</Button>
+							</Link>
+						</div>
 					</nav>
 				</main>
 			</div>

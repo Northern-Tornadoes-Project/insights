@@ -78,6 +78,7 @@ export const captures = pgTable('captures', {
 	file_name: text('file_name').notNull(),
 	source: imageSource('source').default('unknown').notNull(),
 	size: integer('size').notNull(),
+	takenAt: timestamp('taken_at').notNull(),
 	uploadedAt: timestamp('uploaded_at').defaultNow().notNull(),
 	lng: decimal('lng').notNull(),
 	lat: decimal('lat').notNull(),

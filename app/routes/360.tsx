@@ -21,7 +21,7 @@ export default function Layout() {
 
 	return (
 		<main className="bg-muted/40 h-full">
-			<Header title="360" user={data.user} />
+			<Header title="360" user={data.user} className="z-20" />
 			<div className="mx-6 py-4">
 				<Outlet context={data.user} />
 			</div>

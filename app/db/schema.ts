@@ -51,6 +51,8 @@ export const pathInitializationStatus = pgEnum('path_initialization_status', [
 	'failed'
 ]);
 
+// 360 Tables
+
 export const paths = pgTable('paths', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	name: text('name').unique().notNull(),
@@ -108,12 +110,66 @@ export const pathSegments = pgTable('path_segments', {
 	hidden: boolean('hidden').default(false).notNull()
 });
 
-// Relationships
+// Hailgen Tables
+
+export const hailpad = pgTable('hailpad', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	name: text('hailpad_name').notNull(),
+	boxfit: decimal('boxfit').notNull(),
+	adaptiveBlockSize: decimal('adaptive_block_size').notNull(),
+	adaptiveC: decimal('adaptive_c').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.notNull()
+		.$onUpdateFn(() => new Date()),
+	createdBy: integer('created_by')
+		.references(() => users.id)
+		.notNull(),
+	updatedBy: integer('updated_by')
+		.references(() => users.id)
+		.notNull(),
+	hidden: boolean('hidden').default(false).notNull()
+});
+
+export const dent = pgTable('dent', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	hailpadId: uuid('hailpad_id').references(() => hailpad.id).notNull(),
+	majorAxis: decimal('major_axis').notNull(),
+	minorAxis: decimal('minor_axis').notNull(),
+	rotation: decimal('rotation'),
+	centroidX: decimal('centroid_x').notNull(),
+	centroidY: decimal('centroid_y').notNull(),
+});
+
+// Relations
+
+export const hailpadRelations = relations(hailpad, ({ many }) => ({
+	dents: many(dent, {
+			relationName: 'hailpad'
+		}
+	),
+  }));
+  
+  export const dentRelations = relations(dent, ({ one }) => ({
+	hailpad: one(hailpad, {
+	  fields: [dent.hailpadId],
+	  references: [hailpad.id],
+	  relationName: 'hailpad'
+	}),
+  }));
+
 export const userRelations = relations(users, ({ many }) => ({
 	createdPaths: many(paths, {
 		relationName: 'author'
 	}),
+	createdHailpads: many(hailpad, {
+		relationName: 'author'
+	}),
 	editedPaths: many(paths, {
+		relationName: 'editor'
+	}),
+	editedHailpads: many(hailpad, {
 		relationName: 'editor'
 	})
 }));

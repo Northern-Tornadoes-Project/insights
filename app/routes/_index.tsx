@@ -2,7 +2,7 @@ import tornado from '~/assets/bnr-tornado.jpg';
 
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Link, json, useLoaderData } from '@remix-run/react';
-import { Axis3D, CloudHail, Droplet, LucideLifeBuoy, Rotate3D } from 'lucide-react';
+import { Axis3D, CircleDotDashed, CloudHail, Droplet, LucideLifeBuoy, Rotate3D } from 'lucide-react';
 import { version } from '~/../package.json';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
@@ -82,9 +82,9 @@ export default function Index() {
 									<Axis3D /> LiDAR
 								</Button>
 							</Link>
-							<Link to="/hail-gen">
+							<Link to="/hailgen">
 								<Button className="gap-2">
-									<CloudHail /> HailGen
+									<CircleDotDashed /> Hailgen
 								</Button>
 							</Link>
 						</div>

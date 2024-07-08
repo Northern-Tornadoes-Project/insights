@@ -20,7 +20,7 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				'sticky top-0 flex justify-between py-4 items-center gap-4 border-b bg-background px-4 md:px-6',
+				'sticky top-0 flex justify-between py-4 items-center gap-4 border-b bg-background mb-2 px-4 md:px-6',
 				className
 			)}
 		>

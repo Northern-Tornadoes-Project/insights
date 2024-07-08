@@ -15,7 +15,7 @@ import { db } from '~/db/db.server';
 import { pathSegments, paths } from '~/db/schema';
 import { env } from '~/env.server';
 import { FramePicker } from './frame-picker';
-import { Viewer360 } from './viewer-360';
+import { Viewer360 } from './viewer-360.client';
 
 const JUMP_SIZE = 5;
 

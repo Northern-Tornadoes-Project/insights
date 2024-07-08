@@ -107,7 +107,7 @@ export default function () {
 
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<Card className="row-span-2 lg:col-span-2">
+			<Card className="row-span-2 lg:col-span-2 h-min">
 				<CardHeader>
 					<CardTitle>360 Viewer</CardTitle>
 					<CardDescription>View the path in 360 with before and after imagery.</CardDescription>

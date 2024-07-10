@@ -51,8 +51,8 @@ export default function () {
 	return (
 		<div className="flex flex-col gap-4">
 			{userContext && (
-				<Link to="/360/new">
-					<Button className="max-w-32 gap-2" disabled={!userContext}>
+				<Link to="/hailgen/new">
+					<Button className="max-w-44 gap-2" disabled={!userContext}>
 						<LucidePlus size={16} />
 						New Hailpad Scan
 					</Button>

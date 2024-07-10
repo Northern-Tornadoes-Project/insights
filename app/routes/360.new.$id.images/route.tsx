@@ -9,6 +9,7 @@ import {
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { eq, inArray, sum } from 'drizzle-orm';
 import { useState } from 'react';
+import { UploadProgress } from '~/components/progress';
 import { Button } from '~/components/ui/button';
 import {
 	Card,
@@ -210,6 +211,7 @@ export default function () {
 				</CardHeader>
 				<Form method="post" encType="multipart/form-data">
 					<CardContent>
+						<UploadProgress id={path.id} />
 						<fieldset className="grid gap-2" disabled={navigation.state === 'submitting'}>
 							<Label htmlFor="images">Images</Label>
 							<Input

@@ -134,42 +134,38 @@ export const hailpad = pgTable('hailpad', {
 
 export const dent = pgTable('dent', {
 	id: uuid('id').defaultRandom().primaryKey(),
-	hailpadId: uuid('hailpad_id').references(() => hailpad.id).notNull(),
+	hailpadId: uuid('hailpad_id')
+		.references(() => hailpad.id)
+		.notNull(),
 	majorAxis: decimal('major_axis').notNull(),
 	minorAxis: decimal('minor_axis').notNull(),
 	rotation: decimal('rotation'),
 	centroidX: decimal('centroid_x').notNull(),
-	centroidY: decimal('centroid_y').notNull(),
+	centroidY: decimal('centroid_y').notNull()
 });
 
 // Relations
 
 export const hailpadRelations = relations(hailpad, ({ many }) => ({
 	dents: many(dent, {
-			relationName: 'hailpad'
-		}
-	),
-  }));
-  
-  export const dentRelations = relations(dent, ({ one }) => ({
+		relationName: 'hailpad'
+	})
+}));
+
+export const dentRelations = relations(dent, ({ one }) => ({
 	hailpad: one(hailpad, {
-	  fields: [dent.hailpadId],
-	  references: [hailpad.id],
-	  relationName: 'hailpad'
-	}),
-  }));
+		fields: [dent.hailpadId],
+		references: [hailpad.id],
+		relationName: 'hailpad'
+	})
+}));
 
 export const userRelations = relations(users, ({ many }) => ({
 	createdPaths: many(paths, {
 		relationName: 'author'
 	}),
-	createdHailpads: many(hailpad, {
-		relationName: 'author'
-	}),
+
 	editedPaths: many(paths, {
-		relationName: 'editor'
-	}),
-	editedHailpads: many(hailpad, {
 		relationName: 'editor'
 	})
 }));

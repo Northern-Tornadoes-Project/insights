@@ -1,6 +1,7 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { and, eq } from 'drizzle-orm';
+import { lazy } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { z } from 'zod';
 import {
@@ -15,7 +16,8 @@ import { db } from '~/db/db.server';
 import { pathSegments, paths } from '~/db/schema';
 import { env } from '~/env.server';
 import { FramePicker } from './frame-picker';
-import { Viewer360 } from './viewer-360.client';
+
+const Viewer360 = lazy(() => import('./viewer-360.client'));
 
 const JUMP_SIZE = 5;
 

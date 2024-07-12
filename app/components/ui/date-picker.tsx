@@ -9,7 +9,13 @@ import { Calendar } from '~/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { cn } from '~/lib/utils';
 
-export function DatePickerConform({ meta }: { meta: FieldMetadata<Date> }) {
+export function DatePickerConform({
+	meta,
+	disabled
+}: {
+	meta: FieldMetadata<Date>;
+	disabled?: boolean;
+}) {
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const control = useControl(meta);
 
@@ -21,6 +27,7 @@ export function DatePickerConform({ meta }: { meta: FieldMetadata<Date> }) {
 				tabIndex={-1}
 				ref={control.register}
 				name={meta.name}
+				disabled={disabled}
 				defaultValue={meta.initialValue ? new Date(meta.initialValue).toISOString() : ''}
 				onFocus={() => {
 					triggerRef.current?.focus();
@@ -35,6 +42,7 @@ export function DatePickerConform({ meta }: { meta: FieldMetadata<Date> }) {
 							'w-full justify-start text-left font-normal focus:ring-2 focus:ring-stone-950 focus:ring-offset-2',
 							!control.value && 'text-muted-foreground'
 						)}
+						disabled={disabled}
 					>
 						<CalendarIcon className="mr-2 h-4 w-4" />
 						{control.value ? format(control.value, 'PPP') : <span>Pick a date</span>}

@@ -6,10 +6,11 @@ import {
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
-import { eq, inArray, sum } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { LucideLink } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { UploadProgress } from '~/components/progress';
 import { Button } from '~/components/ui/button';
 import {
 	Card,
@@ -21,8 +22,8 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { db } from '~/db/db.server';
-import { captures, paths, pathSegments } from '~/db/schema';
+import { db, updatePathSize } from '~/db/db.server';
+import { paths } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
 import { buildUploadHandler, clearUploads } from './uploader.server';
 
@@ -127,33 +128,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		);
 	}
 
-	// Get the total size of the images
-	const savedSegments = await db.query.pathSegments.findMany({
-		where: eq(pathSegments.pathId, path.id),
-		columns: {
-			id: true
-		}
-	});
+	await updatePathSize(path.id);
 
-	// Get the total size of the images
-	const result = await db
-		.select({
-			size: sum(captures.size)
-		})
-		.from(captures)
-		.where(
-			inArray(
-				captures.id,
-				savedSegments.map((segment) => segment.id)
-			)
-		);
-
-	const size = Number(result[0].size);
-
+	// Set status to processing
 	await db
 		.update(paths)
 		.set({
-			size: Number.isNaN(size) ? undefined : size,
 			status: 'processing'
 		})
 		.where(eq(paths.id, path.id));
@@ -218,6 +198,7 @@ export default function () {
 								<p className="text-primary/60 text-sm">{lastResult.error?.['files']}</p>
 							)}
 						</fieldset>
+						<UploadProgress id={path.id} className="pt-2" />
 					</CardContent>
 					<CardFooter className="space-x-4">
 						<Button type="submit" disabled={navigation.state === 'submitting' || !copyClicked}>

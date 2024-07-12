@@ -32,7 +32,9 @@ export function UserAvatar(props: {
 			<DropdownMenuTrigger asChild>
 				<Avatar>
 					<AvatarImage src={props.user.imageUrl || ''} alt={props.user.email} />
-					<AvatarFallback>{fallbackName || props.user.email[0].toUpperCase()}</AvatarFallback>
+					<AvatarFallback className="select-none">
+						{fallbackName || props.user.email[0].toUpperCase()}
+					</AvatarFallback>
 				</Avatar>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-44">

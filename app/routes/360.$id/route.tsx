@@ -1,8 +1,7 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { and, eq } from 'drizzle-orm';
-import { lazy } from 'react';
-import { ClientOnly } from 'remix-utils/client-only';
+import { Suspense, lazy } from 'react';
 import { z } from 'zod';
 import {
 	Card,
@@ -82,7 +81,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		index,
 		path,
 		capture: capture,
-		captureURL: `${url.origin}${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`,
+		captureURL: new URL(
+			`${env.HOST}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
+		).href,
 		currentState: state.data,
 		pathProgress: {
 			hasBefore: pathSegment.streetView !== null,
@@ -115,7 +116,7 @@ export default function () {
 					<CardDescription>View the path in 360 with before and after imagery.</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<ClientOnly
+					<Suspense
 						fallback={
 							<div className="relative h-[500px] overflow-hidden rounded-md lg:h-[505px]">
 								<div className="flex h-full flex-col items-center justify-center">
@@ -124,45 +125,43 @@ export default function () {
 							</div>
 						}
 					>
-						{() => (
-							<Viewer360
-								capture={{
-									...data.capture,
-									uploadedAt: new Date(data.capture.uploadedAt),
-									takenAt: new Date(data.capture.takenAt)
-								}}
-								captureURL={data.captureURL}
-								currentState={data.currentState}
-								pathProgress={data.pathProgress}
-								onCurrentStateChange={(state) => {
-									navigate({
-										search: `?index=${data.index}&state=${state}`
-									});
-								}}
-								onNext={() => {
-									navigate({
-										search: `?index=${data.index + 1}&state=${data.currentState}`
-									});
-								}}
-								onPrevious={() => {
-									navigate({
-										search: `?index=${data.index - 1}&state=${data.currentState}`
-									});
-								}}
-								onJumpNext={() => {
-									navigate({
-										search: `?index=${data.index + JUMP_SIZE}&state=${data.currentState}`
-									});
-								}}
-								onJumpPrevious={() => {
-									navigate({
-										search: `?index=${data.index - JUMP_SIZE}&state=${data.currentState}`
-									});
-								}}
-								className="relative h-[500px] overflow-hidden rounded-md lg:h-[550px]"
-							/>
-						)}
-					</ClientOnly>
+						<Viewer360
+							capture={{
+								...data.capture,
+								uploadedAt: new Date(data.capture.uploadedAt),
+								takenAt: new Date(data.capture.takenAt)
+							}}
+							captureURL={data.captureURL}
+							currentState={data.currentState}
+							pathProgress={data.pathProgress}
+							onCurrentStateChange={(state) => {
+								navigate({
+									search: `?index=${data.index}&state=${state}`
+								});
+							}}
+							onNext={() => {
+								navigate({
+									search: `?index=${data.index + 1}&state=${data.currentState}`
+								});
+							}}
+							onPrevious={() => {
+								navigate({
+									search: `?index=${data.index - 1}&state=${data.currentState}`
+								});
+							}}
+							onJumpNext={() => {
+								navigate({
+									search: `?index=${data.index + JUMP_SIZE}&state=${data.currentState}`
+								});
+							}}
+							onJumpPrevious={() => {
+								navigate({
+									search: `?index=${data.index - JUMP_SIZE}&state=${data.currentState}`
+								});
+							}}
+							className="relative h-[500px] overflow-hidden rounded-md lg:h-[550px]"
+						/>
+					</Suspense>
 				</CardContent>
 			</Card>
 			<Card>

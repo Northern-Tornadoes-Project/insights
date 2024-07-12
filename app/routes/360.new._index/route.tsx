@@ -1,7 +1,7 @@
 import { FormProvider, useForm } from '@conform-to/react';
 import { conformZodMessage, parseWithZod } from '@conform-to/zod';
 import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useNavigation } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { mkdir } from 'node:fs/promises';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ import {
 import { DatePickerConform } from '~/components/ui/date-picker';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { Spinner } from '~/components/ui/spinner';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
@@ -125,14 +126,13 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function () {
+	const navigation = useNavigation();
 	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({
 		lastResult,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: createSchema() });
-		},
-		shouldValidate: 'onBlur',
-		shouldRevalidate: 'onInput'
+		}
 	});
 
 	return (
@@ -151,6 +151,7 @@ export default function () {
 									key={fields.name.key}
 									name={fields.name.name}
 									defaultValue={fields.name.initialValue}
+									disabled={navigation.state === 'submitting'}
 									placeholder="Name"
 								/>
 								<p className="text-primary/60 text-sm">{fields.name.errors}</p>
@@ -161,18 +162,27 @@ export default function () {
 									key={fields.folderName.key}
 									name={fields.folderName.name}
 									defaultValue={fields.folderName.initialValue}
+									disabled={navigation.state === 'submitting'}
 									placeholder="Folder Name"
 								/>
 								<p className="text-primary/60 text-sm">{fields.folderName.errors}</p>
 							</div>
 							<div>
 								<Label htmlFor={fields.eventDate.id}>Event Date</Label>
-								<DatePickerConform meta={fields.eventDate} />
+								<DatePickerConform
+									meta={fields.eventDate}
+									disabled={navigation.state === 'submitting'}
+								/>
 								<p className="text-primary/60 text-sm">{fields.eventDate.errors}</p>
 							</div>
 						</CardContent>
 						<CardFooter>
-							<Button type="submit">Next</Button>
+							<Button type="submit" disabled={navigation.state === 'submitting'}>
+								{navigation.state === 'submitting' && (
+									<Spinner className="mr-2 fill-primary" size={4} />
+								)}
+								Next
+							</Button>
 						</CardFooter>
 					</Form>
 				</FormProvider>

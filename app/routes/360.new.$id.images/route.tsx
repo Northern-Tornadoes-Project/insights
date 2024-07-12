@@ -7,7 +7,7 @@ import {
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
-import { eq, inArray, sum } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { useState } from 'react';
 import { UploadProgress } from '~/components/progress';
 import { Button } from '~/components/ui/button';
@@ -21,8 +21,9 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { db } from '~/db/db.server';
-import { captures, pathSegments, paths } from '~/db/schema';
+import { Spinner } from '~/components/ui/spinner';
+import { db, updatePathSize } from '~/db/db.server';
+import { pathSegments, paths } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { buildUploadHandler, clearUploads } from './uploader.server';
@@ -84,15 +85,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// Clear the uploads if the number of files does not match the number of segments
 	await clearUploads(path.folderName, path.id);
 
-	const formData = await unstable_parseMultipartFormData(
-		request,
-		buildUploadHandler({
-			path,
-			maxFileSize: 50 * 1024 * 1024
-		})
-	);
+	const files: FormDataEntryValue[] = [];
 
-	const files = formData.getAll('images');
+	try {
+		const formData = await unstable_parseMultipartFormData(
+			request,
+			buildUploadHandler({
+				path,
+				maxFileSize: 50 * 1024 * 1024
+			})
+		);
+
+		files.push(...formData.getAll('images'));
+	} catch (error) {
+		console.error(error);
+		await clearUploads(path.folderName, path.id);
+	}
 
 	let invalid = false;
 
@@ -143,36 +151,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		);
 	}
 
-	// Get the total size of the images
-	const savedSegments = await db.query.pathSegments.findMany({
-		where: eq(pathSegments.pathId, path.id),
-		columns: {
-			id: true
-		}
-	});
-
-	// Get the total size of the images
-	const result = await db
-		.select({
-			size: sum(captures.size)
-		})
-		.from(captures)
-		.where(
-			inArray(
-				captures.id,
-				savedSegments.map((segment) => segment.id)
-			)
-		);
-
-	const size = Number(result[0].size);
-
-	await db
-		.update(paths)
-		.set({
-			size: Number.isNaN(size) ? undefined : size,
-			status: 'processing'
-		})
-		.where(eq(paths.id, path.id));
+	await updatePathSize(path.id);
 
 	const imageFiles: string[] = files.map(
 		(file) => (file as NodeOnDiskFile).getFilePath().split('/').pop()!
@@ -211,7 +190,6 @@ export default function () {
 				</CardHeader>
 				<Form method="post" encType="multipart/form-data">
 					<CardContent>
-						<UploadProgress id={path.id} />
 						<fieldset className="grid gap-2" disabled={navigation.state === 'submitting'}>
 							<Label htmlFor="images">Images</Label>
 							<Input
@@ -230,6 +208,7 @@ export default function () {
 								<p className="text-primary/60 text-sm">{lastResult.error?.['files']}</p>
 							)}
 						</fieldset>
+						<UploadProgress id={path.id} className="pt-2" />
 					</CardContent>
 					<CardFooter className="space-x-4">
 						<Button
@@ -238,7 +217,10 @@ export default function () {
 								navigation.state === 'submitting' || images.length !== path.frameposData?.length
 							}
 						>
-							Upload
+							{navigation.state === 'submitting' && (
+								<Spinner className="mr-2 fill-primary" size={16} />
+							)}
+							{navigation.state === 'submitting' ? 'Uploading...' : 'Upload'}
 						</Button>
 						{images.length !== path.frameposData?.length && (
 							<p className="text-primary/60 text-sm">

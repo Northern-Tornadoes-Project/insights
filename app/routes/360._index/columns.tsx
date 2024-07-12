@@ -22,7 +22,8 @@ export const columns: ColumnDef<Path>[] = [
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Size (MB)" />,
-		accessorKey: 'size'
+		accessorKey: 'size',
+		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2)
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Captures" />,

@@ -1,13 +1,11 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
-import { count, eq, or } from 'drizzle-orm';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
-import { captures, pathSegments, paths } from '~/db/schema';
 import { Path, columns } from './columns';
 import { DataTable } from './data-table';
 import { PathCard } from './path-card';
@@ -21,27 +19,58 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const limit = Number(url.searchParams.get('limit')) || 10;
 	const page = Number(url.searchParams.get('page')) || 1;
 
+	const paths = await db.query.paths.findMany({
+		columns: {
+			id: true,
+			name: true,
+			eventDate: true,
+			createdAt: true,
+			updatedAt: true,
+			status: true,
+			size: true
+		},
+		with: {
+			segments: {
+				columns: {
+					id: true
+				},
+				with: {
+					capture: {
+						columns: {
+							id: true
+						}
+					},
+					streetView: {
+						columns: {
+							id: true
+						}
+					}
+				}
+			}
+		},
+		limit,
+		offset: (page - 1) * limit
+	});
+
 	return json({
-		paths: await db
-			.select({
-				id: paths.id,
-				name: paths.name,
-				eventDate: paths.eventDate,
-				createdAt: paths.createdAt,
-				updatedAt: paths.updatedAt,
-				status: paths.status,
-				captures: count(pathSegments.id),
-				size: count(captures.size)
-			})
-			.from(paths)
-			.leftJoin(pathSegments, eq(paths.id, pathSegments.pathId))
-			.leftJoin(
-				captures,
-				or(eq(pathSegments.captureId, captures.id), eq(pathSegments.streetViewId, captures.id))
-			)
-			.limit(limit)
-			.offset((page - 1) * limit)
-			.groupBy(paths.id)
+		paths: paths.map((path) => {
+			return {
+				id: path.id,
+				name: path.name,
+				eventDate: path.eventDate,
+				createdAt: path.createdAt,
+				updatedAt: path.updatedAt,
+				status: path.status,
+				size: path.size,
+				captures:
+					new Set(path.segments.map((segment) => segment.capture.id)).size +
+					new Set(
+						path.segments
+							.filter((segment) => segment.streetView)
+							.map((segment) => segment.streetView?.id)
+					).size
+			};
+		})
 	});
 }
 
@@ -88,7 +117,8 @@ export default function () {
 										...data.paths[index],
 										createdAt: new Date(data.paths[index].createdAt),
 										updatedAt: new Date(data.paths[index].updatedAt),
-										eventDate: new Date(data.paths[index].eventDate)
+										eventDate: new Date(data.paths[index].eventDate),
+										size: data.paths[index].size || 0
 									})
 								}
 							/>

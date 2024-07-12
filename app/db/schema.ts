@@ -147,7 +147,17 @@ export const dent = pgTable('dent', {
 
 // Relations
 
-export const hailpadRelations = relations(hailpad, ({ many }) => ({
+export const hailpadRelations = relations(hailpad, ({ many, one }) => ({
+	author: one(users, {
+		fields: [hailpad.createdBy],
+		references: [users.id],
+		relationName: 'author'
+	}),
+	editor: one(users, {
+		fields: [hailpad.updatedBy],
+		references: [users.id],
+		relationName: 'editor'
+	}),
 	dents: many(dent, {
 		relationName: 'hailpad'
 	})

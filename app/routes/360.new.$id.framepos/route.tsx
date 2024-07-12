@@ -21,6 +21,7 @@ import {
 	CardTitle
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
+import { Spinner } from '~/components/ui/spinner';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
@@ -227,7 +228,10 @@ export default function () {
 							type="submit"
 							disabled={!!fields.framepos.errors || navigation.state === 'submitting'}
 						>
-							Next
+							{navigation.state === 'submitting' && (
+								<Spinner className="mr-2 fill-primary" size={16} />
+							)}
+							{navigation.state === 'submitting' ? 'Uploading...' : 'Upload'}
 						</Button>
 					</CardFooter>
 				</Form>

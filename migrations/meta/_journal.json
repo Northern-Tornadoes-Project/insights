@@ -43,6 +43,13 @@
       "when": 1720631107671,
       "tag": "0005_large_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1720814227200,
+      "tag": "0006_wet_legion",
+      "breakpoints": true
     }
   ]
 }

@@ -1,8 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { paths } from '~/db/schema';
 import { formatDate } from '~/lib/utils';
 import { DataTableColumnHeader } from './column-header';
-import { StatusBadge } from './status-badge';
 
 export type Hailpad = {
 	id: string;

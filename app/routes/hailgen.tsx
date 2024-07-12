@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs, MetaFunction, json } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/lib/auth.server';
-import { getUser } from '~/db/db.server';
 import { Header } from '~/components/header';
+import { getUser } from '~/db/db.server';
+import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'NHP Insights - Hailgen' }];

@@ -1,7 +1,5 @@
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { env } from '~/env.server';
-import fs from 'fs';
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -25,6 +23,7 @@ import {
 import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
 import { hailpad } from '~/db/schema';
+import { env } from '~/env.server';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
 
 const schema = z.object({
@@ -34,7 +33,7 @@ const schema = z.object({
 		})
 		.refine((file) => {
 			return file.name.endsWith('.stl');
-		}, "File should be of .stl type.")
+		}, 'File should be of .stl type.')
 });
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -67,7 +66,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	}
 
 	const handler = unstable_createMemoryUploadHandler({
-		maxPartSize: 1024 * 1024 *100,
+		maxPartSize: 1024 * 1024 * 100,
 		filter: async (file) => {
 			if (!file.filename) return false;
 			return file.filename.endsWith('.stl');
@@ -101,7 +100,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// Send file to microservice for processing
 	if (env.SERVICE_HAILGEN_ENABLED) {
 		const body = new FormData();
-		body.append('input_directory', new Blob([`${env.SERVICE_HAILGEN_DIRECTORY}/${hailpad.folderName}`], { type: 'text/plain' }));
+		body.append(
+			'input_directory',
+			new Blob([`${env.SERVICE_HAILGEN_DIRECTORY}/${hailpad.folderName}`], { type: 'text/plain' })
+		);
 		body.append('hailpad_id', new Blob([queriedHailpad.id], { type: 'text/plain' }));
 		body.append('mesh_file', file);
 
@@ -111,7 +113,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		});
 	} else {
 		console.log('Hailgen service is disabled');
-	};
+	}
 
 	return redirect(`/hailgen/${params.id}`);
 }

@@ -67,9 +67,7 @@ function createSchema(options?: { isFolderNameUnique: (folderName: string) => Pr
 					});
 				})
 			),
-		boxfit: z
-		.number()
-		.min(0, {
+		boxfit: z.number().min(0, {
 			message: 'Boxfit length must be positive.'
 		})
 	});

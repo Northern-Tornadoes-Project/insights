@@ -1,9 +1,8 @@
 import { Link } from '@remix-run/react';
 import { LucideEdit, LucideX } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Hailpad } from './columns';
-import { StatusBadge } from './status-badge';
 
 export function HailpadCard({
 	hailpad,

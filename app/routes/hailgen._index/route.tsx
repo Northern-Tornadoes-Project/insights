@@ -1,13 +1,13 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
-import { count, eq, or } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
-import { hailpad, dent } from '~/db/schema';
+import { dent, hailpad } from '~/db/schema';
 import { Hailpad, columns } from './columns';
 import { DataTable } from './data-table';
 import { HailpadCard } from './hailpad-card';
@@ -73,7 +73,7 @@ export default function () {
 										...hailpad,
 										dents: hailpad.dents,
 										createdAt: new Date(hailpad.createdAt),
-										updatedAt: new Date(hailpad.updatedAt),
+										updatedAt: new Date(hailpad.updatedAt)
 									} as Hailpad;
 								})}
 								onRowClick={(index) =>
@@ -82,7 +82,7 @@ export default function () {
 										name: data.hailpads[index].name,
 										dents: data.hailpads[index].dents,
 										createdAt: new Date(data.hailpads[index].createdAt),
-										updatedAt: new Date(data.hailpads[index].updatedAt),
+										updatedAt: new Date(data.hailpads[index].updatedAt)
 									})
 								}
 							/>

@@ -24,6 +24,9 @@ authenticator.use(
 
 				return false;
 			},
+			totpGeneration: {
+				charSet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+			},
 			maxAge: 60 * 60 * 24,
 			magicLinkPath: '/auth/magic-link',
 			secret: env.AUTH_SECRET,

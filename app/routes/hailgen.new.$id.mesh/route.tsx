@@ -3,8 +3,10 @@ import { parseWithZod } from '@conform-to/zod';
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
+	NodeOnDiskFile,
 	json,
 	redirect,
+	unstable_createFileUploadHandler,
 	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
@@ -65,23 +67,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return redirect('/hailgen');
 	}
 
-	const handler = unstable_createMemoryUploadHandler({
-		maxPartSize: 1024 * 1024 * 100,
-		filter: async (file) => {
-			if (!file.filename) return false;
-			return file.filename.endsWith('.stl');
-		}
-	});
-
-	const formData = await unstable_parseMultipartFormData(request, handler);
-	const submission = parseWithZod(formData, { schema });
-
-	if (submission.status !== 'success') {
-		return json(submission.reply());
-	}
-
-	const file = formData.get('mesh');
-
 	const queriedHailpad = await db.query.hailpad.findFirst({
 		where: eq(hailpad.id, params.id)
 	});
@@ -90,12 +75,35 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Hailpad not found');
 	}
 
+	const filePath = `${env.HAILPAD_DIRECTORY}/${queriedHailpad.folderName}`;
+
+	const handler = unstable_createFileUploadHandler({
+		maxPartSize: 1024 * 1024 * 100,
+		filter: async (file) => {
+			if (!file.filename) return false;
+			return file.filename.endsWith('.stl');
+		},
+		directory: filePath,
+		avoidFileConflicts: false,
+		file({ filename }) {
+			return filename;
+		}
+	});
+
+	const formData = await unstable_parseMultipartFormData(request, handler);
+	// const submission = parseWithZod(formData, { schema });
+
+	// TODO: Fix validation logic
+	// if (submission.status !== 'success') {
+	// 	return json(submission.reply());
+	// }
+
+	// Save the mesh to the associated hailpad folder
+	const file = formData.get('mesh') as NodeOnDiskFile;
+
 	if (!file) {
 		throw new Error('Could not read the file.');
 	}
-
-	// TODO: Save the mesh data to the associated hailpad folder
-	const filePath = `${env.HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/mesh.txt`;
 
 	// Send file to microservice for processing
 	if (env.SERVICE_HAILGEN_ENABLED) {

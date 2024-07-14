@@ -103,19 +103,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Could not read the file.');
 	}
 
-	// Send file to microservice for processing
+	// Invoke microservice with uploaded file path for processing
 	if (env.SERVICE_HAILGEN_ENABLED) {
-		const body = new FormData();
-		body.append(
-			'input_directory',
-			new Blob([`${env.SERVICE_HAILGEN_DIRECTORY}/${hailpad.folderName}`], { type: 'text/plain' })
-		);
-		body.append('hailpad_id', new Blob([queriedHailpad.id], { type: 'text/plain' }));
-		body.append('mesh_file', file);
-
 		await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
 			method: 'POST',
-			body: body
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				hailpad_id: params.id,
+				file_path: `${filePath}/hailpad.stl`,
+			})
 		});
 	} else {
 		console.log('Hailgen service is disabled');

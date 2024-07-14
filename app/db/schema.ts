@@ -138,9 +138,9 @@ export const dent = pgTable('dent', {
 	hailpadId: uuid('hailpad_id')
 		.references(() => hailpad.id)
 		.notNull(),
+	angle: decimal('angle').notNull(),
 	majorAxis: decimal('major_axis').notNull(),
 	minorAxis: decimal('minor_axis').notNull(),
-	rotation: decimal('rotation'),
 	centroidX: decimal('centroid_x').notNull(),
 	centroidY: decimal('centroid_y').notNull()
 });

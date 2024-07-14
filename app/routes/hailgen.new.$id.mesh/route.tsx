@@ -7,7 +7,6 @@ import {
 	json,
 	redirect,
 	unstable_createFileUploadHandler,
-	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
@@ -30,7 +29,7 @@ import { authenticator, protectedRoute } from '~/lib/auth.server';
 
 const schema = z.object({
 	mesh: z
-		.instanceof(File, {
+		.instanceof(NodeOnDiskFile, {
 			message: 'Please select a .stl file.'
 		})
 		.refine((file) => {
@@ -79,7 +78,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const handler = unstable_createFileUploadHandler({
 		maxPartSize: 1024 * 1024 * 100,
-		filter: async (file) => {
+		filter: (file) => {
 			if (!file.filename) return false;
 			return file.filename.endsWith('.stl');
 		},
@@ -91,12 +90,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	});
 
 	const formData = await unstable_parseMultipartFormData(request, handler);
-	// const submission = parseWithZod(formData, { schema });
+	const submission = parseWithZod(formData, { schema });
 
-	// TODO: Fix validation logic
-	// if (submission.status !== 'success') {
-	// 	return json(submission.reply());
-	// }
+	if (submission.status !== 'success') {
+		return json(submission.reply());
+	}
 
 	// Save the mesh to the associated hailpad folder
 	const file = formData.get('mesh') as NodeOnDiskFile;
@@ -132,11 +130,8 @@ export default function () {
 	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({
 		lastResult,
-		onValidate({ formData }) {
-			return parseWithZod(formData, { schema });
-		},
-		shouldValidate: 'onBlur',
-		shouldRevalidate: 'onInput'
+		shouldValidate: 'onSubmit',
+		shouldRevalidate: 'onSubmit'
 	});
 
 	return (

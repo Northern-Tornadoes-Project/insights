@@ -102,7 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const newHailpad = await db
 		.insert(hailpad)
 		.values({
-			name, // TODO: Bogus error idk
+			name,
 			folderName,
 			boxfit: Number(boxfit).toString(),
 			adaptiveBlockSize: Number(21).toString(), // Default value
@@ -133,9 +133,7 @@ export default function () {
 		lastResult,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: createSchema() });
-		},
-		shouldValidate: 'onBlur',
-		shouldRevalidate: 'onInput'
+		}
 	});
 
 	return (

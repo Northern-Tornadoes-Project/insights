@@ -8,6 +8,7 @@ export const env = createEnv({
 		PUBLIC_URL: z.string().optional(),
 		RESEND_KEY: z.string(),
 		RESEND_EMAIL: z.string(),
+		MAPBOX_KEY: z.string(),
 		AUTH_SECRET: z.string(),
 		COOKIE_SECRET: z.string(),
 		SERVICE_360_ENABLED: z.boolean().default(false),

@@ -1,5 +1,3 @@
-import '~/tailwind.css';
-
 import { LoaderFunctionArgs } from '@remix-run/node';
 import {
 	Link,
@@ -18,6 +16,7 @@ import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from 'remix-themes'
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Toaster } from '~/components/ui/sonner';
 import { themeSessionResolver } from '~/lib/sessions.server';
+import '~/tailwind.css';
 import { Header } from './components/header';
 import { Button } from './components/ui/button';
 

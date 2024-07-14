@@ -1,7 +1,7 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node';
+import { json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { and, eq } from 'drizzle-orm';
-import { Suspense, lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { z } from 'zod';
 import {
 	Card,
@@ -11,12 +11,15 @@ import {
 	CardHeader,
 	CardTitle
 } from '~/components/ui/card';
+import { Skeleton } from '~/components/ui/skeleton';
 import { db } from '~/db/db.server';
-import { pathSegments, paths } from '~/db/schema';
+import { paths, pathSegments } from '~/db/schema';
 import { env } from '~/env.server';
+import { FrameposSchema } from '~/lib/framepos';
 import { FramePicker } from './frame-picker';
 
-const Viewer360 = lazy(() => import('./viewer-360.client'));
+const Viewer360 = lazy(() => import('./viewer-360'));
+const PathMap = lazy(() => import('~/components/path-map'));
 
 const JUMP_SIZE = 5;
 
@@ -77,22 +80,34 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		throw new Response('Capture not found', { status: 404 });
 	}
 
-	return {
-		index,
-		path,
-		capture: capture,
-		captureURL: new URL(
-			`${env.HOST}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
-		).href,
-		currentState: state.data,
-		pathProgress: {
-			hasBefore: pathSegment.streetView !== null,
-			hasNext: index < path.frameposData.length - 1,
-			hasPrevious: index > 0,
-			hasNextJump: index < path.frameposData.length - JUMP_SIZE,
-			hasPreviousJump: index > JUMP_SIZE
+	return json({
+		ENV: {
+			MAPBOX_KEY: env.MAPBOX_KEY
+		},
+		path: {
+			index,
+			eventDate: path.eventDate,
+			segments: z
+				.array(FrameposSchema)
+				.parse(path.frameposData)
+				.map((framepos) => ({
+					lng: framepos.lon,
+					lat: framepos.lat
+				})),
+			capture: capture,
+			captureURL: new URL(
+				`${env.HOST}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
+			).href,
+			currentState: state.data,
+			pathProgress: {
+				hasBefore: pathSegment.streetView !== null,
+				hasNext: index < path.frameposData.length - 1,
+				hasPrevious: index > 0,
+				hasNextJump: index < path.frameposData.length - JUMP_SIZE,
+				hasPreviousJump: index > JUMP_SIZE
+			}
 		}
-	};
+	});
 }
 
 function CaptureDetail({ label, value }: { label: string; value: string }) {
@@ -110,7 +125,7 @@ export default function () {
 
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<Card className="row-span-2 lg:col-span-2 h-min">
+			<Card className="row-span-2 lg:col-span-2 h-full">
 				<CardHeader>
 					<CardTitle>360 Viewer</CardTitle>
 					<CardDescription>View the path in 360 with before and after imagery.</CardDescription>
@@ -127,39 +142,39 @@ export default function () {
 					>
 						<Viewer360
 							capture={{
-								...data.capture,
-								uploadedAt: new Date(data.capture.uploadedAt),
-								takenAt: new Date(data.capture.takenAt)
+								...data.path.capture,
+								uploadedAt: new Date(data.path.capture.uploadedAt),
+								takenAt: new Date(data.path.capture.takenAt)
 							}}
-							captureURL={data.captureURL}
-							currentState={data.currentState}
-							pathProgress={data.pathProgress}
+							captureURL={data.path.captureURL}
+							currentState={data.path.currentState}
+							pathProgress={data.path.pathProgress}
 							onCurrentStateChange={(state) => {
 								navigate({
-									search: `?index=${data.index}&state=${state}`
+									search: `?index=${data.path.index}&state=${state}`
 								});
 							}}
 							onNext={() => {
 								navigate({
-									search: `?index=${data.index + 1}&state=${data.currentState}`
+									search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
 								});
 							}}
 							onPrevious={() => {
 								navigate({
-									search: `?index=${data.index - 1}&state=${data.currentState}`
+									search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
 								});
 							}}
 							onJumpNext={() => {
 								navigate({
-									search: `?index=${data.index + JUMP_SIZE}&state=${data.currentState}`
+									search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
 								});
 							}}
 							onJumpPrevious={() => {
 								navigate({
-									search: `?index=${data.index - JUMP_SIZE}&state=${data.currentState}`
+									search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
 								});
 							}}
-							className="relative h-[500px] overflow-hidden rounded-md lg:h-[550px]"
+							className="relative h-[500px] overflow-hidden rounded-md lg:h-[900px]"
 						/>
 					</Suspense>
 				</CardContent>
@@ -179,37 +194,67 @@ export default function () {
 					<CaptureDetail
 						label="Capture date"
 						value={new Intl.DateTimeFormat('en-CA', { dateStyle: 'long' }).format(
-							new Date(data.capture.takenAt)
+							new Date(data.path.capture.takenAt)
 						)}
 					/>
 					<CaptureDetail
 						label="Location"
-						value={`${Number(data.capture.lat).toFixed(4)}, ${Number(data.capture.lng).toFixed(4)}`}
+						value={`${Number(data.path.capture.lat).toFixed(4)}, ${Number(data.path.capture.lng).toFixed(4)}`}
 					/>
 					<CaptureDetail
 						label="Altitude"
-						value={data.capture.altitude ? `${Number(data.capture.altitude).toFixed(2)} m` : 'N/A'}
+						value={
+							data.path.capture.altitude
+								? `${Number(data.path.capture.altitude).toFixed(2)} m`
+								: 'N/A'
+						}
 					/>
 					<CaptureDetail
 						label="Distance (from start)"
-						value={data.capture.distance ? `${Number(data.capture.distance).toFixed(2)} m` : 'N/A'}
+						value={
+							data.path.capture.distance
+								? `${Number(data.path.capture.distance).toFixed(2)} m`
+								: 'N/A'
+						}
 					/>
 					<CaptureDetail
 						label="Size"
-						value={`${(data.capture.size / 1024 / 1024).toFixed(2)} MB`}
+						value={`${(data.path.capture.size / 1024 / 1024).toFixed(2)} MB`}
 					/>
 				</CardContent>
 				<CardFooter>
 					<FramePicker
-						index={data.index + 1}
-						length={data.path.frameposData?.length}
+						index={data.path.index + 1}
+						length={data.path.segments.length}
 						onJump={(index) => {
 							navigate({
-								search: `?index=${index}&state=${data.currentState}`
+								search: `?index=${index}&state=${data.path.currentState}`
 							});
 						}}
 					/>
 				</CardFooter>
+			</Card>
+			<Card>
+				<CardHeader>
+					<CardTitle>Path Overview</CardTitle>
+					<CardDescription>View the entire path and your current viewing position.</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="h-[400px] w-full overflow-hidden rounded-md lg:h-96">
+						<Suspense fallback={<Skeleton />}>
+							<PathMap
+								segments={data.path.segments}
+								onSegmentClick={(index) => {
+									navigate({
+										search: `?index=${index}&state=${data.path.currentState}`
+									});
+								}}
+								currentSegment={data.path.segments[data.path.index]}
+								token={data.ENV.MAPBOX_KEY}
+							/>
+						</Suspense>
+					</div>
+				</CardContent>
 			</Card>
 		</div>
 	);

@@ -1,6 +1,7 @@
 import { Link } from '@remix-run/react';
-import { Github, LifeBuoy, LogOut, User } from 'lucide-react';
+import { Github, LifeBuoy, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useMemo } from 'react';
+import { Theme, useTheme } from 'remix-themes';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
 	DropdownMenu,
@@ -18,6 +19,7 @@ export function UserAvatar(props: {
 		imageUrl: string | null;
 	};
 }) {
+	const [theme, setTheme] = useTheme();
 	const fallbackName = useMemo(
 		() =>
 			props.user.name
@@ -63,6 +65,17 @@ export function UserAvatar(props: {
 						<span>Support</span>
 					</DropdownMenuItem>
 				</Link>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					onClick={() => setTheme(theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT)}
+				>
+					{theme === Theme.LIGHT ? (
+						<Moon className="mr-2 h-4 w-4" />
+					) : (
+						<Sun className="mr-2 h-4 w-4" />
+					)}
+					{theme === Theme.LIGHT ? 'Dark' : 'Light'} Mode
+				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<Link to="/auth/logout">
 					<DropdownMenuItem>

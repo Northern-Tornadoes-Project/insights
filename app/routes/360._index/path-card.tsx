@@ -1,16 +1,22 @@
 import { Link } from '@remix-run/react';
 import { LucideEdit, LucideX } from 'lucide-react';
+import { Suspense, lazy } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Skeleton } from '~/components/ui/skeleton';
 import { Path } from './columns';
 import { StatusBadge } from './status-badge';
 
+const PathMap = lazy(() => import('~/components/path-map'));
+
 export function PathCard({
 	path,
+	token,
 	loggedIn,
 	onClose
 }: {
 	path: Path;
+	token: string;
 	loggedIn?: boolean;
 	onClose: () => void;
 }) {
@@ -43,7 +49,15 @@ export function PathCard({
 				</div>
 			</div>
 			<CardContent>
-				{path.status === 'processing' && <p>Fetching status from path service...</p>}
+				{path.status === 'processing' ? (
+					<p>Fetching status from path service...</p>
+				) : (
+					<div className="h-[400px] w-full overflow-hidden rounded-md lg:h-96">
+						<Suspense fallback={<Skeleton />}>
+							<PathMap segments={path.segments} token={token} />
+						</Suspense>
+					</div>
+				)}
 			</CardContent>
 			<CardFooter className="justify-end">
 				<Link to={`/360/${path.id}`} prefetch="none">

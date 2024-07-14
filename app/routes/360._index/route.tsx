@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
+import { env } from '~/env.server';
 import { Path, columns } from './columns';
 import { DataTable } from './data-table';
 import { PathCard } from './path-card';
@@ -32,12 +33,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		with: {
 			segments: {
 				columns: {
-					id: true
+					id: true,
+					index: true
 				},
 				with: {
 					capture: {
 						columns: {
-							id: true
+							id: true,
+							lng: true,
+							lat: true
 						}
 					},
 					streetView: {
@@ -53,6 +57,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	});
 
 	return json({
+		ENV: {
+			MAPBOX_KEY: env.MAPBOX_KEY
+		},
 		paths: paths.map((path) => {
 			return {
 				id: path.id,
@@ -68,7 +75,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 						path.segments
 							.filter((segment) => segment.streetView)
 							.map((segment) => segment.streetView?.id)
-					).size
+					).size,
+				segments: path.segments
+					.sort((a, b) => a.index - b.index)
+					.map((segment) => {
+						return {
+							id: segment.id,
+							lat: segment.capture.lat,
+							lng: segment.capture.lng
+						};
+					})
 			};
 		})
 	});
@@ -109,7 +125,14 @@ export default function () {
 										...path,
 										createdAt: new Date(path.createdAt),
 										updatedAt: new Date(path.updatedAt),
-										eventDate: new Date(path.eventDate)
+										eventDate: new Date(path.eventDate),
+										segments: path.segments.map((segment) => {
+											return {
+												id: segment.id,
+												lat: Number(segment.lat),
+												lng: Number(segment.lng)
+											};
+										})
 									} as Path;
 								})}
 								onRowClick={(index) =>
@@ -118,7 +141,14 @@ export default function () {
 										createdAt: new Date(data.paths[index].createdAt),
 										updatedAt: new Date(data.paths[index].updatedAt),
 										eventDate: new Date(data.paths[index].eventDate),
-										size: data.paths[index].size || 0
+										size: data.paths[index].size || 0,
+										segments: data.paths[index].segments.map((segment) => {
+											return {
+												id: segment.id,
+												lat: Number(segment.lat),
+												lng: Number(segment.lng)
+											};
+										})
 									})
 								}
 							/>
@@ -127,6 +157,7 @@ export default function () {
 				</motion.div>
 				{path && (
 					<PathCard
+						token={data.ENV.MAPBOX_KEY}
 						path={path}
 						loggedIn={userContext ? true : false}
 						onClose={() => setPath(null)}

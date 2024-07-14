@@ -1,4 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
+import type { SegmentPoint } from '~/components/path-map';
 import { paths } from '~/db/schema';
 import { formatDate } from '~/lib/utils';
 import { DataTableColumnHeader } from './column-header';
@@ -13,6 +14,7 @@ export type Path = {
 	status: (typeof paths.$inferSelect)['status'];
 	captures: number;
 	size: number;
+	segments: SegmentPoint[];
 };
 
 export const columns: ColumnDef<Path>[] = [

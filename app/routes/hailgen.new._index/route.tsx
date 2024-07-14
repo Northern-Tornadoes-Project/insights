@@ -104,9 +104,9 @@ export async function action({ request }: ActionFunctionArgs) {
 		.values({
 			name, // TODO: Bogus error idk
 			folderName,
-			boxfit,
-			adaptiveBlockSize: 21, // Default value
-			adaptiveC: -4, // Default value
+			boxfit: Number(boxfit).toString(),
+			adaptiveBlockSize: Number(21).toString(), // Default value
+			adaptiveC: Number(-4.0).toString(), // Default value
 			createdBy: userId,
 			updatedBy: userId
 		})
@@ -171,10 +171,12 @@ export default function () {
 							<div>
 								<Label htmlFor={fields.boxfit.id}>Boxfit Length</Label>
 								<Input
+									type="number"
 									key={fields.boxfit.key}
 									name={fields.boxfit.name}
 									defaultValue={fields.boxfit.initialValue}
 									placeholder="Boxfit Length"
+									step="any"
 								/>
 								<p className="text-primary/60 text-sm">{fields.boxfit.errors}</p>
 							</div>

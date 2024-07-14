@@ -110,8 +110,8 @@ export default function () {
 					</Button>
 				</Link>
 			)}
-			<div className="grid xl:grid-flow-col gap-4 min-w-0 min-h-0">
-				<motion.div layout="size" className="min-w-0 h-min">
+			<div className="grid min-h-0 min-w-0 gap-4 xl:grid-flow-col">
+				<motion.div layout="size" className="h-min min-w-0">
 					<Card>
 						<CardHeader>
 							<CardTitle>Paths</CardTitle>

@@ -14,8 +14,8 @@ export function HailpadCard({
 	onClose: () => void;
 }) {
 	return (
-		<Card className="min-w-96 h-min">
-			<div className="flex flex-row justify-between items-center pr-6">
+		<Card className="h-min min-w-96">
+			<div className="flex flex-row items-center justify-between pr-6">
 				<CardHeader>
 					<CardTitle>{hailpad.name}</CardTitle>
 				</CardHeader>

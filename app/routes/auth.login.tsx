@@ -45,7 +45,7 @@ export default function Login() {
 	const { authError } = useLoaderData<typeof loader>();
 
 	return (
-		<div className="grid gap-6 w-[350px] mx-auto h-min">
+		<div className="mx-auto grid h-min w-[350px] gap-6">
 			<div className="text-center">
 				<h1 className="text-3xl font-bold">Login</h1>
 				<p className="text-balance text-muted-foreground">Enter your email to receive a code.</p>

@@ -12,7 +12,16 @@ import {
 	LucideShrink
 } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import {
+	BackSide,
+	EquirectangularReflectionMapping,
+	LinearFilter,
+	Mesh,
+	RepeatWrapping,
+	Texture,
+	TextureLoader,
+	Vector3
+} from 'three';
 import { degToRad, radToDeg } from 'three/src/math/MathUtils.js';
 import { Label } from '~/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
@@ -75,27 +84,27 @@ function Loader() {
 }
 
 function StreetViewImage({ image, startingAngle }: { image: string; startingAngle: number }) {
-	const meshRef = useRef<THREE.Mesh>(null);
+	const meshRef = useRef<Mesh>(null);
 
-	let texture: THREE.Texture | null = null;
-	texture = useLoader(THREE.TextureLoader, image);
+	let texture: Texture | null = null;
+	texture = useLoader(TextureLoader, image);
 
 	if (!texture) return null;
 
 	useEffect(() => {
-		texture.mapping = THREE.EquirectangularReflectionMapping;
-		texture.minFilter = texture.magFilter = THREE.LinearFilter;
-		texture.wrapS = THREE.RepeatWrapping;
+		texture.mapping = EquirectangularReflectionMapping;
+		texture.minFilter = texture.magFilter = LinearFilter;
+		texture.wrapS = RepeatWrapping;
 		texture.repeat.x = -1;
 		texture.needsUpdate = true;
 
-		meshRef.current?.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), -startingAngle);
+		meshRef.current?.setRotationFromAxisAngle(new Vector3(0, 1, 0), -startingAngle);
 	}, [texture, startingAngle]);
 
 	return (
 		<mesh ref={meshRef}>
 			<sphereGeometry attach="geometry" args={[500, 60, 40, 90]} />
-			<meshBasicMaterial attach="material" map={texture} side={THREE.BackSide} />
+			<meshBasicMaterial attach="material" map={texture} side={BackSide} />
 		</mesh>
 	);
 }
@@ -196,7 +205,7 @@ export default function Viewer360({
 			<div className="absolute bottom-3 left-5 z-10 text-2xl">
 				<span className="font-bold">NTP</span> 360
 			</div>
-			<div className="bg-background/60 absolute z-10 m-2 flex flex-row items-center gap-4 rounded-lg p-2 text-lg backdrop-blur">
+			<div className="absolute z-10 m-2 flex flex-row items-center gap-4 rounded-lg bg-background/60 p-2 text-lg backdrop-blur">
 				<RadioGroup
 					onValueChange={(value) => {
 						if (value !== 'before' && value !== 'after') return;
@@ -222,7 +231,7 @@ export default function Viewer360({
 				</RadioGroup>
 			</div>
 			<div
-				className="bg-background/60 hover:bg-foreground/40 hover:text-background absolute right-0 z-10 m-2 rounded-lg p-2 backdrop-blur transition hover:cursor-pointer"
+				className="absolute right-0 z-10 m-2 rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background"
 				onClick={() => {
 					if (!cameraControlsRef.current) return;
 					cameraControlsRef.current.rotateAzimuthTo(0, true);
@@ -237,28 +246,28 @@ export default function Viewer360({
 			</div>
 			<div className="absolute bottom-1/2 right-0 top-1/2 z-10 m-2 flex flex-col items-center justify-center gap-4">
 				<button
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 					onClick={() => onJumpNext?.()}
 					disabled={!pathProgress.hasNextJump}
 				>
 					<LucideChevronsUp />
 				</button>
 				<button
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 					onClick={() => onNext?.()}
 					disabled={!pathProgress.hasNext}
 				>
 					<LucideChevronUp />
 				</button>
 				<button
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 					onClick={() => onPrevious?.()}
 					disabled={!pathProgress.hasPrevious}
 				>
 					<LucideChevronDown />
 				</button>
 				<button
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 					onClick={() => onJumpPrevious?.()}
 					disabled={!pathProgress.hasPreviousJump}
 				>
@@ -270,7 +279,7 @@ export default function Viewer360({
 					onClick={() => {
 						setVR(!vr);
 					}}
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer disabled:pointer-events-none disabled:opacity-50"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 				>
 					<LucideGlasses />
 				</button>
@@ -280,7 +289,7 @@ export default function Viewer360({
 							await toggleFullscreen();
 						})();
 					}}
-					className="bg-background/60 hover:bg-foreground/40 hover:text-background rounded-lg p-2 backdrop-blur transition hover:cursor-pointer"
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background"
 				>
 					{fullscreen ? <LucideShrink /> : <LucideExpand />}
 				</button>

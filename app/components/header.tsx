@@ -20,11 +20,11 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				'sticky top-0 flex justify-between py-4 items-center gap-4 border-b bg-background mb-2 px-4 md:px-6',
+				'sticky top-0 mb-2 flex items-center justify-between gap-4 border-b bg-background px-4 py-4 md:px-6',
 				className
 			)}
 		>
-			<div className="flex flex-row gap-4 items-center">
+			<div className="flex flex-row items-center gap-4">
 				<Link to="/">
 					<Button variant="outline" size="icon">
 						<LucideTornado size={24} />

@@ -149,7 +149,7 @@ export default function () {
 	const [images, setImages] = useState<string[]>([]);
 
 	return (
-		<main className="flex justify-center items-center h-full">
+		<main className="flex h-full items-center justify-center">
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>{path.name}</CardTitle>
@@ -174,7 +174,7 @@ export default function () {
 								<LucideLink size={16} /> Copy
 							</Button>
 							{lastResult && lastResult.status === 'error' && (
-								<p className="text-primary/60 text-sm">{lastResult.error?.['files']}</p>
+								<p className="text-sm text-primary/60">{lastResult.error?.['files']}</p>
 							)}
 						</fieldset>
 						<fieldset
@@ -195,7 +195,7 @@ export default function () {
 								required
 							/>
 							{lastResult && lastResult.status === 'error' && (
-								<p className="text-primary/60 text-sm">{lastResult.error?.['files']}</p>
+								<p className="text-sm text-primary/60">{lastResult.error?.['files']}</p>
 							)}
 						</fieldset>
 						<UploadProgress id={path.id} className="pt-2" />
@@ -205,7 +205,7 @@ export default function () {
 							Upload
 						</Button>
 						{images.length !== Object.keys(path.panoramaData as Record<string, unknown>).length && (
-							<p className="text-primary/60 text-sm">
+							<p className="text-sm text-primary/60">
 								{images.length} images selected,{' '}
 								{Object.keys(path.panoramaData as Record<string, unknown>).length} recommended
 							</p>

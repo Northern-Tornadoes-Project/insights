@@ -20,7 +20,7 @@ export default function Layout() {
 	const data = useLoaderData<typeof loader>();
 
 	return (
-		<main className="bg-muted/40 h-full">
+		<main className="h-full bg-muted/40">
 			<Header title="Hailgen" user={data.user} />
 			<div className="mx-6 py-4">
 				<Outlet context={data.user} />

@@ -91,12 +91,12 @@ export default function Profile() {
 
 	return (
 		<main>
-			<Link to="/" className="m-4 absolute top-0 left-0">
-				<Button variant="link" className="gap-2 items-center">
+			<Link to="/" className="absolute left-0 top-0 m-4">
+				<Button variant="link" className="items-center gap-2">
 					<LucideArrowLeft /> Back
 				</Button>
 			</Link>
-			<div className="grid gap-6 w-[350px] mx-auto h-min grow">
+			<div className="mx-auto grid h-min w-[350px] grow gap-6">
 				<div className="text-center">
 					<h1 className="text-3xl font-bold">Profile</h1>
 					<p className="text-balance text-muted-foreground">Edit your Insights profile details.</p>
@@ -118,7 +118,7 @@ export default function Profile() {
 					</div>
 					<div className="grid gap-2">
 						<Label htmlFor="image_url">Image</Label>
-						<div className="flex flex-row gap-4 items-center">
+						<div className="flex flex-row items-center gap-4">
 							<Input
 								{...getInputProps(fields.image_url, {
 									type: 'text'

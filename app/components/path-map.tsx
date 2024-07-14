@@ -42,7 +42,7 @@ export default function ({
 					latitude={segment.lat}
 					onClick={() => onSegmentClick?.(index * 5)}
 				>
-					<div className="bg-foreground rounded-full">
+					<div className="rounded-full bg-foreground">
 						<div className="h-3 w-3" />
 					</div>
 				</Marker>

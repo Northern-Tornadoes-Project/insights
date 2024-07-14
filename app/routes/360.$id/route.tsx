@@ -125,60 +125,55 @@ export default function () {
 
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<Card className="row-span-2 lg:col-span-2 h-full">
-				<CardHeader>
-					<CardTitle>360 Viewer</CardTitle>
-					<CardDescription>View the path in 360 with before and after imagery.</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<Suspense
-						fallback={
-							<div className="relative h-[500px] overflow-hidden rounded-md lg:h-[505px]">
-								<div className="flex h-full flex-col items-center justify-center">
-									<div className="text-2xl font-bold">Loading</div>
-								</div>
+			<div className="row-span-2 rounded-lg border bg-card text-card-foreground shadow-sm lg:col-span-2 p-6">
+				<Suspense
+					fallback={
+						<div className="overflow-hidden rounded-md">
+							<div className="flex h-full flex-col items-center justify-center">
+								<div className="text-2xl font-bold">Loading</div>
 							</div>
-						}
-					>
-						<Viewer360
-							capture={{
-								...data.path.capture,
-								uploadedAt: new Date(data.path.capture.uploadedAt),
-								takenAt: new Date(data.path.capture.takenAt)
-							}}
-							captureURL={data.path.captureURL}
-							currentState={data.path.currentState}
-							pathProgress={data.path.pathProgress}
-							onCurrentStateChange={(state) => {
-								navigate({
-									search: `?index=${data.path.index}&state=${state}`
-								});
-							}}
-							onNext={() => {
-								navigate({
-									search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
-								});
-							}}
-							onPrevious={() => {
-								navigate({
-									search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
-								});
-							}}
-							onJumpNext={() => {
-								navigate({
-									search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
-								});
-							}}
-							onJumpPrevious={() => {
-								navigate({
-									search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
-								});
-							}}
-							className="relative h-[500px] overflow-hidden rounded-md lg:h-[900px]"
-						/>
-					</Suspense>
-				</CardContent>
-			</Card>
+						</div>
+					}
+				>
+					<Viewer360
+						capture={{
+							...data.path.capture,
+							uploadedAt: new Date(data.path.capture.uploadedAt),
+							takenAt: new Date(data.path.capture.takenAt)
+						}}
+						captureURL={data.path.captureURL}
+						currentState={data.path.currentState}
+						pathProgress={data.path.pathProgress}
+						onCurrentStateChange={(state) => {
+							navigate({
+								search: `?index=${data.path.index}&state=${state}`
+							});
+						}}
+						onNext={() => {
+							navigate({
+								search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
+							});
+						}}
+						onPrevious={() => {
+							navigate({
+								search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
+							});
+						}}
+						onJumpNext={() => {
+							navigate({
+								search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
+							});
+						}}
+						onJumpPrevious={() => {
+							navigate({
+								search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
+							});
+						}}
+						// Scale based on the height of the card
+						className="relative overflow-hidden rounded-md h-full"
+					/>
+				</Suspense>
+			</div>
 			<Card>
 				<CardHeader>
 					<CardTitle>Capture Details</CardTitle>
@@ -240,7 +235,7 @@ export default function () {
 					<CardDescription>View the entire path and your current viewing position.</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div className="h-[400px] w-full overflow-hidden rounded-md lg:h-96">
+					<div className="h-64 w-full overflow-hidden rounded-md">
 						<Suspense fallback={<Skeleton />}>
 							<PathMap
 								segments={data.path.segments}

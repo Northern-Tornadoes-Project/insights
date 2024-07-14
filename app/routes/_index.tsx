@@ -42,12 +42,12 @@ export default function Index() {
 	return (
 		<div className="h-screen">
 			<div className="relative z-0 h-screen">
-				<img className="w-full h-full object-cover" src={tornado} alt="Tornado" />
-				<div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-background" />
+				<img className="h-full w-full object-cover" src={tornado} alt="Tornado" />
+				<div className="absolute left-0 top-0 h-full w-full bg-gradient-to-r from-background" />
 			</div>
-			<div className="absolute top-0 left-0 w-full h-full">
+			<div className="absolute left-0 top-0 h-full w-full">
 				<WesternEngineeringLogo />
-				<header className="absolute top-0 right-0 m-4">
+				<header className="absolute right-0 top-0 m-4">
 					{data ? (
 						<div className="flex flex-row gap-4">
 							<UserAvatar user={data.user} />
@@ -65,7 +65,7 @@ export default function Index() {
 						</div>
 					)}
 				</header>
-				<main className="flex flex-col justify-center gap-8 p-6 lg:p-16 h-screen">
+				<main className="flex h-screen flex-col justify-center gap-8 p-6 lg:p-16">
 					<h1 className="text-7xl">
 						<b>NTP</b> Insights
 					</h1>

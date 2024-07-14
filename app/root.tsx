@@ -49,7 +49,7 @@ export function App() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(theme)} />
 				<Links />
 			</head>
-			<body className="min-h-screen h-screen">
+			<body className="h-screen min-h-screen">
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -83,11 +83,11 @@ function ErrorBody() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(theme)} />
 				<Links />
 			</head>
-			<body className="min-h-screen h-screen">
+			<body className="h-screen min-h-screen">
 				<div className="absolute w-full">
 					<Header title="Error" />
 				</div>
-				<main className="flex justify-center items-center h-full">
+				<main className="flex h-full items-center justify-center">
 					<Card className="sm:min-w-[500px]">
 						{isRouteErrorResponse(error) ? (
 							<CardHeader>

@@ -48,7 +48,7 @@ export default function Verify() {
 	const { authError } = useLoaderData<typeof loader>();
 
 	return (
-		<div className="grid gap-6 mx-auto h-min">
+		<div className="mx-auto grid h-min gap-6">
 			<div className="text-center">
 				<h1 className="text-3xl font-bold">Verify</h1>
 				<p className="text-balance text-muted-foreground">Enter the code sent to your email.</p>

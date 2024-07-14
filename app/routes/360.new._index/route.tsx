@@ -136,7 +136,7 @@ export default function () {
 	});
 
 	return (
-		<main className="flex justify-center items-center h-full">
+		<main className="flex h-full items-center justify-center">
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>New Path</CardTitle>
@@ -154,7 +154,7 @@ export default function () {
 									disabled={navigation.state === 'submitting'}
 									placeholder="Name"
 								/>
-								<p className="text-primary/60 text-sm">{fields.name.errors}</p>
+								<p className="text-sm text-primary/60">{fields.name.errors}</p>
 							</div>
 							<div>
 								<Label htmlFor={fields.folderName.id}>Folder Name</Label>
@@ -165,7 +165,7 @@ export default function () {
 									disabled={navigation.state === 'submitting'}
 									placeholder="Folder Name"
 								/>
-								<p className="text-primary/60 text-sm">{fields.folderName.errors}</p>
+								<p className="text-sm text-primary/60">{fields.folderName.errors}</p>
 							</div>
 							<div>
 								<Label htmlFor={fields.eventDate.id}>Event Date</Label>
@@ -173,7 +173,7 @@ export default function () {
 									meta={fields.eventDate}
 									disabled={navigation.state === 'submitting'}
 								/>
-								<p className="text-primary/60 text-sm">{fields.eventDate.errors}</p>
+								<p className="text-sm text-primary/60">{fields.eventDate.errors}</p>
 							</div>
 						</CardContent>
 						<CardFooter>

@@ -36,10 +36,10 @@ export default function Support() {
 	const data = useLoaderData<typeof loader>();
 
 	return (
-		<main className="bg-muted/40 h-full">
+		<main className="h-full bg-muted/40">
 			<Header title="Support" user={data.user} />
-			<div className="flex justify-center w-full py-4">
-				<div className="flex flex-col gap-4 max-w-6xl">
+			<div className="flex w-full justify-center py-4">
+				<div className="flex max-w-6xl flex-col gap-4">
 					<Card>
 						<CardHeader>
 							<CardTitle>Frequently Asked Questions</CardTitle>
@@ -61,7 +61,7 @@ export default function Support() {
 							<CardDescription>Get in touch with us.</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 								<div className="col-span-1">
 									<Label htmlFor="name">Name</Label>
 									<Input id="name" placeholder="Name" />

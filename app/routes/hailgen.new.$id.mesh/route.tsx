@@ -133,7 +133,7 @@ export default function () {
 	});
 
 	return (
-		<main className="flex justify-center items-center h-full">
+		<main className="flex h-full items-center justify-center">
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>{hailpad.name}</CardTitle>
@@ -155,7 +155,7 @@ export default function () {
 							required
 							disabled={navigation.state === 'submitting'}
 						/>
-						<p className="text-primary/60 text-sm">{fields.mesh.errors}</p>
+						<p className="text-sm text-primary/60">{fields.mesh.errors}</p>
 					</CardContent>
 					<CardFooter>
 						<Button

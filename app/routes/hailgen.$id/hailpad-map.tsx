@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useToast } from '~/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface HailpadDent {
 	angle: number;
@@ -12,29 +12,33 @@ interface HailpadDent {
 export function HailpadMap({
 	index,
 	dentData,
-	dmapPath,
+	depthMapPath,
 	showCentroids,
 	onIndexChange
 }: {
 	index: number;
 	dentData: HailpadDent[];
-	dmapPath: string;
+	depthMapPath: string;
 	showCentroids: boolean;
 	onIndexChange: (index: number) => void;
 }) {
-	const { toast } = useToast();
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
-		const context = canvas?.getContext('2d');
+
+		if (!canvas) return;
+
+		const context = canvas.getContext('2d');
+
+		if (!context) return;
 
 		// Get depth map image from hailpad folder
 		const depthMap = new Image();
-		depthMap.src = dmapPath;
+		depthMap.src = depthMapPath;
 
 		depthMap.onload = () => {
-			context?.drawImage(depthMap, 0, 0, 1000, 1000);
+			context.drawImage(depthMap, 0, 0, 1000, 1000);
 
 			// Render clickable ellipse about centroid of selected dent
 			dentData.forEach((dent: HailpadDent, i: number) => {
@@ -44,8 +48,16 @@ export function HailpadMap({
 				if (i === index && context) {
 					context.globalAlpha = 1;
 					context.beginPath();
-					context.ellipse(x, y, dent.majorAxis / 2 * 1.5, dent.minorAxis / 2 * 1.5, dent.angle, 0, 2 * Math.PI);
-					context.strokeStyle = "#4c2e72"; // TODO: Use a theme color
+					context.ellipse(
+						x,
+						y,
+						(dent.majorAxis / 2) * 1.5,
+						(dent.minorAxis / 2) * 1.5,
+						dent.angle,
+						0,
+						2 * Math.PI
+					);
+					context.strokeStyle = '#4c2e72'; // TODO: Use a theme color
 					context.lineWidth = 3;
 					context.setLineDash([7, 5]);
 					context.stroke();
@@ -62,8 +74,7 @@ export function HailpadMap({
 			});
 		};
 
-		// Event handler for clicking near a centroid to change index
-		canvas?.addEventListener('click', (event) => {
+		const handleClick = (event: MouseEvent) => {
 			const rect = canvas.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
@@ -78,10 +89,9 @@ export function HailpadMap({
 					break;
 				}
 			}
-		});
+		};
 
-		// Event handler for double-clicking on the depth map to copy x and y coordinates to clipboard
-		canvas?.addEventListener('dblclick', async (event) => {
+		const handleDoubleClick = async (event: MouseEvent) => {
 			const rect = canvas.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
@@ -94,12 +104,22 @@ export function HailpadMap({
 			}
 
 			// Show toast notification
-			toast({
-				title: "Coordinates copied to clipboard",
+			toast('Coordinates copied to clipboard', {
 				description: `(${x}, ${y})`
 			});
-		});
-	}, [onIndexChange, index, dentData, dmapPath, showCentroids]);
+		};
+
+		// Event handler for clicking near a centroid to change index
+		canvas.addEventListener('click', handleClick);
+
+		// Event handler for double-clicking on the depth map to copy x and y coordinates to clipboard
+		canvas.addEventListener('dblclick', handleDoubleClick);
+
+		return () => {
+			canvas.removeEventListener('click', handleClick);
+			canvas.removeEventListener('dblclick', handleDoubleClick);
+		};
+	}, [onIndexChange, index, dentData, depthMapPath, showCentroids]);
 
 	return (
 		<canvas ref={canvasRef} width={1000} height={1000} /> // TODO: Responsive sizing

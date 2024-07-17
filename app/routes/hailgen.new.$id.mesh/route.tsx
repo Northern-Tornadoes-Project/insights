@@ -23,9 +23,17 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
-import { hailpad } from '~/db/schema';
+import { hailpad, dent } from '~/db/schema';
 import { env } from '~/env.server';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
+
+interface HailpadDent {
+	angle: number;
+	centroidX: number;
+	centroidY: number;
+	majorAxis: number;
+	minorAxis: number;
+}
 
 const schema = z.object({
 	mesh: z
@@ -105,7 +113,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Invoke microservice with uploaded file path for processing
 	if (env.SERVICE_HAILGEN_ENABLED) {
-		await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
+		const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -115,6 +123,31 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				file_path: `${filePath}/hailpad.stl`
 			})
 		});
+
+		if (response.ok) {
+			// Save dents to db
+			const dents = await response.json();
+
+			dents.forEach(async (hailpadDent: HailpadDent) => {
+				const newDent = await db.insert(dent).values(
+					{
+						hailpadId: queriedHailpad.id,
+						angle: Number(hailpadDent.angle).toString(),
+						majorAxis: Number(hailpadDent.majorAxis).toString(),
+						minorAxis: Number(hailpadDent.minorAxis).toString(),
+						centroidX: Number(hailpadDent.centroidX).toString(),
+						centroidY: Number(hailpadDent.centroidY).toString()
+					})
+					.returning();
+
+				if (newDent.length != 1) {
+					throw new Error('Error creating dent');
+				}
+			});
+
+		} else {
+			console.error('Error invoking Hailgen service')
+		}
 	} else {
 		console.log('Hailgen service is disabled');
 	}

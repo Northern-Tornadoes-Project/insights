@@ -17,7 +17,7 @@ export const env = createEnv({
 		SERVICE_360_KEY: z.string(),
 		PATH_DIRECTORY: z.string(),
 		PUBLIC_PATH_DIRECTORY: z.string(),
-		SERVICE_HAILGEN_ENABLED: z.boolean().default(false),
+		SERVICE_HAILGEN_ENABLED: z.boolean().default(true),
 		SERVICE_HAILGEN_URL: z.string().url(),
 		SERVICE_HAILGEN_DIRECTORY: z.string(),
 		SERVICE_HAILGEN_KEY: z.string(),

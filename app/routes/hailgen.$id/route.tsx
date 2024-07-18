@@ -13,6 +13,9 @@ import { hailpad, dent } from '~/db/schema';
 import { env } from '~/env.server';
 import { Suspense, lazy, useEffect, useState } from 'react';
 
+import HailpadDetails from './hailpad-details';
+import DentDetails from './dent-details';
+
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
 interface HailpadDent { // TODO: Use shared interface
@@ -60,15 +63,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 }
 
-function HailpadDetail({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="flex flex-col">
-			<p className="text-sm text-muted-foreground">{label}</p>
-			<p>{value}</p>
-		</div>
-	);
-}
-
 export default function () {
 	const data = useLoaderData<typeof loader>();
 
@@ -78,7 +72,7 @@ export default function () {
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 
 	const { dents, depthMapPath } = data;
-	
+
 	useEffect(() => {
 		setDentData(dents);
 	}), [];
@@ -117,6 +111,17 @@ export default function () {
 					</Suspense>
 				</CardContent>
 			</Card>
+			<HailpadDetails
+				dentData={dentData}
+				onFilterChange={() => { }} // TODO
+				onShowCentroids={setShowCentroids}
+				onDownload={setDownload}
+			/>
+			<DentDetails
+				dentData={dentData}
+				index={currentIndex}
+				onIndexChange={setCurrentIndex}
+			/>
 		</div>
 	);
 }

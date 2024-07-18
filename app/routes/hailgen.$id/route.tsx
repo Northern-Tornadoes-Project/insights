@@ -1,7 +1,6 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import { ClientOnly } from 'remix-utils/client-only';
 import {
 	Card,
 	CardContent,
@@ -12,7 +11,7 @@ import {
 import { db } from '~/db/db.server';
 import { hailpad, dent } from '~/db/schema';
 import { env } from '~/env.server';
-import { lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
@@ -41,10 +40,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const url = new URL(request.url);
 
-	return {
-		queriedHailpad,
-		hailpadURL: `${url.origin}${env.PUBLIC_PATH_DIRECTORY}/${hailpad.folderName}/${hailpad.id}`,
-	};
+	const dents = await db
+		.select({
+			angle: dent.angle,
+			centroidX: dent.centroidX,
+			centroidY: dent.centroidY,
+			majorAxis: dent.majorAxis,
+			minorAxis: dent.minorAxis
+		})
+		.from(dent)
+		.where(eq(dent.hailpadId, queriedHailpad.id));
+
+	const depthMapPath = `${env.HOST}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
+
+	return json({
+		dents,
+		depthMapPath,
+		// hailpadURL: `${url.origin}${env.PUBLIC_HAILPAD_DIRECTORY}`, TODO: TBD
+	});
 }
 
 function HailpadDetail({ label, value }: { label: string; value: string }) {
@@ -64,26 +77,10 @@ export default function () {
 	const [download, setDownload] = useState<boolean>(false);
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 
-	const { queriedHailpad } = data;
-	const depthMapPath = `${data.hailpadURL}/dmap.png`;
-
-	const getDentData = async () => {
-		const dents = await db
-		.select({
-			angle: dent.angle,
-			centroidX: dent.centroidX,
-			centroidY: dent.centroidY,
-			majorAxis: dent.majorAxis,
-			minorAxis: dent.minorAxis
-		})
-		.from(dent)
-		.where(eq(dent.hailpadId, queriedHailpad.id));
-
-		setDentData(dents);
-	};
-
+	const { dents, depthMapPath } = data;
+	
 	useEffect(() => {
-		getDentData();
+		setDentData(dents);
 	}), [];
 
 	useEffect(() => {
@@ -101,25 +98,23 @@ export default function () {
 					<CardDescription>View the interactable hailpad depth map with dent analysis.</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<ClientOnly
+					<Suspense
 						fallback={
-							<div className="relative h-[500px] overflow-hidden rounded-md lg:h-[505px]">
+							<div className="overflow-hidden rounded-md">
 								<div className="flex h-full flex-col items-center justify-center">
 									<div className="text-2xl font-bold">Loading</div>
 								</div>
 							</div>
 						}
 					>
-						{() => (
-							<HailpadMap
-								index={currentIndex}
-								dentData={dentData}
-								depthMapPath={depthMapPath}
-								showCentroids={showCentroids}
-								onIndexChange={setCurrentIndex}
-							/>
-						)}
-					</ClientOnly>
+						<HailpadMap
+							index={currentIndex}
+							dentData={dentData}
+							depthMapPath={depthMapPath}
+							showCentroids={showCentroids}
+							onIndexChange={setCurrentIndex}
+						/>
+					</Suspense>
 				</CardContent>
 			</Card>
 		</div>

@@ -27,12 +27,12 @@ import { hailpad, dent } from '~/db/schema';
 import { env } from '~/env.server';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
 
-interface HailpadDent {
-	angle: number;
-	centroidX: number;
-	centroidY: number;
-	majorAxis: number;
-	minorAxis: number;
+interface HailpadDent { // TODO: Use shared interface
+	angle: string | null;
+	centroidX: string;
+	centroidY: string;
+	majorAxis: string;
+	minorAxis: string;
 }
 
 const schema = z.object({
@@ -132,11 +132,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				const newDent = await db.insert(dent).values(
 					{
 						hailpadId: queriedHailpad.id,
-						angle: Number(hailpadDent.angle).toString(),
-						majorAxis: Number(hailpadDent.majorAxis).toString(),
-						minorAxis: Number(hailpadDent.minorAxis).toString(),
-						centroidX: Number(hailpadDent.centroidX).toString(),
-						centroidY: Number(hailpadDent.centroidY).toString()
+						angle: hailpadDent.angle,
+						majorAxis: hailpadDent.majorAxis,
+						minorAxis: hailpadDent.minorAxis,
+						centroidX: hailpadDent.centroidX,
+						centroidY: hailpadDent.centroidY
 					})
 					.returning();
 

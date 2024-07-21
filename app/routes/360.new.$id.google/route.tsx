@@ -22,6 +22,7 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { Spinner } from '~/components/ui/spinner';
 import { db, updatePathSize } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
@@ -202,7 +203,10 @@ export default function () {
 					</CardContent>
 					<CardFooter className="space-x-4">
 						<Button type="submit" disabled={navigation.state === 'submitting' || !copyClicked}>
-							Upload
+							{navigation.state === 'submitting' && (
+								<Spinner className="mr-2 fill-primary" size={16} />
+							)}
+							{navigation.state === 'submitting' ? 'Uploading...' : 'Upload'}
 						</Button>
 						{images.length !== Object.keys(path.panoramaData as Record<string, unknown>).length && (
 							<p className="text-sm text-primary/60">

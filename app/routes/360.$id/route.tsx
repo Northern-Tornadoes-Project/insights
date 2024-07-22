@@ -125,7 +125,7 @@ export default function () {
 
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<div className="row-span-2 rounded-lg border bg-card text-card-foreground shadow-sm lg:col-span-2 p-6">
+			<div className="row-span-2 rounded-lg border bg-card p-6 text-card-foreground shadow-sm lg:col-span-2">
 				<Suspense
 					fallback={
 						<div className="overflow-hidden rounded-md">
@@ -170,7 +170,7 @@ export default function () {
 							});
 						}}
 						// Scale based on the height of the card
-						className="relative overflow-hidden rounded-md h-full min-h-96"
+						className="relative h-full min-h-96 overflow-hidden rounded-md"
 					/>
 				</Suspense>
 			</div>

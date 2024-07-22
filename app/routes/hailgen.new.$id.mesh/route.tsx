@@ -23,11 +23,12 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
-import { hailpad, dent } from '~/db/schema';
+import { dent, hailpad } from '~/db/schema';
 import { env } from '~/env.server';
 import { authenticator, protectedRoute } from '~/lib/auth.server';
 
-interface HailpadDent { // TODO: Use shared interface
+interface HailpadDent {
+	// TODO: Use shared interface
 	angle: string | null;
 	centroidX: string;
 	centroidY: string;
@@ -129,8 +130,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			const dents = await response.json();
 
 			dents.forEach(async (hailpadDent: HailpadDent) => {
-				const newDent = await db.insert(dent).values(
-					{
+				const newDent = await db
+					.insert(dent)
+					.values({
 						hailpadId: queriedHailpad.id,
 						angle: hailpadDent.angle,
 						majorAxis: hailpadDent.majorAxis,
@@ -144,9 +146,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 					throw new Error('Error creating dent');
 				}
 			});
-
 		} else {
-			console.error('Error invoking Hailgen service')
+			console.error('Error invoking Hailgen service');
 		}
 	} else {
 		console.log('Hailgen service is disabled');

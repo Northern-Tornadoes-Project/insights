@@ -1,7 +1,6 @@
 import { parseWithZod } from '@conform-to/zod';
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
 import { db } from '~/db/db.server';
 import { paths } from '~/db/schema';
 import { env } from '~/env.server';

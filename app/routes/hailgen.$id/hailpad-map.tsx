@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
-interface HailpadDent { // TODO: Use shared interface
+interface HailpadDent {
+	// TODO: Use shared interface
 	angle: string | null;
 	centroidX: string;
 	centroidY: string;
@@ -82,7 +83,10 @@ export default function HailpadMap({
 			// Set index based on if a centroid was clicked within a certain radius
 			const clickRadius = 25;
 			for (let i = 0; i < dentData.length; i++) {
-				const [centroidX, centroidY] = [Number(dentData[i].centroidX), Number(dentData[i].centroidY)];
+				const [centroidX, centroidY] = [
+					Number(dentData[i].centroidX),
+					Number(dentData[i].centroidY)
+				];
 				const distance = Math.sqrt(Math.pow(x - centroidX, 2) + Math.pow(y - centroidY, 2));
 				if (distance <= clickRadius) {
 					onIndexChange(i);

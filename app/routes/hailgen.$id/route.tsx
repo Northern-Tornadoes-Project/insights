@@ -1,24 +1,19 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/card';
-import { db } from '~/db/db.server';
-import { hailpad, dent } from '~/db/schema';
-import { env } from '~/env.server';
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { db } from '~/db/db.server';
+import { dent, hailpad } from '~/db/schema';
+import { env } from '~/env.server';
 
-import HailpadDetails from './hailpad-details';
 import DentDetails from './dent-details';
+import HailpadDetails from './hailpad-details';
 
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
-interface HailpadDent { // TODO: Use shared interface
+interface HailpadDent {
+	// TODO: Use shared interface
 	angle: string | null;
 	centroidX: string;
 	centroidY: string;
@@ -58,7 +53,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	return json({
 		dents,
-		depthMapPath,
+		depthMapPath
 		// hailpadURL: `${url.origin}${env.PUBLIC_HAILPAD_DIRECTORY}`, TODO: TBD
 	});
 }
@@ -75,7 +70,8 @@ export default function () {
 
 	useEffect(() => {
 		setDentData(dents);
-	}), [];
+	}),
+		[];
 
 	useEffect(() => {
 		if (download) {
@@ -86,10 +82,12 @@ export default function () {
 
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<Card className="row-span-2 lg:col-span-2 h-min">
+			<Card className="row-span-2 h-min lg:col-span-2">
 				<CardHeader>
 					<CardTitle>Hailpad Viewer</CardTitle>
-					<CardDescription>View the interactable hailpad depth map with dent analysis.</CardDescription>
+					<CardDescription>
+						View the interactable hailpad depth map with dent analysis.
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<Suspense
@@ -113,15 +111,11 @@ export default function () {
 			</Card>
 			<HailpadDetails
 				dentData={dentData}
-				onFilterChange={() => { }} // TODO
+				onFilterChange={() => {}} // TODO
 				onShowCentroids={setShowCentroids}
 				onDownload={setDownload}
 			/>
-			<DentDetails
-				dentData={dentData}
-				index={currentIndex}
-				onIndexChange={setCurrentIndex}
-			/>
+			<DentDetails dentData={dentData} index={currentIndex} onIndexChange={setCurrentIndex} />
 		</div>
 	);
 }

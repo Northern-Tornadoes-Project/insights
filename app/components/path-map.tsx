@@ -91,7 +91,7 @@ export default function ({
 						'line-cap': 'round'
 					}}
 					paint={{
-						'line-color': '#ddd',
+						'line-color': theme === Theme.LIGHT ? '#888' : '#fff',
 						'line-width': 2
 					}}
 				/>

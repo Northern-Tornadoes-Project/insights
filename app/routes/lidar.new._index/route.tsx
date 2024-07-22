@@ -19,7 +19,7 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Spinner } from '~/components/ui/spinner';
 import { db } from '~/db/db.server';
-import { paths } from '~/db/schema';
+import { scans } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
 
 // Instead of sharing a schema, prepare a schema creator
@@ -70,7 +70,7 @@ function createSchema(options?: { isFolderNameUnique: (folderName: string) => Pr
 				})
 			),
 		eventDate: z.date(),
-		captureDate: z.date()
+        captureDate: z.date()
 	});
 }
 
@@ -85,10 +85,10 @@ export async function action({ request }: ActionFunctionArgs) {
 	const submission = await parseWithZod(formData, {
 		schema: createSchema({
 			async isFolderNameUnique(folderName) {
-				const path = await db.query.paths.findFirst({
-					where: eq(paths.folderName, folderName)
+				const scan = await db.query.scans.findFirst({
+					where: eq(scans.folderName, folderName)
 				});
-				return !path;
+				return !scan;
 			}
 		}),
 		async: true
@@ -100,31 +100,31 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const { name, folderName, eventDate, captureDate } = submission.value;
 
-	const path = await db
-		.insert(paths)
+	const scan = await db
+		.insert(scans)
 		.values({
 			name,
 			folderName,
 			eventDate,
-			captureDate,
+            captureDate,
 			createdBy: userId,
 			updatedBy: userId
 		})
 		.returning({
-			id: paths.id,
-			folderName: paths.folderName
+			id: scans.id,
+			folderName: scans.folderName
 		});
 
-	if (path.length != 1) {
+	if (scan.length !== 1) {
 		throw new Error('Error creating path.');
 	}
 
-	// Create folder in the PATH_DIRECTORY
-	await mkdir(`${process.env.PATH_DIRECTORY}/${path[0].folderName}`, {
+	// Create folder in the SCAN_DIRECTORY
+	await mkdir(`${process.env.SCAN_DIRECTORY}/${scan[0].folderName}`, {
 		recursive: true
 	});
 
-	return redirect(`/360/new/${path[0].id}/framepos`);
+	return redirect(`/lidar/new/${scan[0].id}/scan`);
 }
 
 export default function () {
@@ -141,8 +141,10 @@ export default function () {
 		<main className="flex h-full items-center justify-center">
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
-					<CardTitle>New Path</CardTitle>
-					<CardDescription>Create a new path to start uploading images.</CardDescription>
+					<CardTitle>New Scan</CardTitle>
+					<CardDescription>
+						Create a new LiDAR scan to start uploading the related files.
+					</CardDescription>
 				</CardHeader>
 				<FormProvider context={form.context}>
 					<Form method="post" id={form.id} onSubmit={form.onSubmit}>
@@ -177,7 +179,7 @@ export default function () {
 								/>
 								<p className="text-sm text-primary/60">{fields.eventDate.errors}</p>
 							</div>
-							<div>
+                            <div>
 								<Label htmlFor={fields.captureDate.id}>Capture Date</Label>
 								<DatePickerConform
 									meta={fields.captureDate}

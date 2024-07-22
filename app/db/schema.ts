@@ -39,12 +39,24 @@ export const users = pgTable('users', {
 });
 
 export const validEmails = pgTable('valid_emails', {
-	email: text('email').primaryKey()
+	email: text('email').primaryKey(),
+	enabled: boolean('enabled').default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.notNull()
+		.$onUpdateFn(() => new Date())
 });
 
 export const imageSource = pgEnum('image_source', ['ntp', 'google', 'unknown']);
 export const pathInitializationStatus = pgEnum('path_initialization_status', [
 	'framepos',
+	'uploading',
+	'processing',
+	'complete',
+	'failed'
+]);
+export const scanInitializationStatus = pgEnum('scan_initialization_status', [
 	'uploading',
 	'processing',
 	'complete',
@@ -58,6 +70,7 @@ export const paths = pgTable('paths', {
 	name: text('name').unique().notNull(),
 	folderName: text('folder_name').unique().notNull(),
 	eventDate: timestamp('event_date').notNull(),
+	captureDate: timestamp('capture_date').notNull(),
 	frameposData: jsonb('framepos_data').array(),
 	panoramaData: jsonb('panorama_data'),
 	status: pathInitializationStatus('status').default('framepos').notNull(),
@@ -143,6 +156,31 @@ export const dent = pgTable('dent', {
 	minorAxis: decimal('minor_axis').notNull(),
 	centroidX: decimal('centroid_x').notNull(),
 	centroidY: decimal('centroid_y').notNull()
+});
+
+// LiDAR Tables
+
+export const scans = pgTable('scans', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	name: text('name').unique().notNull(),
+	size: integer('size'),
+	folderName: text('folder_name').unique().notNull(),
+	eventDate: timestamp('event_date').notNull(),
+	captureDate: timestamp('capture_date').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.notNull()
+		.$onUpdateFn(() => new Date()),
+	createdBy: integer('created_by')
+		.references(() => users.id)
+		.notNull(),
+	updatedBy: integer('updated_by')
+		.references(() => users.id)
+		.notNull(),
+	status: scanInitializationStatus('status').default('uploading').notNull(),
+	hidden: boolean('hidden').default(false).notNull(),
+	viewerSettings: jsonb('viewer_settings')
 });
 
 // Relations

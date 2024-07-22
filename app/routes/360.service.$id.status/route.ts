@@ -25,7 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			return new Response('Could not find the requested path', { status: 404 });
 		}
 
-		if (!env.SERVICE_HAILGEN_ENABLED) return new Response('Service not enabled', { status: 400 });
+		if (!env.SERVICE_360_ENABLED) return new Response('Service not enabled', { status: 400 });
 
 		const response = await fetch(new URL(`${env.SERVICE_360_URL}/${path.id}/status`));
 

@@ -1,7 +1,9 @@
 /node_modules
-*.log
-.DS_Store
-.env
-/.cache
-/public/build
+**/*.log
+**/*.DS_Store
+**/*.env
+**/*.git
+**/*.cache
+/public/**/*
+!/public/favicon.ico
 /build

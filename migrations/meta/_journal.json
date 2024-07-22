@@ -50,6 +50,20 @@
       "when": 1720814227200,
       "tag": "0006_wet_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1721672159314,
+      "tag": "0007_charming_kylun",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1721672286832,
+      "tag": "0008_robust_rick_jones",
+      "breakpoints": true
     }
   ]
 }

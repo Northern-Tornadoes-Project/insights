@@ -9,5 +9,5 @@ installGlobals();
 export default defineConfig({
 	// Enable debug in dev
 	logLevel: 'info',
-	plugins: [remix(), tsconfigPaths(), mkcert()]
+	plugins: [remix(), tsconfigPaths(), process.env.NODE_ENV === 'development' && mkcert()]
 });

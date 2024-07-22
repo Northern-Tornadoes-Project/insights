@@ -96,7 +96,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 				})),
 			capture: capture,
 			captureURL: new URL(
-				`${env.HOST}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
+				`${env.BASE_URL}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
 			).href,
 			currentState: state.data,
 			pathProgress: {

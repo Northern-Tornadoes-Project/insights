@@ -49,7 +49,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.from(dent)
 		.where(eq(dent.hailpadId, queriedHailpad.id));
 
-	const depthMapPath = `${env.HOST}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
+	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
 
 	return json({
 		dents,

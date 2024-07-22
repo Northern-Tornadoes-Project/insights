@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
@@ -92,6 +92,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
+	const paths = useMemo<Path[]>(
+		() =>
+			data.paths.map((path) => ({
+				...path,
+				createdAt: new Date(path.createdAt),
+				updatedAt: new Date(path.updatedAt),
+				eventDate: new Date(path.eventDate),
+				size: path.size || 0,
+				segments: path.segments.map((segment) => ({
+					id: segment.id,
+					lat: Number(segment.lat),
+					lng: Number(segment.lng)
+				}))
+			})),
+		[data]
+	);
 	const userContext = useOutletContext<{
 		id: string;
 		email: string;
@@ -120,37 +136,8 @@ export default function () {
 						<CardContent>
 							<DataTable
 								columns={columns}
-								data={data.paths.map((path) => {
-									return {
-										...path,
-										createdAt: new Date(path.createdAt),
-										updatedAt: new Date(path.updatedAt),
-										eventDate: new Date(path.eventDate),
-										segments: path.segments.map((segment) => {
-											return {
-												id: segment.id,
-												lat: Number(segment.lat),
-												lng: Number(segment.lng)
-											};
-										})
-									} as Path;
-								})}
-								onRowClick={(index) =>
-									setPath({
-										...data.paths[index],
-										createdAt: new Date(data.paths[index].createdAt),
-										updatedAt: new Date(data.paths[index].updatedAt),
-										eventDate: new Date(data.paths[index].eventDate),
-										size: data.paths[index].size || 0,
-										segments: data.paths[index].segments.map((segment) => {
-											return {
-												id: segment.id,
-												lat: Number(segment.lat),
-												lng: Number(segment.lng)
-											};
-										})
-									})
-								}
+								data={paths}
+								onRowClick={(index) => setPath(paths[index])}
 							/>
 						</CardContent>
 					</Card>

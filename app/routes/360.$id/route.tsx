@@ -170,7 +170,7 @@ export default function () {
 							});
 						}}
 						// Scale based on the height of the card
-						className="relative overflow-hidden rounded-md h-full"
+						className="relative overflow-hidden rounded-md h-full min-h-96"
 					/>
 				</Suspense>
 			</div>

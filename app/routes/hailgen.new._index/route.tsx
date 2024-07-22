@@ -116,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		});
 
 	if (newHailpad.length != 1) {
-		throw new Error('Error creating hailpad.');
+		throw new Error('Error creating hailpad');
 	}
 
 	// Create folder in the HAILPAD_DIRECTORY

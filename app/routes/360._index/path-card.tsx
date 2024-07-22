@@ -1,9 +1,11 @@
 import { Link } from '@remix-run/react';
 import { LucideEdit, LucideX } from 'lucide-react';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Progress } from '~/components/ui/progress';
 import { Skeleton } from '~/components/ui/skeleton';
+import { Spinner } from '~/components/ui/spinner';
 import { Path } from './columns';
 import { StatusBadge } from './status-badge';
 
@@ -20,6 +22,36 @@ export function PathCard({
 	loggedIn?: boolean;
 	onClose: () => void;
 }) {
+	const [progress, setProgress] = useState<number | null>(null);
+
+	useEffect(() => {
+		if (path.status !== 'processing') return;
+
+		// Pull data from /360/service/:id to update the status
+		const interval = setInterval(async () => {
+			const response = await fetch(`/360/service/${path.id}/status`);
+
+			if (!response.ok) {
+				clearInterval(interval);
+				return;
+			}
+
+			const data: {
+				completed: boolean;
+				progress: number;
+			} = await response.json();
+
+			if (data.completed) {
+				clearInterval(interval);
+				return;
+			}
+
+			setProgress(data.progress);
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, []);
+
 	return (
 		<Card className="h-min min-w-96">
 			<div className="flex flex-row items-center justify-between pr-6">
@@ -49,15 +81,26 @@ export function PathCard({
 				</div>
 			</div>
 			<CardContent>
-				{path.status === 'processing' ? (
-					<p>Fetching status from path service...</p>
-				) : (
-					<div className="h-[400px] w-full overflow-hidden rounded-md lg:h-96">
-						<Suspense fallback={<Skeleton />}>
-							<PathMap segments={path.segments} token={token} />
-						</Suspense>
+				{path.status === 'processing' && (
+					<div className="flex flex-row items-center gap-2 pb-4">
+						{!!progress ? (
+							<>
+								<p>Processing {progress.toFixed(1)}%</p>
+								<Progress value={progress} />
+							</>
+						) : (
+							<>
+								<Spinner />
+								<p>Starting processing service...</p>
+							</>
+						)}
 					</div>
 				)}
+				<div className="h-[400px] w-full overflow-hidden rounded-md lg:h-96">
+					<Suspense fallback={<Skeleton />}>
+						<PathMap segments={path.segments} token={token} />
+					</Suspense>
+				</div>
 			</CardContent>
 			<CardFooter className="justify-end">
 				<Link to={`/360/${path.id}`} prefetch="none">

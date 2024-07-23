@@ -50,11 +50,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.where(eq(dent.hailpadId, queriedHailpad.id));
 
 	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
+	const boxfit = queriedHailpad.boxfit;
+	const hailpadName = queriedHailpad.name;
 
 	return json({
 		dents,
-		depthMapPath
-		// hailpadURL: `${url.origin}${env.PUBLIC_HAILPAD_DIRECTORY}`, TODO: TBD
+		depthMapPath,
+		boxfit,
+		hailpadName
 	});
 }
 
@@ -66,12 +69,20 @@ export default function () {
 	const [download, setDownload] = useState<boolean>(false);
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 
-	const { dents, depthMapPath } = data;
+	const { dents, depthMapPath, boxfit, hailpadName } = data;
 
 	useEffect(() => {
-		setDentData(dents);
-	}),
-		[];
+		const scaledDents = dents.map((dent: HailpadDent) => {
+			return {
+				angle: dent.angle,
+				centroidX: dent.centroidX,
+				centroidY: dent.centroidY,
+				majorAxis: String(Number(dent.majorAxis) / 1000 * Number(boxfit)),
+				minorAxis: String(Number(dent.minorAxis) / 1000 * Number(boxfit))
+			};
+		});
+		setDentData(scaledDents);
+	}, []);
 
 	useEffect(() => {
 		if (download) {
@@ -84,7 +95,7 @@ export default function () {
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
 			<Card className="row-span-2 h-min lg:col-span-2">
 				<CardHeader>
-					<CardTitle>Hailpad Viewer</CardTitle>
+					<CardTitle>{hailpadName}</CardTitle>
 					<CardDescription>
 						View the interactable hailpad depth map with dent analysis.
 					</CardDescription>
@@ -111,7 +122,7 @@ export default function () {
 			</Card>
 			<HailpadDetails
 				dentData={dentData}
-				onFilterChange={() => {}} // TODO
+				onFilterChange={() => { }} // TODO
 				onShowCentroids={setShowCentroids}
 				onDownload={setDownload}
 			/>

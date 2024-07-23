@@ -58,7 +58,7 @@ export default function HailpadMap({
 						0,
 						2 * Math.PI
 					);
-					context.strokeStyle = '#4c2e72'; // TODO: Use a theme color
+					context.strokeStyle = '#8F55E0'; // TODO: Use a theme color
 					context.lineWidth = 3;
 					context.setLineDash([7, 5]);
 					context.stroke();

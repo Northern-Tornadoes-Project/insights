@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '~/components/ui/chart';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
 const chartConfig = {
     count: {
@@ -26,10 +26,12 @@ export default function Histogram({
         const min = Math.floor(Math.min(...data) / 5) * 5;
         const max = Math.ceil(Math.max(...data) / 5) * 5;
 
+        // Create bins in increments of 5
         for (let i = min; i < max; i += 5) {
             bins.push({ bin: `[${i}, ${i + 5})`, count: 0 });
         }
 
+        // Populate bins
         data.forEach(num => {
             const binIndex = Math.floor(num / 5);
             bins[binIndex - min / 5].count += 1;
@@ -41,9 +43,9 @@ export default function Histogram({
     return (
         data &&
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-            <BarChart accessibilityLayer layout="vertical" data={binnedData}>
+            <BarChart accessibilityLayer  data={binnedData}>
                 <CartesianGrid horizontal={false} />
-                <YAxis
+                <XAxis
                     dataKey="bin"
                     type="category"
                     tickLine={false}

@@ -1,6 +1,6 @@
 import { FileSpreadsheet, Filter, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
-// import { Button } from '~/components/ui/button';
+import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
@@ -80,9 +80,9 @@ export default function HailpadDetails({
                     <div className="justify-end">
                         <Popover>
                             <PopoverTrigger>
-                                {/* <Button variant="outline" className="w-8 h-8 p-2">
+                                <Button asChild variant="outline" className="w-8 h-8 p-2">
                                     <Settings />
-                                </Button> */}
+                                </Button>
                             </PopoverTrigger>
                             <PopoverContent>
                                 TODO
@@ -99,14 +99,14 @@ export default function HailpadDetails({
                             <TabsTrigger value="major">Major Axis</TabsTrigger>
                         </TabsList>
                         <div className="flex flex-row space-x-2">
-                            {/* <Button variant="secondary" className="w-8 h-8 p-2 hover:text-green-500" onClick={() => onDownload(true)}>
+                            <Button variant="secondary" className="w-8 h-8 p-2 hover:text-green-500" onClick={() => onDownload(true)}>
                                 <FileSpreadsheet />
-                            </Button> */}
+                            </Button>
                             <Popover>
                                 <PopoverTrigger>
-                                    {/* <Button variant="outline" className="w-8 h-8 p-2">
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2">
                                         <Filter />
-                                    </Button> */}
+                                    </Button>
                                 </PopoverTrigger>
                                 <PopoverContent>
                                     TODO

@@ -72,6 +72,7 @@ export default function () {
 	const { dents, depthMapPath, boxfit, hailpadName } = data;
 
 	useEffect(() => {
+		// Convert major and minor axes from px to mm based on boxfit length
 		const scaledDents = dents.map((dent: HailpadDent) => {
 			return {
 				angle: dent.angle,
@@ -87,7 +88,24 @@ export default function () {
 	useEffect(() => {
 		if (download) {
 			setDownload(false);
-			// TODO: Updated download method
+
+			// Prepare dent data for CSV
+			const headers = ['Minor Axis (mm)', 'Major Axis (mm)']
+			const csvData = dentData.map(dent => {
+				return `${dent.minorAxis},${dent.majorAxis}`
+			});
+
+			// Prepend headers to CSV data
+			csvData.unshift(headers.join(','));
+			const csv = csvData.join('\n');
+			const blob = new Blob ([csv], { type: 'text/csv' });
+
+			// Download CSV
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${hailpadName}.csv`;
+			a.click();
 		}
 	}, [download]);
 

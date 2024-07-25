@@ -43,8 +43,8 @@ export default function Histogram({
     return (
         data &&
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-            <BarChart accessibilityLayer  data={binnedData}>
-                <CartesianGrid horizontal={false} />
+            <BarChart accessibilityLayer data={binnedData}>
+                <CartesianGrid vertical={false} />
                 <XAxis
                     dataKey="bin"
                     type="category"

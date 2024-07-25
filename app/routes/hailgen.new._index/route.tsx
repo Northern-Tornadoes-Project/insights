@@ -68,7 +68,7 @@ function createSchema(options?: { isFolderNameUnique: (folderName: string) => Pr
 				})
 			),
 		boxfit: z.number().min(0, {
-			message: 'Boxfit length must be positive.'
+			message: 'Box-fitting length must be positive.'
 		})
 	});
 }
@@ -167,13 +167,13 @@ export default function () {
 								<p className="text-sm text-primary/60">{fields.folderName.errors}</p>
 							</div>
 							<div>
-								<Label htmlFor={fields.boxfit.id}>Boxfit Length</Label>
+								<Label htmlFor={fields.boxfit.id}>Box-fitting Length</Label>
 								<Input
 									type="number"
 									key={fields.boxfit.key}
 									name={fields.boxfit.name}
 									defaultValue={fields.boxfit.initialValue}
-									placeholder="Boxfit Length"
+									placeholder="Box-fitting Length"
 									step="any"
 								/>
 								<p className="text-sm text-primary/60">{fields.boxfit.errors}</p>

@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs, json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -9,6 +9,7 @@ import { env } from '~/env.server';
 
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
+import { useLoader } from '@react-three/fiber';
 
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
@@ -51,18 +52,46 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
 	const boxfit = queriedHailpad.boxfit;
+	const hailpadId = queriedHailpad.id;
 	const hailpadName = queriedHailpad.name;
 
 	return json({
 		dents,
 		depthMapPath,
 		boxfit,
+		hailpadId,
 		hailpadName
 	});
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+	// const formData = await request.formData();
+	// const boxfit = formData.get('boxfit');
+
+	console.log("hello");
+
+	const formData = await request.formData();
+	const boxfit = formData.get('boxfit');
+
+	const hailpadId = useLoaderData<typeof loader>().hailpadId;
+
+	console.log(boxfit);
+
+	if (!boxfit) return;
+
+	await db
+		.update(hailpad)
+		.set({
+			boxfit: boxfit.toString(),
+			// updatedBy: TODO,
+			updatedAt: new Date()
+		})
+		.where(eq(hailpad.id, hailpadId));
+}
+
 export default function () {
 	const data = useLoaderData<typeof loader>();
+    const fetcher = useFetcher();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
@@ -98,7 +127,7 @@ export default function () {
 			// Prepend headers to CSV data
 			csvData.unshift(headers.join(','));
 			const csv = csvData.join('\n');
-			const blob = new Blob ([csv], { type: 'text/csv' });
+			const blob = new Blob([csv], { type: 'text/csv' });
 
 			// Download CSV
 			const url = window.URL.createObjectURL(blob);
@@ -140,6 +169,7 @@ export default function () {
 			</Card>
 			<HailpadDetails
 				dentData={dentData}
+				fetcher={fetcher}
 				onFilterChange={() => { }} // TODO
 				onShowCentroids={setShowCentroids}
 				onDownload={setDownload}

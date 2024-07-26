@@ -11,7 +11,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const id = params.id;
 
 	if (!id) {
-		return new Response('No ID was specified', { status: 400 });
+		return new Response(null, { status: 400, statusText: 'No ID was specified' });
 	}
 
 	await protectedRoute(request);
@@ -22,15 +22,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		});
 
 		if (!path) {
-			return new Response('Could not find the requested path', { status: 404 });
+			return new Response(null, { status: 404, statusText: 'Could not find the requested path' });
 		}
 
-		if (!env.SERVICE_360_ENABLED) return new Response('Service not enabled', { status: 400 });
+		if (!env.SERVICE_360_ENABLED)
+			return new Response(null, { status: 400, statusText: 'Service not enabled' });
 
 		const response = await fetch(new URL(`${env.SERVICE_360_URL}/${path.id}/status`));
 
 		if (!response.ok) {
-			return new Response('Service failed to respond', { status: 500 });
+			return new Response(null, { status: 500, statusText: 'Service failed to respond' });
 		}
 
 		const status = StatusResponseSchema.parse(await response.json());
@@ -40,7 +41,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			progress: status.task_status.progress
 		});
 	} catch (error) {
-		return new Response('Internal error', { status: 500 });
+		return new Response(null, { status: 500, statusText: 'Internal server error' });
 	}
 }
 

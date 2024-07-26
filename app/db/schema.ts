@@ -216,10 +216,16 @@ export const userRelations = relations(users, ({ many }) => ({
 	createdHailpads: many(hailpad, {
 		relationName: 'author'
 	}),
+	createdScans: many(scans, {
+		relationName: 'author'
+	}),
 	editedPaths: many(paths, {
 		relationName: 'editor'
 	}),
 	editedHailpads: many(hailpad, {
+		relationName: 'editor'
+	}),
+	editedScans: many(scans, {
 		relationName: 'editor'
 	})
 }));
@@ -253,5 +259,18 @@ export const segmentRelations = relations(pathSegments, ({ one }) => ({
 		fields: [pathSegments.streetViewId],
 		references: [captures.id],
 		relationName: 'googleCaptures'
+	})
+}));
+
+export const scanRelations = relations(scans, ({ one }) => ({
+	author: one(users, {
+		fields: [scans.createdBy],
+		references: [users.id],
+		relationName: 'author'
+	}),
+	editor: one(users, {
+		fields: [scans.updatedBy],
+		references: [users.id],
+		relationName: 'editor'
 	})
 }));

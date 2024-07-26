@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -9,7 +9,6 @@ import { env } from '~/env.server';
 
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
-import { useLoader } from '@react-three/fiber';
 
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
@@ -26,7 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params;
 
 	if (!id) {
-		throw new Response('Hailpad not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Hailpad not found' });
 	}
 
 	const queriedHailpad = await db.query.hailpad.findFirst({
@@ -34,7 +33,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 
 	if (!queriedHailpad) {
-		throw new Response('Path not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Hailpad not found' });
 	}
 
 	const url = new URL(request.url);
@@ -68,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	// const formData = await request.formData();
 	// const boxfit = formData.get('boxfit');
 
-	console.log("hello");
+	console.log('hello');
 
 	const formData = await request.formData();
 	const boxfit = formData.get('boxfit');
@@ -91,7 +90,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
-    const fetcher = useFetcher();
+	const fetcher = useFetcher();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
@@ -107,8 +106,8 @@ export default function () {
 				angle: dent.angle,
 				centroidX: dent.centroidX,
 				centroidY: dent.centroidY,
-				majorAxis: String(Number(dent.majorAxis) / 1000 * Number(boxfit)),
-				minorAxis: String(Number(dent.minorAxis) / 1000 * Number(boxfit))
+				majorAxis: String((Number(dent.majorAxis) / 1000) * Number(boxfit)),
+				minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit))
 			};
 		});
 		setDentData(scaledDents);
@@ -119,9 +118,9 @@ export default function () {
 			setDownload(false);
 
 			// Prepare dent data for CSV
-			const headers = ['Minor Axis (mm)', 'Major Axis (mm)']
-			const csvData = dentData.map(dent => {
-				return `${dent.minorAxis},${dent.majorAxis}`
+			const headers = ['Minor Axis (mm)', 'Major Axis (mm)'];
+			const csvData = dentData.map((dent) => {
+				return `${dent.minorAxis},${dent.majorAxis}`;
 			});
 
 			// Prepend headers to CSV data
@@ -170,7 +169,7 @@ export default function () {
 			<HailpadDetails
 				dentData={dentData}
 				fetcher={fetcher}
-				onFilterChange={() => { }} // TODO
+				onFilterChange={() => {}} // TODO
 				onShowCentroids={setShowCentroids}
 				onDownload={setDownload}
 			/>

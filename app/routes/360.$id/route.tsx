@@ -27,7 +27,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params;
 
 	if (!id) {
-		throw new Response('Path not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Path not found' });
 	}
 
 	const path = await db.query.paths.findFirst({
@@ -35,18 +35,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 
 	if (!path) {
-		throw new Response('Path not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Path not found' });
 	}
 
 	if (!path.frameposData) {
-		throw new Response('Path not initialized', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Path not initialized' });
 	}
 
 	const url = new URL(request.url);
 	const index = Number(url.searchParams.get('index') || url.searchParams.get('i') || 0);
 
 	if (isNaN(index) || index < 0 || index >= path.frameposData?.length) {
-		throw new Response('Invalid index', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Invalid index' });
 	}
 
 	const pathSegment = await db.query.pathSegments.findFirst({
@@ -58,7 +58,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 
 	if (!pathSegment) {
-		throw new Response('Path segment not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Path segment not found' });
 	}
 
 	// Capture state
@@ -67,7 +67,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.safeParse(url.searchParams.get('state') || url.searchParams.get('s') || 'after');
 
 	if (!state.success) {
-		throw new Response('Invalid state', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Invalid state' });
 	}
 
 	if (state.data === 'before' && !pathSegment.streetView) {
@@ -77,7 +77,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const capture = state.data === 'before' ? pathSegment.streetView : pathSegment.capture;
 
 	if (!capture) {
-		throw new Response('Capture not found', { status: 404 });
+		throw new Response(null, { status: 404, statusText: 'Capture not found' });
 	}
 
 	return json({

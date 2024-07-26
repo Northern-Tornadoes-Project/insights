@@ -70,7 +70,7 @@ function createSchema(options?: { isFolderNameUnique: (folderName: string) => Pr
 				})
 			),
 		eventDate: z.date(),
-        captureDate: z.date()
+		captureDate: z.date()
 	});
 }
 
@@ -106,7 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			name,
 			folderName,
 			eventDate,
-            captureDate,
+			captureDate,
 			createdBy: userId,
 			updatedBy: userId
 		})
@@ -171,21 +171,23 @@ export default function () {
 								/>
 								<p className="text-sm text-primary/60">{fields.folderName.errors}</p>
 							</div>
-							<div>
-								<Label htmlFor={fields.eventDate.id}>Event Date</Label>
-								<DatePickerConform
-									meta={fields.eventDate}
-									disabled={navigation.state === 'submitting'}
-								/>
-								<p className="text-sm text-primary/60">{fields.eventDate.errors}</p>
-							</div>
-                            <div>
-								<Label htmlFor={fields.captureDate.id}>Capture Date</Label>
-								<DatePickerConform
-									meta={fields.captureDate}
-									disabled={navigation.state === 'submitting'}
-								/>
-								<p className="text-sm text-primary/60">{fields.captureDate.errors}</p>
+							<div className="grid grid-cols-2 gap-2">
+								<div>
+									<Label htmlFor={fields.eventDate.id}>Event Date</Label>
+									<DatePickerConform
+										meta={fields.eventDate}
+										disabled={navigation.state === 'submitting'}
+									/>
+									<p className="text-sm text-primary/60">{fields.eventDate.errors}</p>
+								</div>
+								<div>
+									<Label htmlFor={fields.captureDate.id}>Capture Date</Label>
+									<DatePickerConform
+										meta={fields.captureDate}
+										disabled={navigation.state === 'submitting'}
+									/>
+									<p className="text-sm text-primary/60">{fields.captureDate.errors}</p>
+								</div>
 							</div>
 						</CardContent>
 						<CardFooter>

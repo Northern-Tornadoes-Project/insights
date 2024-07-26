@@ -91,7 +91,7 @@ export function PathCard({
 						) : (
 							<>
 								<Spinner />
-								<p>Starting processing service...</p>
+								<p>Fetching processing service...</p>
 							</>
 						)}
 					</div>

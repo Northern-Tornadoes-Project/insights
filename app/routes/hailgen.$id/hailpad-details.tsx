@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Filter, Settings } from 'lucide-react';
+import { CornerDownLeft, FileSpreadsheet, Filter, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -14,6 +14,8 @@ import { Form, useActionData, useFetcher, useLoaderData, useSubmit } from '@remi
 // import { protectedRoute } from '~/lib/auth.server';
 import { parseWithZod } from '@conform-to/zod';
 import { z } from 'zod';
+import { Separator } from '~/components/ui/separator';
+import { Slider } from '~/components/ui/slider';
 // import { db } from '~/db/db.server';
 // import { hailpad } from '~/db/schema';
 // import { eq } from 'drizzle-orm';
@@ -88,6 +90,10 @@ function createSchema() {
 
 export default function HailpadDetails({
     dentData,
+    boxfit,
+    maxDepth,
+    adaptiveBlockSize,
+    adaptiveC,
     fetcher,
     onFilterChange,
     onShowCentroids,
@@ -95,6 +101,10 @@ export default function HailpadDetails({
     onDownload
 }: {
     dentData: HailpadDent[];
+    boxfit: string;
+    maxDepth: string;
+    adaptiveBlockSize: string;
+    adaptiveC: string;
     fetcher: any;
     onFilterChange: (value: object) => void; // TODO: Define interface
     onShowCentroids: (value: boolean) => void;
@@ -108,6 +118,9 @@ export default function HailpadDetails({
 
     const [avgMinor, setAvgMinor] = useState<number>(0);
     const [avgMajor, setAvgMajor] = useState<number>(0);
+
+    const [adaptiveBlockSliderValue, setAdaptiveBlockSliderValue] = useState<number>(0);
+    const [adaptiveCSliderValue, setAdaptiveCSliderValue] = useState<number>(0);
 
     // const lastResult = useActionData<typeof action>();
     // const [boxfitForm, boxfitFields] = useForm({
@@ -129,6 +142,9 @@ export default function HailpadDetails({
     //     }
     // });
 
+    const [maxDepthForm, maxDepthFields] = useForm({}); // TODO
+    const [thresholdForm, thresholdFields] = useForm({}); // TODO
+
     // const submit = useSubmit();
     const [boxfitForm, boxfitFields] = useForm({
         onValidate({ formData }) {
@@ -138,7 +154,7 @@ export default function HailpadDetails({
             const formData = new FormData();
             formData.append(boxfitFields.boxfit.name, boxfitFields.boxfit.value || "");
             console.log(formData);
-            fetcher.submit(formData, { method: "POST"});
+            fetcher.submit(formData, { method: "POST" });
         }
     });
 
@@ -155,7 +171,10 @@ export default function HailpadDetails({
 
         setAvgMinor(dentData.reduce((acc, dent) => acc + Number(dent.minorAxis), 0) / dentData.length);
         setAvgMajor(dentData.reduce((acc, dent) => acc + Number(dent.majorAxis), 0) / dentData.length);
-    }, [dentData]);
+
+        setAdaptiveBlockSliderValue(Number(adaptiveBlockSize));
+        setAdaptiveCSliderValue(Number(adaptiveC));
+    }, [dentData, adaptiveBlockSize, adaptiveC]);
 
     return (
         <Card>
@@ -172,11 +191,16 @@ export default function HailpadDetails({
                                     <Settings />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-60">
+                            <PopoverContent className="w-76">
                                 <div className="space-y-4">
-                                    <p className="font-semibold text-sm">
-                                        Hailpad View Settings
-                                    </p>
+                                    <div className="mb-6">
+                                        <p className="font-semibold text-lg">
+                                            View
+                                        </p>
+                                        <CardDescription className="text-sm">
+                                            Adjust depth map overlays and calibration values.
+                                        </CardDescription>
+                                    </div>
                                     <div className="flex flex-row items-center space-x-2">
                                         <Checkbox
                                             id="show-centroids"
@@ -191,19 +215,85 @@ export default function HailpadDetails({
                                     </div>
                                     <FormProvider context={boxfitForm.context}>
                                         <Form id={boxfitForm.id} onSubmit={boxfitForm.onSubmit}>
-                                            <div>
-                                                <Label htmlFor={boxfitFields.boxfit.id}>Box-fitting Length</Label>
+                                            <div className="flex flex-row items-center mt-1">
+                                                <div className="w-48 mr-4">
+                                                    <Label htmlFor={boxfitFields.boxfit.id}>Box-fitting Length (mm)</Label>
+                                                </div>
                                                 <Input
+                                                    className="w-20 h-8 mr-4"
                                                     type="number"
                                                     key={boxfitFields.boxfit.key}
                                                     name={boxfitFields.boxfit.name}
                                                     defaultValue={boxfitFields.boxfit.initialValue}
-                                                    placeholder=""
+                                                    placeholder={boxfit}
                                                     step="any"
                                                 />
-                                                <p className="text-sm text-primary/60">{boxfitFields.boxfit.errors}</p>
+                                                <Button type="submit" variant="secondary" className="w-8 h-8 p-2">
+                                                    <CornerDownLeft />
+                                                </Button>
                                             </div>
-                                            <Button type="submit">Next</Button>
+                                            <p className="text-sm text-primary/60">{boxfitFields.boxfit.errors}</p>
+                                        </Form>
+                                        <Form id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
+                                            <div className="flex flex-row items-center mt-1">
+                                                <div className="w-48 mr-4">
+                                                    <Label htmlFor={maxDepthFields.boxfit.id}>Maximum Depth (mm)</Label>
+                                                </div>
+                                                <Input
+                                                    className="w-20 h-8 mr-4"
+                                                    type="number"
+                                                    key={maxDepthFields.maxDepth.key}
+                                                    name={maxDepthFields.maxDepth.name}
+                                                    // defaultValue={maxDepthFields.maxDepth.initialValue} TODO
+                                                    placeholder={maxDepth}
+                                                    step="any"
+                                                />
+                                                <Button type="submit" variant="secondary" className="w-8 h-8 p-2">
+                                                    <CornerDownLeft />
+                                                </Button>
+                                            </div>
+                                            <p className="text-sm text-primary/60">{maxDepthFields.maxDepth.errors}</p>
+                                        </Form>
+                                    </FormProvider>
+                                    <Separator />
+                                    <div className="mb-4">
+                                        <p className="font-semibold text-lg">
+                                            Processing
+                                        </p>
+                                        <CardDescription className="text-sm">
+                                            Adjust depth map thresholding.
+                                        </CardDescription>
+                                    </div>
+                                    <FormProvider context={thresholdForm.context}>
+                                        <Form id={thresholdForm.id} onSubmit={boxfitForm.onSubmit}>
+                                            <div className="flex flex-row justify-between mt-6 mb-2">
+                                                <Label htmlFor={thresholdFields.adaptiveBlockSize.id}>Adaptive Block Size</Label>
+                                                <CardDescription>{adaptiveBlockSliderValue}</CardDescription>
+                                            </div>
+                                            <Slider
+                                                defaultValue={[Number(adaptiveBlockSize)]}
+                                                min={-25}
+                                                max={25}
+                                                step={1}
+                                                onValueChange={(value: number[]) => setAdaptiveBlockSliderValue(value[0])}
+                                            />
+                                            <div className="flex flex-row justify-between mt-4 mb-2">
+                                                <Label htmlFor={thresholdFields.adaptiveC.id}>Adaptive <span className="italic">C</span>-Value</Label>
+                                                <CardDescription>{adaptiveCSliderValue}</CardDescription>
+                                            </div>
+                                            <Slider
+                                                defaultValue={[Number(adaptiveC)]}
+                                                min={-10}
+                                                max={10}
+                                                step={1}
+                                                onValueChange={(value: number[]) => setAdaptiveCSliderValue(value[0])}
+                                            />
+                                            <div className="flex flex-row">
+                                                <Button type="submit" variant="secondary" className="flex flex-row justify-between items-center space-x-2 mt-6 h-8 p-4 px-3 pr-2 text-sm w-full">
+                                                    Perform new analysis
+                                                    <CornerDownLeft className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </Form>
                                     </FormProvider>
                                 </div>

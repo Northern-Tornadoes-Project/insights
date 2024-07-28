@@ -1,4 +1,4 @@
-import { CornerDownLeft, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CornerDownLeft, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -55,37 +55,56 @@ export default function DentDetails({
                         <CardTitle className="mb-2">Dent Details</CardTitle>
                         <CardDescription>About the selected dent.</CardDescription>
                     </div>
-                    <div className="justify-end space-x-2">
-                        <Popover>
-                            <PopoverTrigger>
-                                <Button asChild variant="outline" className="w-8 h-8 p-2">
-                                    <Trash2 />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                                TODO
-                            </PopoverContent>
-                        </Popover>
-                        <Popover>
-                            <PopoverTrigger>
-                                <Button asChild variant="outline" className="w-8 h-8 p-2">
-                                    <Pencil />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                                TODO
-                            </PopoverContent>
-                        </Popover>
-                        <Popover>
-                            <PopoverTrigger>
-                                <Button asChild variant="outline" className="w-8 h-8 p-2">
-                                    <Plus />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                                TODO
-                            </PopoverContent>
-                        </Popover>
+                    <div className="flex flex-row justify-end space-x-4">
+                        <div className="space-x-2">
+                            <Popover>
+                                <PopoverTrigger>
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2">
+                                        <Trash2 />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    TODO
+                                </PopoverContent>
+                            </Popover>
+                            <Popover>
+                                <PopoverTrigger>
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2">
+                                        <Pencil />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    TODO
+                                </PopoverContent>
+                            </Popover>
+                            <Popover>
+                                <PopoverTrigger>
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2">
+                                        <Plus />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    TODO
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="space-x-2">
+                            <Button
+                                className="w-8 h-8 p-2"
+                                variant="secondary"
+                                onClick={() => onPrevious?.()}
+                            >
+                                <ChevronLeft />
+
+                            </Button>
+                            <Button
+                                className="w-8 h-8 p-2"
+                                variant="secondary"
+                                onClick={() => onNext?.()}
+                            >
+                                <ChevronRight />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </CardHeader>
@@ -96,13 +115,13 @@ export default function DentDetails({
                         <Input
                             className="w-20 h-8"
                             type="number"
-                            min={0}
-                            max={dentData.length + 1}
+                            min={1}
+                            max={dentData.length}
                             placeholder={`${index + 1}`}
                             onChange={(e) => setCurrentIndex(parseInt(e.target.value))}
                         />
                         <p>/</p>
-                        <p>{`${dentData.length + 1}`}</p>
+                        <p>{`${dentData.length}`}</p>
                         <Button
                             className="w-8 h-8 p-2 ml-2"
                             variant="secondary"

@@ -104,13 +104,13 @@ export default function () {
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 
 	const { dents,
-			depthMapPath,
-			boxfit,
-			maxDepth,
-			adaptiveBlockSize,
-			adaptiveC,
-			hailpadName
-		} = data;
+		depthMapPath,
+		boxfit,
+		maxDepth,
+		adaptiveBlockSize,
+		adaptiveC,
+		hailpadName
+	} = data;
 
 	useEffect(() => {
 		// Convert major and minor axes from px to mm based on boxfit length
@@ -186,11 +186,29 @@ export default function () {
 				adaptiveBlockSize={adaptiveBlockSize}
 				adaptiveC={adaptiveC}
 				fetcher={fetcher}
-				onFilterChange={() => {}} // TODO
+				onFilterChange={() => { }} // TODO
 				onShowCentroids={setShowCentroids}
 				onDownload={setDownload}
 			/>
-			<DentDetails dentData={dentData} index={currentIndex} onIndexChange={setCurrentIndex} />
+			<DentDetails
+				dentData={dentData}
+				index={currentIndex}
+				onPrevious={() => {
+					if (currentIndex - 1 >= 0) {
+						setCurrentIndex(currentIndex - 1);
+					} else {
+						setCurrentIndex(dentData.length - 1);
+					}
+				}}
+				onNext={() => {
+					if (currentIndex + 1 < dentData.length) {
+						setCurrentIndex(currentIndex + 1);
+					} else {
+						setCurrentIndex(0);
+					}
+				}}
+				onIndexChange={setCurrentIndex}
+			/>
 		</div>
 	);
 }

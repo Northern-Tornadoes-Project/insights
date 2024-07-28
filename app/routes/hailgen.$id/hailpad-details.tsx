@@ -1,4 +1,4 @@
-import { CornerDownLeft, FileSpreadsheet, Filter, Settings } from 'lucide-react';
+import { CornerDownLeft, FileSpreadsheet, Filter, FilterX, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -144,6 +144,7 @@ export default function HailpadDetails({
 
     const [maxDepthForm, maxDepthFields] = useForm({}); // TODO
     const [thresholdForm, thresholdFields] = useForm({}); // TODO
+    const [filterForm, filterFields] = useForm({}); // TODO
 
     // const submit = useSubmit();
     const [boxfitForm, boxfitFields] = useForm({
@@ -234,6 +235,8 @@ export default function HailpadDetails({
                                             </div>
                                             <p className="text-sm text-primary/60">{boxfitFields.boxfit.errors}</p>
                                         </Form>
+                                    </FormProvider>
+                                    <FormProvider context={maxDepthForm.context}>
                                         <Form id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
                                             <div className="flex flex-row items-center mt-1">
                                                 <div className="w-48 mr-4">
@@ -319,8 +322,81 @@ export default function HailpadDetails({
                                         <Filter />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent>
-                                    TODO
+                                <PopoverContent className="w-96">
+                                    <div className="space-y-4">
+                                        <div className="mb-6">
+                                            <p className="font-semibold text-lg">
+                                                Filter
+                                            </p>
+                                            <CardDescription className="text-sm">
+                                                Refine hailpad dent data.
+                                            </CardDescription>
+                                        </div>
+                                        <FormProvider context={filterForm.context}>
+                                            <Form id={filterForm.id} onSubmit={filterForm.onSubmit}>
+                                                <div className="flex flex-row items-center mt-1 justify-between text-sm">
+                                                    <Input
+                                                        className="w-20 h-8"
+                                                        type="number"
+                                                        key={filterFields.minMinor.key}
+                                                        name={filterFields.minMinor.name}
+                                                        // defaultValue={filterFields.minMinor.initialValue} TODO
+                                                        placeholder="Min."
+                                                        step="any"
+                                                    />
+                                                    <p>≤</p>
+                                                    <p>Minor Axis (mm)</p>
+                                                    <p>≤</p>
+                                                    <Input
+                                                        className="w-20 h-8"
+                                                        type="number"
+                                                        key={filterFields.maxMinor.key}
+                                                        name={filterFields.maxMinor.name}
+                                                        // defaultValue={filterFields.maxMinor.initialValue} TODO
+                                                        placeholder="Max."
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row items-center mt-2 justify-between text-sm">
+                                                    <Input
+                                                        className="w-20 h-8"
+                                                        type="number"
+                                                        key={filterFields.minMajor.key}
+                                                        name={filterFields.minMajor.name}
+                                                        // defaultValue={filterFields.minMajor.initialValue} TODO
+                                                        placeholder="Min."
+                                                        step="any"
+                                                    />
+                                                    <p>≤</p>
+                                                    <p>Major Axis (mm)</p>
+                                                    <p>≤</p>
+                                                    <Input
+                                                        className="w-20 h-8"
+                                                        type="number"
+                                                        key={filterFields.maxMajor.key}
+                                                        name={filterFields.maxMajor.name}
+                                                        // defaultValue={filterFields.maxMajor.initialValue} TODO
+                                                        placeholder="Max."
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="text-sm text-primary/60">
+                                                    <p>{filterFields.minMinor.errors}</p>
+                                                    <p>{filterFields.maxMinor.errors}</p>
+                                                    <p>{filterFields.minMajor.errors}</p>
+                                                    <p>{filterFields.maxMajor.errors}</p>
+                                                </div>
+                                                <div className="flex flex-row mt-6 justify-between">
+                                                    <Button type="reset" variant="secondary" className="w-8 h-8 p-2">
+                                                        <FilterX />
+                                                    </Button>
+                                                    <Button type="submit" variant="secondary" className="w-8 h-8 p-2">
+                                                        <CornerDownLeft />
+                                                    </Button>
+                                                </div>
+                                            </Form>
+                                        </FormProvider>
+                                    </div>
                                 </PopoverContent>
                             </Popover>
                         </div>

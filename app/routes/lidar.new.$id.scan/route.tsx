@@ -89,21 +89,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const formData = await unstable_parseMultipartFormData(request, handler);
 	const submission = parseWithZod(formData, { schema });
 
-	if (submission.status !== 'success') {
+	const emptyDirectory = async () => {
 		// Delete the uploaded file
 		try {
-			for (const file of await readdir(directory)) {
-				await unlink(join(directory, file));
-			}
+			for (const file of await readdir(directory)) await unlink(join(directory, file));
 		} catch (error) {
 			console.error(error);
 		}
+	};
+
+	if (submission.status !== 'success') {
+		await emptyDirectory();
 		return json(submission.reply());
 	}
 
 	const file = formData.get('scan') as NodeOnDiskFile;
 
 	if (!file) {
+		await emptyDirectory();
 		throw new Error('File not found after uploading...');
 	}
 

@@ -36,8 +36,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		throw new Response(null, { status: 404, statusText: 'Hailpad not found' });
 	}
 
-	const url = new URL(request.url);
-
 	const dents = await db
 		.select({
 			angle: dent.angle,
@@ -73,10 +71,12 @@ export async function action({ request }: ActionFunctionArgs) {
 	// const formData = await request.formData();
 	// const boxfit = formData.get('boxfit');
 
+    const boxfitFetcher = useFetcher({ key: "boxfit"});
+
 	console.log('hello');
 
-	const formData = await request.formData();
-	const boxfit = formData.get('boxfit');
+	const boxfit = await boxfitFetcher.formData?.get('boxfit');
+	// const boxfit = formData.get('boxfit');
 
 	const hailpadId = useLoaderData<typeof loader>().hailpadId;
 
@@ -96,7 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
-	const fetcher = useFetcher();
+	// const fetcher = useFetcher();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
@@ -151,8 +151,8 @@ export default function () {
 	}, [download]);
 
 	return (
-		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-			<Card className="row-span-2 h-min lg:col-span-2">
+		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-5">
+			<Card className="row-span-5 h-min lg:col-span-2">
 				<CardHeader>
 					<CardTitle>{hailpadName}</CardTitle>
 					<CardDescription>
@@ -179,36 +179,40 @@ export default function () {
 					</Suspense>
 				</CardContent>
 			</Card>
-			<HailpadDetails
-				dentData={dentData}
-				boxfit={boxfit}
-				maxDepth={maxDepth}
-				adaptiveBlockSize={adaptiveBlockSize}
-				adaptiveC={adaptiveC}
-				fetcher={fetcher}
-				onFilterChange={() => { }} // TODO
-				onShowCentroids={setShowCentroids}
-				onDownload={setDownload}
-			/>
-			<DentDetails
-				dentData={dentData}
-				index={currentIndex}
-				onPrevious={() => {
-					if (currentIndex - 1 >= 0) {
-						setCurrentIndex(currentIndex - 1);
-					} else {
-						setCurrentIndex(dentData.length - 1);
-					}
-				}}
-				onNext={() => {
-					if (currentIndex + 1 < dentData.length) {
-						setCurrentIndex(currentIndex + 1);
-					} else {
-						setCurrentIndex(0);
-					}
-				}}
-				onIndexChange={setCurrentIndex}
-			/>
+			<div className="lg:row-span-3">
+				<HailpadDetails
+					dentData={dentData}
+					boxfit={boxfit}
+					maxDepth={maxDepth}
+					adaptiveBlockSize={adaptiveBlockSize}
+					adaptiveC={adaptiveC}
+					// fetcher={fetcher}
+					onFilterChange={() => { }} // TODO
+					onShowCentroids={setShowCentroids}
+					onDownload={setDownload}
+				/>
+			</div>
+			<div className="lg:row-span-2">
+				<DentDetails
+					dentData={dentData}
+					index={currentIndex}
+					onPrevious={() => {
+						if (currentIndex - 1 >= 0) {
+							setCurrentIndex(currentIndex - 1);
+						} else {
+							setCurrentIndex(dentData.length - 1);
+						}
+					}}
+					onNext={() => {
+						if (currentIndex + 1 < dentData.length) {
+							setCurrentIndex(currentIndex + 1);
+						} else {
+							setCurrentIndex(0);
+						}
+					}}
+					onIndexChange={setCurrentIndex}
+				/>
+			</div>
 		</div>
 	);
 }

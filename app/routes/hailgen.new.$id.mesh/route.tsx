@@ -149,7 +149,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		console.log('Hailgen service is disabled');
 	}
 
-	return redirect(`/hailgen/${params.id}`);
+	// return redirect(`/hailgen/${params.id}`);
+	return redirect(`/hailgen/${queriedHailpad.id}/depth`);
 }
 
 export default function () {

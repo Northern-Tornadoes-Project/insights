@@ -42,7 +42,7 @@ export default function Histogram({
 
     return (
         data &&
-        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+        <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
             <BarChart accessibilityLayer data={binnedData}>
                 <CartesianGrid vertical={false} />
                 <XAxis

@@ -23,6 +23,15 @@ function Detail({ label, value }: { label: string; value?: string }) {
     );
 }
 
+// const getRotatedEllipseEquation = (a: number, b: number, angle: number) => {
+//     // Constants for the cos and sin of the angle
+//     const cosTheta = Math.cos(angle);
+//     const sinTheta = Math.sin(angle);
+
+//     const equation = `((${cosTheta.toFixed(2)}*x - ${sinTheta.toFixed(2)}*y)^2)/${a.toFixed(2)}^2 + ((${sinTheta.toFixed(2)}*x + ${cosTheta.toFixed(2)}*y)^2)/${b.toFixed(2)}^2 = 1`;
+//     return equation;
+// } TODO: TBD
+
 export default function DentDetails({
     dentData,
     index,
@@ -59,7 +68,7 @@ export default function DentDetails({
                         <div className="space-x-2">
                             <Popover>
                                 <PopoverTrigger>
-                                    <Button asChild variant="outline" className="w-8 h-8 p-2">
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2 hover:text-red-500">
                                         <Trash2 />
                                     </Button>
                                 </PopoverTrigger>
@@ -138,6 +147,10 @@ export default function DentDetails({
                 <div className="grid grid-cols-3 mt-4 gap-4">
                     <Detail label="Minor Axis" value={`${minor.toFixed(2)} mm`} />
                     <Detail label="Major Axis" value={`${major.toFixed(2)} mm`} />
+                    <Detail label="TODO" value={`TODO`} />
+                    {/* {dentData[index].minorAxis && dentData[index].majorAxis && dentData[index].angle &&
+                        <Detail label="Ellipse Approximation" value={getRotatedEllipseEquation(Number(dentData[index].majorAxis), Number(dentData[index].minorAxis), Number(dentData[index].angle))} />
+                    } TODO: TBD */}
                 </div>
             </CardContent>
         </Card>

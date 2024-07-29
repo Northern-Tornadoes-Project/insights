@@ -4,6 +4,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-r
 import { Form, useActionData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { mkdir } from 'node:fs/promises';
+import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
 import {
@@ -105,6 +106,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			name,
 			folderName,
 			boxfit: Number(boxfit).toString(),
+			maxDepth: Number(0).toString(), // Default value
 			adaptiveBlockSize: Number(21).toString(), // Default value
 			adaptiveC: Number(-4.0).toString(), // Default value
 			createdBy: userId,
@@ -135,6 +137,18 @@ export default function () {
 			return parseWithZod(formData, { schema: createSchema() });
 		}
 	});
+	const [image, setImage] = useState<typeof Image>();
+	const filePath = "";
+
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+
+	const canvas = canvasRef.current;
+	if (!canvas) return;
+
+	const context = canvas.getContext('2d');
+	if (!context) return;
+
+	const depthMap = new Image();
 
 	return (
 		<main className="flex h-full items-center justify-center">
@@ -143,47 +157,50 @@ export default function () {
 					<CardTitle>New Hailpad Scan</CardTitle>
 					<CardDescription>Create a new hailpad scan to start analyzing dents.</CardDescription>
 				</CardHeader>
-				<FormProvider context={form.context}>
-					<Form method="post" id={form.id} onSubmit={form.onSubmit}>
-						<CardContent className="grid gap-2">
-							<div>
-								<Label htmlFor={fields.name.id}>Name</Label>
-								<Input
-									key={fields.name.key}
-									name={fields.name.name}
-									defaultValue={fields.name.initialValue}
-									placeholder="Name"
-								/>
-								<p className="text-sm text-primary/60">{fields.name.errors}</p>
-							</div>
-							<div>
-								<Label htmlFor={fields.folderName.id}>Folder Name</Label>
-								<Input
-									key={fields.folderName.key}
-									name={fields.folderName.name}
-									defaultValue={fields.folderName.initialValue}
-									placeholder="Folder Name"
-								/>
-								<p className="text-sm text-primary/60">{fields.folderName.errors}</p>
-							</div>
-							<div>
-								<Label htmlFor={fields.boxfit.id}>Box-fitting Length</Label>
-								<Input
-									type="number"
-									key={fields.boxfit.key}
-									name={fields.boxfit.name}
-									defaultValue={fields.boxfit.initialValue}
-									placeholder="Box-fitting Length"
-									step="any"
-								/>
-								<p className="text-sm text-primary/60">{fields.boxfit.errors}</p>
-							</div>
-						</CardContent>
-						<CardFooter>
-							<Button type="submit">Next</Button>
-						</CardFooter>
-					</Form>
-				</FormProvider>
+				<div className="flex flex-col gap-4">
+```					
+					<FormProvider context={form.context}>
+						<Form method="post" id={form.id} onSubmit={form.onSubmit}>
+							<CardContent className="grid gap-2">
+								<div>
+									<Label htmlFor={fields.name.id}>Name</Label>
+									<Input
+										key={fields.name.key}
+										name={fields.name.name}
+										defaultValue={fields.name.initialValue}
+										placeholder="Name"
+									/>
+									<p className="text-sm text-primary/60">{fields.name.errors}</p>
+								</div>
+								<div>
+									<Label htmlFor={fields.folderName.id}>Folder Name</Label>
+									<Input
+										key={fields.folderName.key}
+										name={fields.folderName.name}
+										defaultValue={fields.folderName.initialValue}
+										placeholder="Folder Name"
+									/>
+									<p className="text-sm text-primary/60">{fields.folderName.errors}</p>
+								</div>
+								<div>
+									<Label htmlFor={fields.boxfit.id}>Box-fitting Length</Label>
+									<Input
+										type="number"
+										key={fields.boxfit.key}
+										name={fields.boxfit.name}
+										defaultValue={fields.boxfit.initialValue}
+										placeholder="Box-fitting Length"
+										step="any"
+									/>
+									<p className="text-sm text-primary/60">{fields.boxfit.errors}</p>
+								</div>
+							</CardContent>
+							<CardFooter>
+								<Button type="submit">Next</Button>
+							</CardFooter>
+						</Form>
+					</FormProvider>
+				</div>
 			</Card>
 		</main>
 	);

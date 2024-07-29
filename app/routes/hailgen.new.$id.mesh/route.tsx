@@ -65,11 +65,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-	const id = await authenticator.isAuthenticated(request);
-
-	if (!id) {
-		return redirect('/auth/login');
-	}
+	await protectedRoute(request);
 
 	if (!params.id) {
 		return redirect('/hailgen');

@@ -108,8 +108,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Could not read the file.');
 	}
 
+	let depthX;
+	let depthY;
+
 	// Invoke microservice with uploaded file path for processing
-	if (env.SERVICE_HAILGEN_ENABLED) {
+	// if (env.SERVICE_HAILGEN_ENABLED) {
 		const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
 			method: 'POST',
 			headers: {
@@ -123,7 +126,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 		if (response.ok) {
 			// Save dents to db
-			const dents = await response.json();
+			const res = await response.json();
+			const dents = res.dents;
+			const maxDepthLocation = res.maxDepthLocation;
 
 			dents.forEach(async (hailpadDent: HailpadDent) => {
 				const newDent = await db
@@ -135,6 +140,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 						minorAxis: hailpadDent.minorAxis,
 						centroidX: hailpadDent.centroidX,
 						centroidY: hailpadDent.centroidY
+						// TODO: Depth information
 					})
 					.returning();
 
@@ -142,15 +148,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
 					throw new Error('Error creating dent');
 				}
 			});
+
+			// Get location for max. depth
+			depthX = maxDepthLocation[0];
+			depthY = maxDepthLocation[1];
 		} else {
 			console.error('Error invoking Hailgen service');
 		}
-	} else {
-		console.log('Hailgen service is disabled');
-	}
+	// } else {
+	// 	console.log('Hailgen service is disabled');
+	// } // TODO: Uncomment
 
-	// return redirect(`/hailgen/${params.id}`);
 	return redirect(`/hailgen/${queriedHailpad.id}/depth`);
+	// return redirect(`/hailgen/${queriedHailpad.id}/depth?x=${depthX}&y=${depthY}`);
 }
 
 export default function () {

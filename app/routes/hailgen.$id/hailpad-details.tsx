@@ -122,6 +122,8 @@ export default function HailpadDetails({
     const [adaptiveBlockSliderValue, setAdaptiveBlockSliderValue] = useState<number>(0);
     const [adaptiveCSliderValue, setAdaptiveCSliderValue] = useState<number>(0);
 
+    const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
+
     // const lastResult = useActionData<typeof action>();
     // const [boxfitForm, boxfitFields] = useForm({
     //     lastResult,
@@ -207,6 +209,8 @@ export default function HailpadDetails({
                                     <div className="flex flex-row items-center space-x-2">
                                         <Checkbox
                                             id="show-centroids"
+                                            checked={isShowCentroidChecked}
+                                            onClick={() => setIsShowCentroidChecked(!isShowCentroidChecked)}
                                             onCheckedChange={onShowCentroids}
                                         />
                                         <Label

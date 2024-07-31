@@ -137,18 +137,6 @@ export default function () {
 			return parseWithZod(formData, { schema: createSchema() });
 		}
 	});
-	const [image, setImage] = useState<typeof Image>();
-	const filePath = "";
-
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-
-	const canvas = canvasRef.current;
-	if (!canvas) return;
-
-	const context = canvas.getContext('2d');
-	if (!context) return;
-
-	const depthMap = new Image();
 
 	return (
 		<main className="flex h-full items-center justify-center">
@@ -158,7 +146,6 @@ export default function () {
 					<CardDescription>Create a new hailpad scan to start analyzing dents.</CardDescription>
 				</CardHeader>
 				<div className="flex flex-col gap-4">
-```					
 					<FormProvider context={form.context}>
 						<Form method="post" id={form.id} onSubmit={form.onSubmit}>
 							<CardContent className="grid gap-2">

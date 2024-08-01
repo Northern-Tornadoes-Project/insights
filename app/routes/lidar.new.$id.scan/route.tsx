@@ -110,6 +110,28 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('File not found after uploading...');
 	}
 
+	if (env.SERVICE_LIDAR_ENABLED) {
+		try {
+			const response = await fetch(new URL(`${env.SERVICE_LIDAR_URL}/${scan.id}/process`), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${env.SERVICE_LIDAR_KEY}`
+				},
+				body: JSON.stringify({
+					input: `${env.SERVICE_LIDAR_DIRECTORY}/${scan.folderName}/scan.${file.name.split('.').pop()}`,
+					output: `${env.SERVICE_LIDAR_DIRECTORY}/${scan.folderName}/output`
+				})
+			});
+
+			if (!response.ok) {
+				console.error('Failed to connect to LiDAR service', response.statusText);
+			}
+		} catch (error) {
+			console.error('Unable to connect to LiDAR service', error);
+		}
+	}
+
 	return redirect(`/lidar/${scan.id}`);
 }
 

@@ -52,6 +52,7 @@
 		"nanoid": "^5.0.7",
 		"next-themes": "^0.3.0",
 		"pg": "^8.12.0",
+		"potree-core": "^2.0.8",
 		"react": "^18.3.1",
 		"react-day-picker": "8.10.1",
 		"react-dom": "^18.3.1",
@@ -66,7 +67,8 @@
 		"tailwind-merge": "^2.4.0",
 		"tailwindcss-animate": "^1.0.7",
 		"three": "^0.167.0",
-		"zod": "^3.23.4"
+		"zod": "^3.23.4",
+		"zustand": "^4.5.4"
 	},
 	"devDependencies": {
 		"@remix-run/dev": "^2.10.3",

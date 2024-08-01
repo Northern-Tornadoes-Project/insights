@@ -41,6 +41,8 @@ function createSchema() {
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	await protectedRoute(request);
 
+	const url = new URL(request.url);
+
 	if (!params.id) {
 		return redirect('/hailgen');
 	}
@@ -58,10 +60,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return json({
 		queriedHailpad,
 		depthMapPath,
-		// x: params.x,
-		// y: params.y
-		x: 10,
-		y: 10
+		x: url.searchParams.get("x"),
+		y: url.searchParams.get("y")
 	});
 }
 
@@ -128,7 +128,7 @@ export default function () {
 			context.drawImage(depthMap, 0, 0, 1000, 1000);
 			context.globalAlpha = 1;
 			context.beginPath();
-			context.arc(Number(x), Number(y), 5, 0, 2 * Math.PI);
+			context.arc(Number(x), Number(y), 7, 0, 2 * Math.PI);
 			context.fill();
 			context.globalAlpha = 1;
 		};

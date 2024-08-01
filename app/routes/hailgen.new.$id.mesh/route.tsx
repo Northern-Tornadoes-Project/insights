@@ -150,8 +150,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			});
 
 			// Get location for max. depth
-			depthX = maxDepthLocation[0];
-			depthY = maxDepthLocation[1];
+			console.log("max depth location is: " + maxDepthLocation);
+			// depthX = Number(maxDepthLocation[0]);
+			// depthY = Number(maxDepthLocation[1]);
 		} else {
 			console.error('Error invoking Hailgen service');
 		}
@@ -159,8 +160,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// 	console.log('Hailgen service is disabled');
 	// } // TODO: Uncomment
 
-	return redirect(`/hailgen/${queriedHailpad.id}/depth`);
-	// return redirect(`/hailgen/${queriedHailpad.id}/depth?x=${depthX}&y=${depthY}`);
+	return redirect(`/hailgen/new/${queriedHailpad.id}/depth`);
+	// return redirect(`/hailgen/new/${queriedHailpad.id}/depth?x=${depthX}&y=${depthY}`);
 }
 
 export default function () {

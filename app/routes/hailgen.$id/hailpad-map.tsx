@@ -27,11 +27,9 @@ export default function HailpadMap({
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
-
 		if (!canvas) return;
 
 		const context = canvas.getContext('2d');
-
 		if (!context) return;
 
 		// Get depth map image from hailpad folder

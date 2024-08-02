@@ -1,5 +1,5 @@
 import { LucideCircle, LucideSquare } from 'lucide-react';
-import { InsightsTooltip } from '~/components/insight-tooltip';
+import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Label } from '~/components/ui/label';
 import { Slider } from '~/components/ui/slider';
@@ -8,7 +8,8 @@ import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group';
 import { useStore } from './store';
 
 export function Options() {
-	const { size, setSize, shape, setShape, cameraPosition, cameraRotation } = useStore();
+	const { size, setSize, shape, setShape, budget, setBudget, cameraPosition, cameraRotation } =
+		useStore();
 
 	return (
 		<Card className="min-w-96">
@@ -18,11 +19,25 @@ export function Options() {
 			</CardHeader>
 			<CardContent>
 				<Tabs defaultValue="view" className="w-full">
-					<TabsList className="grid w-full grid-cols-2">
+					<TabsList className="mb-4 grid w-full grid-cols-2">
 						<TabsTrigger value="view">View</TabsTrigger>
 						<TabsTrigger value="debug">Debug</TabsTrigger>
 					</TabsList>
 					<TabsContent value="view" className="grid grid-cols-1 gap-4">
+						<div className="flex flex-col items-start gap-2">
+							<Label htmlFor="point-budget-slider">Point Budget</Label>
+							<div className="flex w-full flex-row items-center gap-2">
+								<Slider
+									id="point-budget-slider"
+									min={100_000}
+									max={3_000_000}
+									step={50_000}
+									value={[budget]}
+									onValueChange={(value) => setBudget(value[0])}
+								/>
+								<p className="text-sm font-normal">{budget.toLocaleString()}</p>
+							</div>
+						</div>
 						<div className="flex flex-col items-start gap-2">
 							<Label htmlFor="point-size-slider">Point Size</Label>
 							<div className="flex w-full flex-row items-center gap-2">
@@ -45,40 +60,43 @@ export function Options() {
 								onValueChange={(value) => setShape(value === 'circle' ? 1 : 0)}
 								variant="outline"
 							>
-								<InsightsTooltip tip="Square">
-									<ToggleGroupItem value="square">
-										<LucideSquare size={16} />
-									</ToggleGroupItem>
-								</InsightsTooltip>
-								<InsightsTooltip tip="Circle">
-									<ToggleGroupItem value="circle">
-										<LucideCircle size={16} />
-									</ToggleGroupItem>
-								</InsightsTooltip>
+								<ToggleGroupItem value="square" className="flex flex-row gap-1">
+									<LucideSquare size={16} />
+									Square
+								</ToggleGroupItem>
+								<ToggleGroupItem value="circle" className="flex flex-row gap-1">
+									<LucideCircle size={16} />
+									Circle
+								</ToggleGroupItem>
 							</ToggleGroup>
 						</div>
 					</TabsContent>
-					<TabsContent value="debug" className="grid grid-cols-1 gap-4">
-						<div className="flex flex-col items-start gap-2">
-							<p className="text-sm font-medium">Camera Position</p>
-							<div className="flex flex-row gap-1 text-sm font-normal">
-								{cameraPosition.map((coord, i) => (
-									<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
-										{coord.toFixed(2)}
-									</p>
-								))}
+					<TabsContent value="debug" className="flex flex-col gap-4">
+						<div className="grid grid-cols-2">
+							<div className="flex w-full flex-col gap-1">
+								<p className="text-sm font-medium">Camera Position</p>
+								<div className="flex w-full flex-row gap-1 text-sm font-normal">
+									{cameraPosition.map((coord, i) => (
+										<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
+											{coord.toFixed(2)}
+										</p>
+									))}
+								</div>
+							</div>
+							<div className="flex w-full flex-col gap-1">
+								<p className="text-sm font-medium">Camera Rotation</p>
+								<div className="flex w-full flex-row gap-1 text-sm font-normal">
+									{cameraRotation.map((coord, i) => (
+										<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
+											{coord.toFixed(2)}
+										</p>
+									))}
+								</div>
 							</div>
 						</div>
-						<div className="flex flex-col items-start gap-2">
-							<p className="text-sm font-medium">Camera Rotation</p>
-							<div className="flex flex-row gap-1 text-sm font-normal">
-								{cameraRotation.map((coord, i) => (
-									<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
-										{coord.toFixed(2)}
-									</p>
-								))}
-							</div>
-						</div>
+						<Button variant="outline" className="col-span-2">
+							Set Default Camera Transform
+						</Button>
 					</TabsContent>
 				</Tabs>
 			</CardContent>

@@ -6,10 +6,9 @@ import { cn } from '~/lib/utils';
 import { useStore } from './store';
 
 const potree = new Potree();
-potree.pointBudget = 200_000;
 
 function Renderer() {
-	const { size, shape, setCameraPosition, setCameraRotation } = useStore();
+	const { size, shape, budget, setCameraPosition, setCameraRotation } = useStore();
 	const { scene } = useThree();
 	const [pointClouds, setPointClouds] = useState<PointCloudOctree[]>([]);
 
@@ -29,10 +28,14 @@ function Renderer() {
 			setPointClouds([result]);
 		};
 
+		potree.pointBudget = budget;
+
 		load();
 	}, []);
 
 	useEffect(() => {
+		potree.pointBudget = budget;
+
 		if (!pointClouds.length) return;
 
 		// Only ever one point cloud
@@ -40,7 +43,7 @@ function Renderer() {
 
 		pointCloud.material.shape = shape;
 		pointCloud.material.size = size;
-	}, [size, shape]);
+	}, [size, shape, budget]);
 
 	useFrame(({ gl, camera }) => {
 		potree.updatePointClouds(pointClouds, camera, gl);
@@ -60,8 +63,13 @@ function Renderer() {
 
 export default function ({ className }: { className?: string }) {
 	return (
-		<Canvas id="potree-canvas" className={cn('rounded-lg border bg-card shadow-sm', className)}>
-			<Renderer />
-		</Canvas>
+		<div className={cn('relative rounded-lg border bg-card shadow-sm h-full w-full', className)}>
+			<p className="absolute bottom-3 left-5 z-10 text-2xl">
+				<span className="font-bold">NTP</span> LiDAR
+			</p>
+			<Canvas id="potree-canvas">
+				<Renderer />
+			</Canvas>
+		</div>
 	);
 }

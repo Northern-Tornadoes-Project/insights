@@ -146,12 +146,12 @@ export default function () {
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>{scan.name}</CardTitle>
-					<CardDescription>Upload the images captured from the camera.</CardDescription>
+					<CardDescription>Upload the scan LAZ or LAS..</CardDescription>
 				</CardHeader>
 				<Form method="post" encType="multipart/form-data">
 					<CardContent>
 						<fieldset className="grid gap-2" disabled={navigation.state === 'submitting'}>
-							<Label htmlFor="images">Images</Label>
+							<Label htmlFor="images">Scan File</Label>
 							<Input
 								type="file"
 								key="scan"

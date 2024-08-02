@@ -4,7 +4,6 @@ import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-r
 import { Form, useActionData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { mkdir } from 'node:fs/promises';
-import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
 import {

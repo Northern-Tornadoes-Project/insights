@@ -1,7 +1,5 @@
 {
-  "id": "86f0b07e-1cc6-4d9e-bd67-d7cf98f742a6",
-  "prevId": "208acc9a-6417-41e7-81b2-7857cb17b272",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.captures": {
@@ -164,41 +162,41 @@
         "path_segments_path_id_paths_id_fk": {
           "name": "path_segments_path_id_paths_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "paths",
           "columnsFrom": [
             "path_id"
           ],
+          "tableTo": "paths",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "path_segments_capture_id_captures_id_fk": {
           "name": "path_segments_capture_id_captures_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "captures",
           "columnsFrom": [
             "capture_id"
           ],
+          "tableTo": "captures",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "path_segments_street_view_id_captures_id_fk": {
           "name": "path_segments_street_view_id_captures_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "captures",
           "columnsFrom": [
             "street_view_id"
           ],
+          "tableTo": "captures",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -291,45 +289,45 @@
         "paths_created_by_users_id_fk": {
           "name": "paths_created_by_users_id_fk",
           "tableFrom": "paths",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "paths_updated_by_users_id_fk": {
           "name": "paths_updated_by_users_id_fk",
           "tableFrom": "paths",
-          "tableTo": "users",
           "columnsFrom": [
             "updated_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "paths_name_unique": {
           "name": "paths_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "name"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "paths_folder_name_unique": {
           "name": "paths_folder_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "folder_name"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -410,10 +408,10 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -458,8 +456,10 @@
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "86f0b07e-1cc6-4d9e-bd67-d7cf98f742a6",
+  "prevId": "208acc9a-6417-41e7-81b2-7857cb17b272"
 }

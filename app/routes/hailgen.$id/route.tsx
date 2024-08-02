@@ -49,7 +49,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
 	const boxfit = queriedHailpad.boxfit;
-	const maxDepth = "0"; // TODO
+	const maxDepth = '0'; // TODO
 	const adaptiveBlockSize = queriedHailpad.adaptiveBlockSize;
 	const adaptiveC = queriedHailpad.adaptiveC;
 	const hailpadId = queriedHailpad.id;
@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	// const formData = await request.formData();
 	// const boxfit = formData.get('boxfit');
 
-    const boxfitFetcher = useFetcher({ key: "boxfit"});
+	const boxfitFetcher = useFetcher({ key: 'boxfit' });
 
 	console.log('hello');
 
@@ -103,14 +103,7 @@ export default function () {
 	const [download, setDownload] = useState<boolean>(false);
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 
-	const { dents,
-		depthMapPath,
-		boxfit,
-		maxDepth,
-		adaptiveBlockSize,
-		adaptiveC,
-		hailpadName
-	} = data;
+	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName } = data;
 
 	useEffect(() => {
 		// Convert major and minor axes from px to mm based on boxfit length
@@ -187,7 +180,7 @@ export default function () {
 					adaptiveBlockSize={adaptiveBlockSize}
 					adaptiveC={adaptiveC}
 					// fetcher={fetcher}
-					onFilterChange={() => { }} // TODO
+					onFilterChange={() => {}} // TODO
 					onShowCentroids={setShowCentroids}
 					onDownload={setDownload}
 				/>

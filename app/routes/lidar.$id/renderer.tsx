@@ -1,13 +1,14 @@
 import { FlyControls, PointerLockControls } from '@react-three/drei';
-import { useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Potree, type PointCloudOctree } from 'potree-core';
 import { useEffect, useState } from 'react';
+import { cn } from '~/lib/utils';
 import { useStore } from './store';
 
 const potree = new Potree();
 potree.pointBudget = 200_000;
 
-export default function () {
+function Renderer() {
 	const { size, shape, setCameraPosition, setCameraRotation } = useStore();
 	const { scene } = useThree();
 	const [pointClouds, setPointClouds] = useState<PointCloudOctree[]>([]);
@@ -32,7 +33,7 @@ export default function () {
 	}, []);
 
 	useEffect(() => {
-		if (pointClouds.length === 0) return;
+		if (!pointClouds.length) return;
 
 		// Only ever one point cloud
 		const pointCloud = pointClouds[0];
@@ -54,5 +55,13 @@ export default function () {
 				<FlyControls movementSpeed={5} rollSpeed={0} />
 			</PointerLockControls>
 		</>
+	);
+}
+
+export default function ({ className }: { className?: string }) {
+	return (
+		<Canvas id="potree-canvas" className={cn('rounded-lg border bg-card shadow-sm', className)}>
+			<Renderer />
+		</Canvas>
 	);
 }

@@ -17,5 +17,5 @@ export const useStore = create<{
 	setShape: (shape: number) => set({ shape }),
 	setSize: (size: number) => set({ size }),
 	setCameraPosition: (cameraPosition: [number, number, number]) => set({ cameraPosition }),
-	setCameraRotation: (cameraRotation: [number, number, number]) => set({ cameraRotation }),
+	setCameraRotation: (cameraRotation: [number, number, number]) => set({ cameraRotation })
 }));

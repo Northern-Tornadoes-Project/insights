@@ -69,7 +69,7 @@ export default function Index() {
 					<h1 className="text-7xl">
 						<b>NTP</b> Insights
 					</h1>
-					<h3 className="text-2xl font-semibold">v{version}</h3>
+					<h3 className="text-2xl font-semibold">{`v${version}`}</h3>
 					<nav className="flex flex-col gap-2">
 						<div className="flex flex-row gap-2">
 							<Link to="/360">

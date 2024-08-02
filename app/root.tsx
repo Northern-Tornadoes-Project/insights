@@ -1,12 +1,12 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { json, LoaderFunctionArgs } from '@remix-run/node';
 import {
+	isRouteErrorResponse,
 	Link,
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
-	isRouteErrorResponse,
 	useLoaderData,
 	useRouteError,
 	useRouteLoaderData
@@ -23,9 +23,9 @@ import { Button } from './components/ui/button';
 // Return the theme from the session storage using the loader
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { getTheme } = await themeSessionResolver(request);
-	return {
+	return json({
 		theme: getTheme()
-	};
+	});
 }
 
 export default function AppWithProviders() {
@@ -38,6 +38,7 @@ export default function AppWithProviders() {
 }
 
 export function App() {
+	const data = useLoaderData<typeof loader>();
 	const [theme] = useTheme();
 
 	return (
@@ -46,10 +47,10 @@ export function App() {
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<Meta />
-				<PreventFlashOnWrongTheme ssrTheme={Boolean(theme)} />
+				<PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
 				<Links />
 			</head>
-			<body className="h-screen min-h-screen">
+			<body className="h-screen min-h-screen" suppressHydrationWarning>
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />

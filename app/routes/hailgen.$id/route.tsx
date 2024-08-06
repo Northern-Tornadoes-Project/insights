@@ -49,7 +49,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
 	const boxfit = queriedHailpad.boxfit;
-	const maxDepth = "0"; // TODO
+	const maxDepth = queriedHailpad.maxDepth;
 	const adaptiveBlockSize = queriedHailpad.adaptiveBlockSize;
 	const adaptiveC = queriedHailpad.adaptiveC;
 	const hailpadId = queriedHailpad.id;

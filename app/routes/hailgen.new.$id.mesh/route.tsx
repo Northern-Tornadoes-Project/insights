@@ -120,7 +120,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			},
 			body: JSON.stringify({
 				hailpad_id: params.id,
-				file_path: `${filePath}/hailpad.stl`
+				file_paths: [`${filePath}/hailpad.stl`]
 			})
 		});
 

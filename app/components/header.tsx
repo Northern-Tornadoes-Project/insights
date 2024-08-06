@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import { LucideTornado } from 'lucide-react';
+import cssl from '~/assets/cssl.svg';
 import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 import { UserAvatar } from './user-avatar';
@@ -27,7 +28,9 @@ export function Header({
 			<div className="flex flex-row items-center gap-4">
 				<Link to="/">
 					<Button variant="outline" size="icon">
-						<LucideTornado size={24} />
+						{/* <LucideTornado size={24} /> */}
+						{/* TODO: idk I thought I'd try it for fun */}
+						<img src={cssl} className="p-2" />
 					</Button>
 				</Link>
 				<h1 className="text-xl font-bold">

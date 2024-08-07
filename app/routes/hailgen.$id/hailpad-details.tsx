@@ -159,8 +159,8 @@ export default function HailpadDetails({
         onSubmit() {
             const formData = new FormData();
             formData.append(boxfitFields.boxfit.name, boxfitFields.boxfit.value || "");
-            console.log(formData);
-            boxfitFetcher.submit(formData);
+            // console.log(formData);
+            // boxfitFetcher.submit(formData);
         }
     });
 
@@ -221,10 +221,10 @@ export default function HailpadDetails({
                                         </Label>
                                     </div>
                                     <FormProvider context={boxfitForm.context}>
-                                        <boxfitFetcher.Form method="post" id={boxfitForm.id} onSubmit={boxfitForm.onSubmit}>
+                                        <Form method="post" id={boxfitForm.id} onSubmit={boxfitForm.onSubmit}>
                                             <div className="flex flex-row items-center mt-1">
                                                 <div className="w-48 mr-4">
-                                                    <Label htmlFor={boxfitFields.boxfit.id}>Box-fitting Length (mm)</Label>
+                                                    <Label>Box-fitting Length (mm)</Label>
                                                 </div>
                                                 <Input
                                                     className="w-20 h-8 mr-4"
@@ -240,7 +240,7 @@ export default function HailpadDetails({
                                                 </Button>
                                             </div>
                                             <p className="text-sm text-primary/60">{boxfitFields.boxfit.errors}</p>
-                                        </boxfitFetcher.Form>
+                                        </Form>
                                     </FormProvider>
                                     <FormProvider context={maxDepthForm.context}>
                                         <Form id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
@@ -273,7 +273,7 @@ export default function HailpadDetails({
                                             Adjust depth map thresholding.
                                         </CardDescription>
                                     </div>
-                                    <FormProvider context={thresholdForm.context}>
+                                    {/* <FormProvider context={thresholdForm.context}>
                                         <Form id={thresholdForm.id} onSubmit={boxfitForm.onSubmit}>
                                             <div className="flex flex-row justify-between mt-6 mb-2">
                                                 <Label htmlFor={thresholdFields.adaptiveBlockSize.id}>Adaptive Block Size</Label>
@@ -304,7 +304,7 @@ export default function HailpadDetails({
                                                 </Button>
                                             </div>
                                         </Form>
-                                    </FormProvider>
+                                    </FormProvider> */}
                                 </div>
                             </PopoverContent>
                         </Popover>

@@ -20,17 +20,6 @@ export function HailpadCard({
 					<CardTitle>{hailpad.name}</CardTitle>
 				</CardHeader>
 				<div className="flex flex-row items-center gap-2">
-					{loggedIn && (
-						<Button
-							variant="secondary"
-							size="icon"
-							onClick={() => {
-								window.location.href = `/hailgen/${hailpad.id}`;
-							}}
-						>
-							<LucideEdit />
-						</Button>
-					)}
 					<Button variant="outline" size="icon" onClick={onClose}>
 						<LucideX />
 					</Button>

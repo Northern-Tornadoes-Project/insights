@@ -9,6 +9,7 @@ import { env } from '~/env.server';
 
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
+import { protectedRoute } from '~/lib/auth.server';
 
 const HailpadMap = lazy(() => import('./hailpad-map'));
 
@@ -67,36 +68,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	// const formData = await request.formData();
-	// const boxfit = formData.get('boxfit');
+export async function action({ request, params }: ActionFunctionArgs) {
+	if (!params.id) return;
 
-    const boxfitFetcher = useFetcher({ key: "boxfit"});
+	const userId = await protectedRoute(request);
+	
+	const formData = await request.formData();
+	const boxfit = formData.get('boxfit');
 
-	console.log('hello');
+	if (boxfit) {
+		await db
+			.update(hailpad)
+			.set({
+				boxfit: boxfit.toString(),
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
+	} // else if TODO
 
-	const boxfit = await boxfitFetcher.formData?.get('boxfit');
-	// const boxfit = formData.get('boxfit');
-
-	const hailpadId = useLoaderData<typeof loader>().hailpadId;
-
-	console.log(boxfit);
-
-	if (!boxfit) return;
-
-	await db
-		.update(hailpad)
-		.set({
-			boxfit: boxfit.toString(),
-			// updatedBy: TODO,
-			updatedAt: new Date()
-		})
-		.where(eq(hailpad.id, hailpadId));
+	return null;
 }
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
-	// const fetcher = useFetcher();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
@@ -109,10 +104,15 @@ export default function () {
 		maxDepth,
 		adaptiveBlockSize,
 		adaptiveC,
+		hailpadId,
 		hailpadName
 	} = data;
 
 	useEffect(() => {
+		// Store hailpad ID and user ID in session storage
+		sessionStorage.setItem('hailpadId', hailpadId);
+		// sessionStorage.setItem('userId', TODO);
+
 		// Convert major and minor axes from px to mm based on boxfit length
 		const scaledDents = dents.map((dent: HailpadDent) => {
 			return {
@@ -124,7 +124,7 @@ export default function () {
 			};
 		});
 		setDentData(scaledDents);
-	}, []);
+	}, [boxfit]);
 
 	useEffect(() => {
 		if (download) {
@@ -186,7 +186,6 @@ export default function () {
 					maxDepth={maxDepth}
 					adaptiveBlockSize={adaptiveBlockSize}
 					adaptiveC={adaptiveC}
-					// fetcher={fetcher}
 					onFilterChange={() => { }} // TODO
 					onShowCentroids={setShowCentroids}
 					onDownload={setDownload}

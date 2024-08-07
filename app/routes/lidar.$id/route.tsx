@@ -6,7 +6,7 @@ const Renderer = lazy(() => import('./renderer'));
 
 export default function () {
 	return (
-		<main className="flex flex-row justify-between gap-2">
+		<main className="flex flex-col lg:flex-row justify-between gap-2">
 			<div className="h-[750px] w-full">
 				<Suspense fallback={<Skeleton />}>
 					<Renderer />

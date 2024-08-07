@@ -72,8 +72,8 @@ export function Options() {
 						</div>
 					</TabsContent>
 					<TabsContent value="debug" className="flex flex-col gap-4">
-						<div className="grid grid-cols-2">
-							<div className="flex w-full flex-col gap-1">
+						<div className="flex flex-row items-center gap-4">
+							<div className="flex flex-col gap-1">
 								<p className="text-sm font-medium">Camera Position</p>
 								<div className="flex w-full flex-row gap-1 text-sm font-normal">
 									{cameraPosition.map((coord, i) => (
@@ -83,7 +83,7 @@ export function Options() {
 									))}
 								</div>
 							</div>
-							<div className="flex w-full flex-col gap-1">
+							<div className="flex flex-col gap-1">
 								<p className="text-sm font-medium">Camera Rotation</p>
 								<div className="flex w-full flex-row gap-1 text-sm font-normal">
 									{cameraRotation.map((coord, i) => (

@@ -25,6 +25,7 @@ import { Label } from '~/components/ui/label';
 import { Spinner } from '~/components/ui/spinner';
 import { db, updatePathSize } from '~/db/db.server';
 import { paths } from '~/db/schema';
+import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { buildUploadHandler, clearUploads } from './uploader.server';
 
@@ -135,7 +136,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	await db
 		.update(paths)
 		.set({
-			status: 'processing'
+			status: env.SERVICE_360_ENABLED ? 'processing' : 'complete'
 		})
 		.where(eq(paths.id, path.id));
 

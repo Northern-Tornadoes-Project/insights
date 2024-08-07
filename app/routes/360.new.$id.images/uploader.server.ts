@@ -26,9 +26,7 @@ export const clearUploads = async (folderName: string, pathId: string) => {
 		streetViewId: pathSegments.streetViewId
 	});
 
-	if (!deleted) {
-		throw new Error('Could not delete segments');
-	}
+	if (!deleted) throw new Error('Could not delete segments');
 
 	const captureIds = [
 		...deleted.map((segment) => segment.captureId),
@@ -37,6 +35,10 @@ export const clearUploads = async (folderName: string, pathId: string) => {
 
 	if (captureIds.length > 0)
 		await db.delete(captures).where(inArray(captures.id, captureIds as string[]));
+
+	console.log(
+		`Deleted ${deleted.length} segments and ${captureIds.length} captures for path ${pathId}`
+	);
 };
 
 export const buildUploadHandler = ({

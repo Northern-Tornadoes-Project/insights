@@ -9,16 +9,11 @@ import { Checkbox } from '~/components/ui/checkbox';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { FormProvider, useForm } from '@conform-to/react';
-import { Form, useActionData, useFetcher, useLoaderData, useSubmit } from '@remix-run/react';
-// import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-// import { protectedRoute } from '~/lib/auth.server';
+import { Form, useFetcher } from '@remix-run/react';
 import { parseWithZod } from '@conform-to/zod';
 import { z } from 'zod';
 import { Separator } from '~/components/ui/separator';
 import { Slider } from '~/components/ui/slider';
-// import { db } from '~/db/db.server';
-// import { hailpad } from '~/db/schema';
-// import { eq } from 'drizzle-orm';
 
 interface HailpadDent {
     // TODO: Use shared interface
@@ -60,44 +55,14 @@ function createSchema() {
     });
 }
 
-// export async function loader({ params, request }: LoaderFunctionArgs) {
-//     const { id } = params;
-
-//     await protectedRoute(request);
-//     return id;
-// }
-
-// export async function action({ request }: ActionFunctionArgs) {
-//     const userId = await protectedRoute(request);
-//     const formData = await request.formData();
-//     const submission = await parseWithZod(formData, {
-//         schema: createSchema(),
-//         async: true
-//     });
-
-//     if (submission.status !== 'success') {
-//         return json(submission.reply());
-//     }
-
-//     const { boxfit } = submission.value;
-//     const id = useLoaderData<typeof loader>();
-
-//     await db
-//         .update(hailpad)
-//         .set({ boxfit: Number(boxfit).toString(), updatedBy: userId })
-//         .where(eq(hailpad.id, id));
-// }
-
 export default function HailpadDetails({
     dentData,
     boxfit,
     maxDepth,
     adaptiveBlockSize,
     adaptiveC,
-    // fetcher,
     onFilterChange,
     onShowCentroids,
-    // onBoxfitChange,
     onDownload
 }: {
     dentData: HailpadDent[];
@@ -105,7 +70,6 @@ export default function HailpadDetails({
     maxDepth: string;
     adaptiveBlockSize: string;
     adaptiveC: string;
-    // fetcher: any;
     onFilterChange: (value: object) => void; // TODO: Define interface
     onShowCentroids: (value: boolean) => void;
     onDownload: (value: boolean) => void;
@@ -124,33 +88,9 @@ export default function HailpadDetails({
 
     const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
-    // const lastResult = useActionData<typeof action>();
-    // const [boxfitForm, boxfitFields] = useForm({
-    //     lastResult,
-    //     onValidate({ formData }) {
-    //         return parseWithZod(formData, { schema: createSchema() });
-    //     }
-    // });
-
-    // const [boxfitForm, boxfitFields] = useForm({
-    //     onValidate({ formData }) {
-    //         return parseWithZod(formData, { schema: createSchema() });
-    //     },
-    //     onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    //         event.preventDefault();
-    //         const formData = new FormData(event.target as HTMLFormElement);
-    //         const boxfit = Number(formData.get(boxfitFields.boxfit.name));
-    //         onBoxfitChange(Number(boxfit));
-    //     }
-    // });
-
     const [maxDepthForm, maxDepthFields] = useForm({}); // TODO
     const [thresholdForm, thresholdFields] = useForm({}); // TODO
     const [filterForm, filterFields] = useForm({}); // TODO
-
-    // const submit = useSubmit();
-
-    const boxfitFetcher = useFetcher({ key: "boxfit"});
 
     const [boxfitForm, boxfitFields] = useForm({
         onValidate({ formData }) {
@@ -159,13 +99,8 @@ export default function HailpadDetails({
         onSubmit() {
             const formData = new FormData();
             formData.append(boxfitFields.boxfit.name, boxfitFields.boxfit.value || "");
-            // console.log(formData);
-            // boxfitFetcher.submit(formData);
         }
     });
-
-    // const formData = new FormData();
-    // fetcher.submit(event.currentTarget.form, { method: "post" });
 
     useEffect(() => {
         setMinMinor(Math.min(...dentData.map((dent) => Number(dent.minorAxis))));

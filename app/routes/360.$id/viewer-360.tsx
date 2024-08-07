@@ -1,6 +1,6 @@
 import { CameraControls, Html, useProgress } from '@react-three/drei';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { XR, useXR, useXRControllerState, useXRStore } from '@react-three/xr';
+import { VRButton, XR, useController, useXR } from '@react-three/xr';
 import {
 	LucideChevronDown,
 	LucideChevronUp,
@@ -37,11 +37,11 @@ function MovementController(props: {
 	on3Fwd?: () => void;
 	on3Bwd?: () => void;
 }) {
-	const { mode } = useXR();
-	const controller = useXRControllerState(props.hand);
+	const { player } = useXR();
+	const controller = useController(props.hand);
 
 	useFrame(() => {
-		if (controller && mode === 'immersive-vr') {
+		if (controller && player) {
 			const gamepad = controller.inputSource?.gamepad;
 
 			// Buttons
@@ -138,14 +138,14 @@ export default function Viewer360({
 	onJumpPrevious: () => void;
 	className?: string;
 }) {
-	const fullscreenRef = useRef<HTMLDivElement>(null);
 	const cameraControlsRef = useRef<CameraControls>(null);
 	const [hidden, setHidden] = useState(false);
 	const [fullscreen, setFullscreen] = useState(false);
+	const [vr, setVR] = useState(false);
 	const [input, setInput] = useState(false);
 	const [startingAngle, setStartingAngle] = useState(capture.heading ? Number(capture.heading) : 0);
 	const [rotation, setRotation] = useState(0);
-	const store = useXRStore();
+	const fullscreenRef = useRef<HTMLDivElement>(null);
 
 	const toggleFullscreen = async () => {
 		if (fullscreen) {
@@ -277,8 +277,7 @@ export default function Viewer360({
 			<div className="absolute bottom-0 right-0 z-10 m-2 flex flex-row gap-4">
 				<button
 					onClick={() => {
-						if (store.getState().mode === 'immersive-vr') return;
-						store.enterVR();
+						setVR(!vr);
 					}}
 					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 				>
@@ -295,6 +294,7 @@ export default function Viewer360({
 					{fullscreen ? <LucideShrink /> : <LucideExpand />}
 				</button>
 			</div>
+			{vr ? <VRButton /> : null}
 			<Canvas className="touch-none">
 				<CameraControls
 					ref={cameraControlsRef}
@@ -322,7 +322,7 @@ export default function Viewer360({
 						setRotation(radToDeg(cameraControlsRef.current.azimuthAngle));
 					}}
 				/>
-				<XR store={store}>
+				<XR>
 					<MovementController
 						hand="left"
 						on1={() => {

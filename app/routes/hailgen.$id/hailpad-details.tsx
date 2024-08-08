@@ -47,11 +47,19 @@ function DetailSection({ min, max, avg }: { min: number; max: number; avg: numbe
     );
 }
 
-function createSchema() {
+function createBoxfitSchema() {
     return z.object({
         boxfit: z.number().min(0, {
             message: 'Box-fitting length must be positive.'
-        })
+        }),
+    });
+}
+
+function createMaxDepthSchema() {
+    return z.object({
+        maxDepth: z.number().min(0, {
+            message: 'Max. depth length must be positive.'
+        }),
     });
 }
 
@@ -88,17 +96,26 @@ export default function HailpadDetails({
 
     const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
-    const [maxDepthForm, maxDepthFields] = useForm({}); // TODO
     const [thresholdForm, thresholdFields] = useForm({}); // TODO
     const [filterForm, filterFields] = useForm({}); // TODO
 
     const [boxfitForm, boxfitFields] = useForm({
         onValidate({ formData }) {
-            return parseWithZod(formData, { schema: createSchema() });
+            return parseWithZod(formData, { schema: createBoxfitSchema() });
         },
         onSubmit() {
             const formData = new FormData();
             formData.append(boxfitFields.boxfit.name, boxfitFields.boxfit.value || "");
+        }
+    });
+
+    const [maxDepthForm, maxDepthFields] = useForm({
+        onValidate({ formData }) {
+            return parseWithZod(formData, { schema: createMaxDepthSchema() });
+        },
+        onSubmit() {
+            const formData = new FormData();
+            formData.append(maxDepthFields.maxDepth.name, maxDepthFields.maxDepth.value || "");
         }
     });
 
@@ -178,17 +195,17 @@ export default function HailpadDetails({
                                         </Form>
                                     </FormProvider>
                                     <FormProvider context={maxDepthForm.context}>
-                                        <Form id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
+                                        <Form method="post" id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
                                             <div className="flex flex-row items-center mt-1">
                                                 <div className="w-48 mr-4">
-                                                    <Label htmlFor={maxDepthFields.boxfit.id}>Maximum Depth (mm)</Label>
+                                                    <Label htmlFor={maxDepthFields.maxDepth.id}>Maximum Depth (mm)</Label>
                                                 </div>
                                                 <Input
                                                     className="w-20 h-8 mr-4"
                                                     type="number"
                                                     key={maxDepthFields.maxDepth.key}
                                                     name={maxDepthFields.maxDepth.name}
-                                                    // defaultValue={maxDepthFields.maxDepth.initialValue} TODO
+                                                    // defaultValue={maxDepthFields.maxDepth.initialValue}
                                                     placeholder={maxDepth}
                                                     step="any"
                                                 />

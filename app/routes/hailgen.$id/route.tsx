@@ -72,15 +72,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	if (!params.id) return;
 
 	const userId = await protectedRoute(request);
-	
+
 	const formData = await request.formData();
 	const boxfit = formData.get('boxfit');
+	const maxDepth = formData.get('maxDepth');
 
 	if (boxfit) {
 		await db
 			.update(hailpad)
 			.set({
 				boxfit: boxfit.toString(),
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
+	} else if (maxDepth) {
+		await db
+			.update(hailpad)
+			.set({
+				maxDepth: maxDepth.toString(),
 				updatedBy: userId,
 				updatedAt: new Date()
 			})
@@ -124,7 +134,7 @@ export default function () {
 			};
 		});
 		setDentData(scaledDents);
-	}, [boxfit]);
+	}, [boxfit, maxDepth]);
 
 	useEffect(() => {
 		if (download) {

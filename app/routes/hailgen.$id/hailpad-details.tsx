@@ -9,7 +9,7 @@ import { Checkbox } from '~/components/ui/checkbox';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { FormProvider, useForm } from '@conform-to/react';
-import { Form, useFetcher } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 import { parseWithZod } from '@conform-to/zod';
 import { z } from 'zod';
 import { Separator } from '~/components/ui/separator';
@@ -63,6 +63,17 @@ function createMaxDepthSchema() {
     });
 }
 
+function createThresholdSchema() {
+    return z.object({
+        adaptiveBlock: z.number().min(-25, {
+            message: 'Adaptive block size must be at least -25.'
+        }),
+        adaptiveC: z.number().min(-10, {
+            message: 'Adaptive C-value must be at least -10.'
+        }),
+    });
+}
+
 export default function HailpadDetails({
     dentData,
     boxfit,
@@ -96,9 +107,6 @@ export default function HailpadDetails({
 
     const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
-    const [thresholdForm, thresholdFields] = useForm({}); // TODO
-    const [filterForm, filterFields] = useForm({}); // TODO
-
     const [boxfitForm, boxfitFields] = useForm({
         onValidate({ formData }) {
             return parseWithZod(formData, { schema: createBoxfitSchema() });
@@ -118,6 +126,19 @@ export default function HailpadDetails({
             formData.append(maxDepthFields.maxDepth.name, maxDepthFields.maxDepth.value || "");
         }
     });
+
+    const [thresholdForm, thresholdFields] = useForm({
+        onValidate({ formData }) {
+            return parseWithZod(formData, { schema: createThresholdSchema() });
+        },
+        onSubmit() {
+            const formData = new FormData();
+            formData.append(thresholdFields.adaptiveBlock.name, thresholdFields.adaptiveBlock.value || "");
+            formData.append(thresholdFields.adaptiveC.name, thresholdFields.adaptiveC.value || "");
+        }
+    });
+
+    const [filterForm, filterFields] = useForm({}); // TODO
 
     useEffect(() => {
         setMinMinor(Math.min(...dentData.map((dent) => Number(dent.minorAxis))));
@@ -205,7 +226,7 @@ export default function HailpadDetails({
                                                     type="number"
                                                     key={maxDepthFields.maxDepth.key}
                                                     name={maxDepthFields.maxDepth.name}
-                                                    // defaultValue={maxDepthFields.maxDepth.initialValue}
+                                                    defaultValue={maxDepthFields.maxDepth.initialValue}
                                                     placeholder={maxDepth}
                                                     step="any"
                                                 />
@@ -225,14 +246,16 @@ export default function HailpadDetails({
                                             Adjust depth map thresholding.
                                         </CardDescription>
                                     </div>
-                                    {/* <FormProvider context={thresholdForm.context}>
-                                        <Form id={thresholdForm.id} onSubmit={boxfitForm.onSubmit}>
+                                    <FormProvider context={thresholdForm.context}>
+                                        <Form id={thresholdForm.id} method="post" onSubmit={thresholdForm.onSubmit}>
                                             <div className="flex flex-row justify-between mt-6 mb-2">
-                                                <Label htmlFor={thresholdFields.adaptiveBlockSize.id}>Adaptive Block Size</Label>
+                                                <Label htmlFor={thresholdFields.adaptiveBlock.id}>Adaptive Block Size</Label>
                                                 <CardDescription>{adaptiveBlockSliderValue}</CardDescription>
                                             </div>
                                             <Slider
                                                 defaultValue={[Number(adaptiveBlockSize)]}
+                                                key={thresholdFields.adaptiveBlock.key}
+                                                name={thresholdFields.adaptiveBlock.name}
                                                 min={-25}
                                                 max={25}
                                                 step={1}
@@ -244,6 +267,8 @@ export default function HailpadDetails({
                                             </div>
                                             <Slider
                                                 defaultValue={[Number(adaptiveC)]}
+                                                key={thresholdFields.adaptiveC.key}
+                                                name={thresholdFields.adaptiveC.name}
                                                 min={-10}
                                                 max={10}
                                                 step={1}
@@ -256,7 +281,7 @@ export default function HailpadDetails({
                                                 </Button>
                                             </div>
                                         </Form>
-                                    </FormProvider> */}
+                                    </FormProvider>
                                 </div>
                             </PopoverContent>
                         </Popover>

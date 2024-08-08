@@ -74,6 +74,29 @@ function createThresholdSchema() {
     });
 }
 
+function createFilterSchema() {
+    return z.object({
+        minMinor: z.number().min(0, {
+            message: 'Lower bound of minor axis must be positive.'
+        }),
+        maxMinor: z.number().min(0, {
+            message: 'Upper bound of minor axis must be greater than lower bound.'
+        }),
+        minMajor: z.number().min(0, {
+            message: 'Lower bound of major axis must be positive.'
+        }),
+        maxMajor: z.number().min(0, {
+            message: 'Upper bound of major axis must be greater than lower bound.'
+        })
+    }).refine(data => data.maxMinor > data.minMinor, {
+        path: ['maxMinor'], // path to the error
+        message: 'Upper bound of minor axis must be greater than lower bound.'
+    }).refine(data => data.maxMajor > data.minMajor, {
+        path: ['maxMajor'], // path to the error
+        message: 'Upper bound of major axis must be greater than lower bound.'
+    });
+}
+
 export default function HailpadDetails({
     dentData,
     boxfit,
@@ -89,7 +112,7 @@ export default function HailpadDetails({
     maxDepth: string;
     adaptiveBlockSize: string;
     adaptiveC: string;
-    onFilterChange: (value: object) => void; // TODO: Define interface
+    onFilterChange: (value: { minMinor: number; maxMinor: number; minMajor: number; maxMajor: number; }) => void;
     onShowCentroids: (value: boolean) => void;
     onDownload: (value: boolean) => void;
 }) {
@@ -107,6 +130,7 @@ export default function HailpadDetails({
 
     const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
+    // TODO: Minimize code duplication (?)
     const [boxfitForm, boxfitFields] = useForm({
         onValidate({ formData }) {
             return parseWithZod(formData, { schema: createBoxfitSchema() });
@@ -138,7 +162,20 @@ export default function HailpadDetails({
         }
     });
 
-    const [filterForm, filterFields] = useForm({}); // TODO
+    const [filterForm, filterFields] = useForm({
+        onValidate({ formData }) {
+            return parseWithZod(formData, { schema: createFilterSchema() });
+        },
+        onSubmit() {
+            // TODO: Don't create needless query params
+            onFilterChange({
+                minMinor: Number(filterFields.minMinor.value) || 0,
+                maxMinor: Number(filterFields.maxMinor.value) || Infinity,
+                minMajor: Number(filterFields.minMajor.value) || 0,
+                maxMajor: Number(filterFields.maxMajor.value) || Infinity,
+            });
+        }
+    });
 
     useEffect(() => {
         setMinMinor(Math.min(...dentData.map((dent) => Number(dent.minorAxis))));
@@ -316,14 +353,25 @@ export default function HailpadDetails({
                                             </CardDescription>
                                         </div>
                                         <FormProvider context={filterForm.context}>
-                                            <Form id={filterForm.id} onSubmit={filterForm.onSubmit}>
+                                            <Form
+                                                id={filterForm.id}
+                                                onReset={() => {
+                                                    onFilterChange({
+                                                        minMinor: 0,
+                                                        maxMinor: Infinity,
+                                                        minMajor: 0,
+                                                        maxMajor: Infinity
+                                                    });
+                                                }}
+                                                onSubmit={filterForm.onSubmit}
+                                            >
                                                 <div className="flex flex-row items-center mt-1 justify-between text-sm">
                                                     <Input
                                                         className="w-20 h-8"
                                                         type="number"
                                                         key={filterFields.minMinor.key}
                                                         name={filterFields.minMinor.name}
-                                                        // defaultValue={filterFields.minMinor.initialValue} TODO
+                                                        defaultValue={filterFields.minMinor.initialValue}
                                                         placeholder="Min."
                                                         step="any"
                                                     />
@@ -335,7 +383,7 @@ export default function HailpadDetails({
                                                         type="number"
                                                         key={filterFields.maxMinor.key}
                                                         name={filterFields.maxMinor.name}
-                                                        // defaultValue={filterFields.maxMinor.initialValue} TODO
+                                                        defaultValue={filterFields.maxMinor.initialValue}
                                                         placeholder="Max."
                                                         step="any"
                                                     />
@@ -346,7 +394,7 @@ export default function HailpadDetails({
                                                         type="number"
                                                         key={filterFields.minMajor.key}
                                                         name={filterFields.minMajor.name}
-                                                        // defaultValue={filterFields.minMajor.initialValue} TODO
+                                                        defaultValue={filterFields.minMajor.initialValue}
                                                         placeholder="Min."
                                                         step="any"
                                                     />
@@ -358,7 +406,7 @@ export default function HailpadDetails({
                                                         type="number"
                                                         key={filterFields.maxMajor.key}
                                                         name={filterFields.maxMajor.name}
-                                                        // defaultValue={filterFields.maxMajor.initialValue} TODO
+                                                        defaultValue={filterFields.maxMajor.initialValue}
                                                         placeholder="Max."
                                                         step="any"
                                                     />

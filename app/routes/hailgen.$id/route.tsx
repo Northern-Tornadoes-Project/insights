@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -162,131 +162,147 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		}
 	} // else if TODO
 
-		return null;
-	}
+	return null;
+}
 
-	export default function () {
-		const data = useLoaderData<typeof loader>();
+export default function () {
+	const data = useLoaderData<typeof loader>();
 
-		const [currentIndex, setCurrentIndex] = useState<number>(0);
-		const [showCentroids, setShowCentroids] = useState<boolean>(false);
-		const [download, setDownload] = useState<boolean>(false);
-		const [dentData, setDentData] = useState<HailpadDent[]>([]);
+	const [currentIndex, setCurrentIndex] = useState<number>(0);
+	const [showCentroids, setShowCentroids] = useState<boolean>(false);
+	const [download, setDownload] = useState<boolean>(false);
+	const [dentData, setDentData] = useState<HailpadDent[]>([]);
+	const [filters, setFilters] = useState<{
+		minMinor: number,
+		maxMinor: number,
+		minMajor: number,
+		maxMajor: number
+	}>({
+		minMinor: 0,
+		maxMinor: Infinity,
+		minMajor: 0,
+		maxMajor: Infinity
+	});
 
-		const { dents,
-			depthMapPath,
-			boxfit,
-			maxDepth,
-			adaptiveBlockSize,
-			adaptiveC,
-			hailpadId,
-			hailpadName
-		} = data;
+	const { dents,
+		depthMapPath,
+		boxfit,
+		maxDepth,
+		adaptiveBlockSize,
+		adaptiveC,
+		hailpadName
+	} = data;
 
-		useEffect(() => {
-			// Store hailpad ID and user ID in session storage
-			sessionStorage.setItem('hailpadId', hailpadId);
-			// sessionStorage.setItem('userId', TODO);
+	useEffect(() => {
+		// Convert major and minor axes from px to mm based on boxfit length
+		const scaledDents = dents.map((dent: HailpadDent) => {
+			return {
+				angle: dent.angle,
+				centroidX: dent.centroidX,
+				centroidY: dent.centroidY,
+				majorAxis: String((Number(dent.majorAxis) / 1000) * Number(boxfit)),
+				minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit))
+			};
+		});
 
-			// Convert major and minor axes from px to mm based on boxfit length
-			const scaledDents = dents.map((dent: HailpadDent) => {
-				return {
-					angle: dent.angle,
-					centroidX: dent.centroidX,
-					centroidY: dent.centroidY,
-					majorAxis: String((Number(dent.majorAxis) / 1000) * Number(boxfit)),
-					minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit))
-				};
+		// Filter dent data based on user input
+		const filteredDents = scaledDents.filter((dent: HailpadDent) => {
+			return (
+				Number(dent.minorAxis) >= filters.minMinor &&
+				Number(dent.minorAxis) <= filters.maxMinor &&
+				Number(dent.majorAxis) >= filters.minMajor &&
+				Number(dent.majorAxis) <= filters.maxMajor
+			);
+		});
+		setDentData(filteredDents);
+	}, [boxfit, maxDepth, filters]);
+
+	useEffect(() => {
+		if (download) {
+			setDownload(false);
+
+			// Prepare dent data for CSV
+			const headers = ['Minor Axis (mm)', 'Major Axis (mm)'];
+			const csvData = dentData.map((dent) => {
+				return `${dent.minorAxis},${dent.majorAxis}`;
 			});
-			setDentData(scaledDents);
-		}, [boxfit, maxDepth]);
 
-		useEffect(() => {
-			if (download) {
-				setDownload(false);
+			// Prepend headers to CSV data
+			csvData.unshift(headers.join(','));
+			const csv = csvData.join('\n');
+			const blob = new Blob([csv], { type: 'text/csv' });
 
-				// Prepare dent data for CSV
-				const headers = ['Minor Axis (mm)', 'Major Axis (mm)'];
-				const csvData = dentData.map((dent) => {
-					return `${dent.minorAxis},${dent.majorAxis}`;
-				});
+			// Download CSV
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${hailpadName}.csv`;
+			a.click();
+		}
+	}, [download]);
 
-				// Prepend headers to CSV data
-				csvData.unshift(headers.join(','));
-				const csv = csvData.join('\n');
-				const blob = new Blob([csv], { type: 'text/csv' });
-
-				// Download CSV
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = `${hailpadName}.csv`;
-				a.click();
-			}
-		}, [download]);
-
-		return (
-			<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-5">
-				<Card className="row-span-5 h-min lg:col-span-2">
-					<CardHeader>
-						<CardTitle>{hailpadName}</CardTitle>
-						<CardDescription>
-							View the interactable hailpad depth map with dent analysis.
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<Suspense
-							fallback={
-								<div className="overflow-hidden rounded-md">
-									<div className="flex h-full flex-col items-center justify-center">
-										<div className="text-2xl font-bold">Loading</div>
-									</div>
+	return (
+		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-5">
+			<Card className="row-span-5 h-min lg:col-span-2">
+				<CardHeader>
+					<CardTitle>{hailpadName}</CardTitle>
+					<CardDescription>
+						View the interactable hailpad depth map with dent analysis.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Suspense
+						fallback={
+							<div className="overflow-hidden rounded-md">
+								<div className="flex h-full flex-col items-center justify-center">
+									<div className="text-2xl font-bold">Loading</div>
 								</div>
-							}
-						>
-							<HailpadMap
-								index={currentIndex}
-								dentData={dentData}
-								depthMapPath={depthMapPath}
-								showCentroids={showCentroids}
-								onIndexChange={setCurrentIndex}
-							/>
-						</Suspense>
-					</CardContent>
-				</Card>
-				<div className="lg:row-span-3">
-					<HailpadDetails
-						dentData={dentData}
-						boxfit={boxfit}
-						maxDepth={maxDepth}
-						adaptiveBlockSize={adaptiveBlockSize}
-						adaptiveC={adaptiveC}
-						onFilterChange={() => { }} // TODO
-						onShowCentroids={setShowCentroids}
-						onDownload={setDownload}
-					/>
-				</div>
-				<div className="lg:row-span-2">
-					<DentDetails
-						dentData={dentData}
-						index={currentIndex}
-						onPrevious={() => {
-							if (currentIndex - 1 >= 0) {
-								setCurrentIndex(currentIndex - 1);
-							} else {
-								setCurrentIndex(dentData.length - 1);
-							}
-						}}
-						onNext={() => {
-							if (currentIndex + 1 < dentData.length) {
-								setCurrentIndex(currentIndex + 1);
-							} else {
-								setCurrentIndex(0);
-							}
-						}}
-						onIndexChange={setCurrentIndex}
-					/>
-				</div>
+							</div>
+						}
+					>
+						<HailpadMap
+							index={currentIndex}
+							dentData={dentData}
+							depthMapPath={depthMapPath}
+							showCentroids={showCentroids}
+							onIndexChange={setCurrentIndex}
+						/>
+					</Suspense>
+				</CardContent>
+			</Card>
+			<div className="lg:row-span-3">
+				<HailpadDetails
+					dentData={dentData}
+					boxfit={boxfit}
+					maxDepth={maxDepth}
+					adaptiveBlockSize={adaptiveBlockSize}
+					adaptiveC={adaptiveC}
+					onFilterChange={setFilters}
+					onShowCentroids={setShowCentroids}
+					onDownload={setDownload}
+				/>
 			</div>
-		);
-	}
+			<div className="lg:row-span-2">
+				<DentDetails
+					dentData={dentData}
+					index={currentIndex}
+					onPrevious={() => {
+						if (currentIndex - 1 >= 0) {
+							setCurrentIndex(currentIndex - 1);
+						} else {
+							setCurrentIndex(dentData.length - 1);
+						}
+					}}
+					onNext={() => {
+						if (currentIndex + 1 < dentData.length) {
+							setCurrentIndex(currentIndex + 1);
+						} else {
+							setCurrentIndex(0);
+						}
+					}}
+					onIndexChange={setCurrentIndex}
+				/>
+			</div>
+		</div>
+	);
+}

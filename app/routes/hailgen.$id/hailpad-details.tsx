@@ -63,7 +63,7 @@ function createMaxDepthSchema() {
     });
 }
 
-function createThresholdSchema() {
+function createThresholdSchema() { // TODO: Remove schema (?)
     return z.object({
         adaptiveBlock: z.number().min(-25, {
             message: 'Adaptive block size must be at least -25.'

@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
+import { FormProvider, useForm } from '@conform-to/react';
+import { Form } from '@remix-run/react';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { Label } from '~/components/ui/label';
+import { parseWithZod } from '@conform-to/zod';
+import { z } from 'zod';
 
 interface HailpadDent {
     // TODO: Use shared interface
@@ -12,6 +17,20 @@ interface HailpadDent {
     centroidY: string;
     majorAxis: string;
     minorAxis: string;
+}
+
+function createUpdateSchema() {
+    return z.object({
+        minor: z.number().min(0, {
+            message: 'Minor axis must be positive.'
+        }),
+        major: z.number().min(0, {
+            message: 'Major axis must be greater than minor axis.'
+        }),
+    }).refine(data => data.major > data.minor, {
+        path: ['major'],
+        message: 'Major axis must be greater than minor axis.'
+    });
 }
 
 function Detail({ label, value }: { label: string; value?: string }) {
@@ -50,6 +69,24 @@ export default function DentDetails({
 
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
+    const [deleteForm, deleteFields] = useForm({
+        onSubmit() {
+            const formData = new FormData();
+            formData.append("index", String(index) || "");
+        }
+    });
+
+    const [updateForm, updateFields] = useForm({
+        onValidate({ formData }) {
+            return parseWithZod(formData, { schema: createUpdateSchema() });
+        },
+        onSubmit() {
+            const formData = new FormData();
+            formData.append(updateFields.minor.name, updateFields.minor.value || "");
+            formData.append(updateFields.major.name, updateFields.major.value || "");
+        }
+    });
+
     useEffect(() => {
         if (dentData.length === 0) return;
         setMinor(Number(dentData[index].minorAxis));
@@ -68,12 +105,31 @@ export default function DentDetails({
                         <div className="space-x-2">
                             <Popover>
                                 <PopoverTrigger>
-                                    <Button asChild variant="outline" className="w-8 h-8 p-2 hover:text-red-500">
+                                    <Button asChild variant="outline" className="w-8 h-8 p-2 hover:text-red-600">
                                         <Trash2 />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent>
-                                    TODO
+                                <PopoverContent className="w-56">
+                                    <div className="space-y-4">
+                                        <div className="mb-2">
+                                            <p className="font-semibold text-lg">
+                                                Delete
+                                            </p>
+                                            <CardDescription className="text-sm">
+                                                Delete the selected dent.
+                                            </CardDescription>
+                                        </div>
+                                        <FormProvider context={deleteForm.context}>
+                                            <Form id={deleteForm.id} onSubmit={deleteForm.onSubmit}>
+                                                <div className="flex flex-row">
+                                                    <Button type="submit" variant="secondary" className="flex flex-row justify-between items-center space-x-2 mt-6 h-8 p-4 px-3 pr-2 hover:bg-red-600 text-sm w-full">
+                                                        Delete Dent {index + 1}
+                                                        <CornerDownLeft className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </Form>
+                                        </FormProvider>
+                                    </div>
                                 </PopoverContent>
                             </Popover>
                             <Popover>
@@ -82,8 +138,56 @@ export default function DentDetails({
                                         <Pencil />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent>
-                                    TODO
+                                <PopoverContent className="w-76">
+                                    <div className="space-y-4">
+                                        <div className="mb-6">
+                                            <p className="font-semibold text-lg">
+                                                Update
+                                            </p>
+                                            <CardDescription className="text-sm">
+                                                Modify the selected dent's details.
+                                            </CardDescription>
+                                        </div>
+                                        <FormProvider context={updateForm.context}>
+                                            <Form method="post" id={updateForm.id} onSubmit={updateForm.onSubmit}>
+                                                <div className="flex flex-row items-center mt-1">
+                                                    <div className="w-48 mr-4">
+                                                        <Label>Minor Axis (mm)</Label>
+                                                    </div>
+                                                    <Input
+                                                        className="w-24 h-8"
+                                                        type="number"
+                                                        key={updateFields.minor.key}
+                                                        name={updateFields.minor.name}
+                                                        defaultValue={updateFields.minor.initialValue}
+                                                        placeholder={minor.toFixed(2)}
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row items-center mt-2">
+                                                    <div className="w-48 mr-4">
+                                                        <Label>Major Axis (mm)</Label>
+                                                    </div>
+                                                    <Input
+                                                        className="w-24 h-8"
+                                                        type="number"
+                                                        key={updateFields.major.key}
+                                                        name={updateFields.major.name}
+                                                        defaultValue={updateFields.major.initialValue}
+                                                        placeholder={major.toFixed(2)}
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row justify-end">
+                                                    <Button type="submit" variant="secondary" className="w-8 h-8 p-2 mt-4">
+                                                        <CornerDownLeft />
+                                                    </Button>
+                                                </div>
+                                                <p className="text-sm text-primary/60">{updateFields.minor.errors}</p>
+                                                <p className="text-sm text-primary/60">{updateFields.major.errors}</p>
+                                            </Form>
+                                        </FormProvider>
+                                    </div>
                                 </PopoverContent>
                             </Popover>
                             <Popover>

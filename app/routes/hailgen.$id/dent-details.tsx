@@ -33,6 +33,31 @@ function createUpdateSchema() {
     });
 }
 
+function createCreateSchema() {
+    return z.object({
+        minor: z.number().min(0, {
+            message: 'Minor axis must be positive.'
+        }),
+        major: z.number().min(0, {
+            message: 'Major axis must be greater than minor axis.'
+        }),
+        location: z.string().refine((value) => {
+            const regex = /^\s*\(\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*\)\s*$/;
+            return regex.test(value);
+        }, {
+            message: "Dent location must be in the format (x, y)."
+        }).transform((value) => {
+            const regex = /^\s*\(\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*\)\s*$/;
+            const match = value.match(regex);
+            if (!match) return;
+            return [parseFloat(match[1]), parseFloat(match[3])];
+        })
+    }).refine(data => data.major > data.minor, {
+        path: ['major'],
+        message: 'Major axis must be greater than minor axis.'
+    });
+}
+
 function Detail({ label, value }: { label: string; value?: string }) {
     return (
         <div className="flex flex-col">
@@ -84,6 +109,18 @@ export default function DentDetails({
             const formData = new FormData();
             formData.append(updateFields.minor.name, updateFields.minor.value || "");
             formData.append(updateFields.major.name, updateFields.major.value || "");
+        }
+    });
+
+    const [createForm, createFields] = useForm({
+        onValidate({ formData }) {
+            return parseWithZod(formData, { schema: createCreateSchema() });
+        },
+        onSubmit() {
+            const formData = new FormData();
+            formData.append(createFields.minor.name, createFields.minor.value || "");
+            formData.append(createFields.major.name, createFields.major.value || "");
+            formData.append(createFields.location.name, createFields.location.value || "");
         }
     });
 
@@ -196,8 +233,71 @@ export default function DentDetails({
                                         <Plus />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent>
-                                    TODO
+                                <PopoverContent className="w-76">
+                                    <div className="space-y-4">
+                                        <div className="mb-6">
+                                            <p className="font-semibold text-lg">
+                                                Create
+                                            </p>
+                                            <CardDescription className="text-sm">
+                                                Save a new dent to the hailpad.
+                                            </CardDescription>
+                                        </div>
+                                        <FormProvider context={createForm.context}>
+                                            <Form method="post" id={createForm.id} onSubmit={createForm.onSubmit}>
+                                                <div className="flex flex-row items-center mt-1">
+                                                    <div className="w-48 mr-4">
+                                                        <Label>Minor Axis (mm)</Label>
+                                                    </div>
+                                                    <Input
+                                                        className="w-28 h-8"
+                                                        type="number"
+                                                        key={createFields.minor.key}
+                                                        name={createFields.minor.name}
+                                                        defaultValue={createFields.minor.initialValue}
+                                                        placeholder="b"
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row items-center mt-2">
+                                                    <div className="w-48 mr-4">
+                                                        <Label>Major Axis (mm)</Label>
+                                                    </div>
+                                                    <Input
+                                                        className="w-28 h-8"
+                                                        type="number"
+                                                        key={createFields.major.key}
+                                                        name={createFields.major.name}
+                                                        defaultValue={createFields.major.initialValue}
+                                                        placeholder="a"
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row items-center mt-2">
+                                                    <div className="w-48 mr-4">
+                                                        <Label>Dent Location</Label>
+                                                    </div>
+                                                    <Input
+                                                        className="w-28 h-8"
+                                                        type="string"
+                                                        key={createFields.location.key}
+                                                        name={createFields.location.name}
+                                                        defaultValue={createFields.location.initialValue}
+                                                        placeholder="(x, y)"
+                                                        step="any"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-row justify-end">
+                                                    <Button type="submit" variant="secondary" className="w-8 h-8 p-2 mt-4">
+                                                        <CornerDownLeft />
+                                                    </Button>
+                                                </div>
+                                                <p className="text-sm text-primary/60">{createFields.minor.errors}</p>
+                                                <p className="text-sm text-primary/60">{createFields.major.errors}</p>
+                                                <p className="text-sm text-primary/60">{createFields.location.errors}</p>
+                                            </Form>
+                                        </FormProvider>
+                                    </div>
                                 </PopoverContent>
                             </Popover>
                         </div>

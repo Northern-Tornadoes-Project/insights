@@ -79,8 +79,6 @@ function Renderer() {
 			// Set to proper shader
 			result.material.updateShaderSource();
 
-			console.log(result.material);
-
 			scene.clear();
 			scene.add(result);
 			setPointClouds([result]);

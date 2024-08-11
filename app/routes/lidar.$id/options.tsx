@@ -1,4 +1,4 @@
-import { LucideCircle, LucideSquare } from 'lucide-react';
+import { LucideBird, LucideCircle, LucideEarth, LucideSquare } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Label } from '~/components/ui/label';
@@ -6,10 +6,22 @@ import { Slider } from '~/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group';
 import { useStore } from './store';
+import { Separator } from '~/components/ui/separator';
 
 export function Options() {
-	const { size, setSize, shape, setShape, budget, setBudget, cameraPosition, cameraRotation } =
-		useStore();
+	const {
+		size,
+		setSize,
+		shape,
+		setShape,
+		budget,
+		fps,
+		cameraControl,
+		setCameraControl,
+		setBudget,
+		cameraPosition,
+		cameraRotation
+	} = useStore();
 
 	return (
 		<Card className="min-w-96">
@@ -24,6 +36,24 @@ export function Options() {
 						<TabsTrigger value="debug">Debug</TabsTrigger>
 					</TabsList>
 					<TabsContent value="view" className="grid grid-cols-1 gap-4">
+						<div className="flex flex-col items-start gap-2">
+							<Label htmlFor="camera-control">Camera Control</Label>
+							<ToggleGroup
+								type="single"
+								defaultValue={cameraControl}
+								onValueChange={(value) => setCameraControl(value as 'fly' | 'earth')}
+								variant="outline"
+							>
+								<ToggleGroupItem value="fly" className="flex flex-row gap-1">
+									<LucideBird size={16} />
+									Fly
+								</ToggleGroupItem>
+								<ToggleGroupItem value="earth" className="flex flex-row gap-1" disabled>
+									<LucideEarth size={16} />
+									Earth
+								</ToggleGroupItem>
+							</ToggleGroup>
+						</div>
 						<div className="flex flex-col items-start gap-2">
 							<Label htmlFor="point-budget-slider">Point Budget</Label>
 							<div className="flex w-full flex-row items-center gap-2">
@@ -72,6 +102,11 @@ export function Options() {
 						</div>
 					</TabsContent>
 					<TabsContent value="debug" className="flex flex-col gap-4">
+						<div className="flex flex-row gap-2">
+							<p className="text-sm font-medium">FPS</p>
+							<p className="text-sm font-normal">{fps}</p>
+						</div>
+						<Separator />
 						<div className="flex flex-row items-center gap-4">
 							<div className="flex flex-col gap-1">
 								<p className="text-sm font-medium">Camera Position</p>

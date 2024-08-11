@@ -1,19 +1,62 @@
-import { FlyControls, PointerLockControls } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PointSizeType, Potree, type PointCloudOctree } from 'potree-core';
 import { useEffect, useState } from 'react';
+import { Euler, Vector3 } from 'three';
+import { useShallow } from 'zustand/react/shallow';
 import { cn } from '~/lib/utils';
+import Earth from './navigation/earth';
+import Fly from './navigation/fly';
 import { useStore } from './store';
 
 const potree = new Potree();
 
+function DebugTools() {
+	const { cameraPosition, cameraRotation, setCameraPosition, setCameraRotation, setFPS } = useStore(
+		useShallow((state) => ({
+			cameraPosition: state.cameraPosition,
+			cameraRotation: state.cameraRotation,
+			setCameraPosition: state.setCameraPosition,
+			setCameraRotation: state.setCameraRotation,
+			setFPS: state.setFPS
+		}))
+	);
+
+	useFrame(({ camera }, delta) => {
+		// Calculate FPS
+		setFPS(Math.floor(1 / delta));
+
+		// Check if the camera has moved
+		const oldPosition = new Vector3(...cameraPosition);
+		const oldRotation = new Euler(...cameraRotation);
+
+		if (!camera.position.equals(oldPosition)) {
+			setCameraPosition([camera.position.x, camera.position.y, camera.position.z]);
+		}
+
+		if (!camera.rotation.equals(oldRotation)) {
+			setCameraRotation([camera.rotation.x, camera.rotation.y, camera.rotation.z]);
+		}
+	});
+
+	return null;
+}
+
 function Renderer() {
-	const { size, shape, budget, setCameraPosition, setCameraRotation } = useStore();
+	const { size, shape, budget, cameraControl } = useStore(
+		useShallow((state) => ({
+			size: state.size,
+			shape: state.shape,
+			budget: state.budget,
+			cameraControl: state.cameraControl
+		}))
+	);
 	const scene = useThree((state) => state.scene);
 	const [pointClouds, setPointClouds] = useState<PointCloudOctree[]>([]);
 
 	useEffect(() => {
 		potree.pointBudget = budget;
+
+		console.log('[LiDAR Renderer] Loading point cloud...');
 
 		(async () => {
 			const result = await potree.loadPointCloud(
@@ -41,15 +84,20 @@ function Renderer() {
 			scene.clear();
 			scene.add(result);
 			setPointClouds([result]);
+
+			console.log('[LiDAR Renderer] Loaded point cloud!');
 		})();
 	}, []);
 
 	useEffect(() => {
+		console.log('[LiDAR Renderer] Updating point budget...');
 		potree.pointBudget = budget;
 	}, [budget]);
 
 	useEffect(() => {
 		if (!pointClouds.length) return;
+
+		console.log('[LiDAR Renderer] Updating point cloud...');
 
 		// Only ever one point cloud
 		const pointCloud = pointClouds[0];
@@ -58,19 +106,16 @@ function Renderer() {
 		pointCloud.material.size = size;
 	}, [size, shape]);
 
+	// Overwrite the default render loop
 	useFrame(({ gl, camera }) => {
 		potree.updatePointClouds(pointClouds, camera, gl);
-		gl.clear();
 		gl.render(scene, camera);
-		setCameraPosition([camera.position.x, camera.position.y, camera.position.z]);
-		setCameraRotation([camera.rotation.x, camera.rotation.y, camera.rotation.z]);
-	});
+	}, 1);
 
 	return (
 		<>
-			<PointerLockControls makeDefault selector="#potree-canvas">
-				<FlyControls movementSpeed={5} rollSpeed={0} />
-			</PointerLockControls>
+			{cameraControl === 'fly' && <Fly selector="#potree-canvas" />}
+			{cameraControl === 'earth' && <Earth />}
 		</>
 	);
 }
@@ -83,6 +128,7 @@ export default function ({ className }: { className?: string }) {
 			</p>
 			<Canvas id="potree-canvas">
 				<Renderer />
+				<DebugTools />
 			</Canvas>
 		</div>
 	);

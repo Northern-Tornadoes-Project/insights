@@ -1,6 +1,6 @@
 import { CameraControls, Html, useProgress } from '@react-three/drei';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { VRButton, XR, useController, useXR } from '@react-three/xr';
+import { Canvas, useLoader } from '@react-three/fiber';
+import { XR, createXRStore, useXRControllerButtonEvent } from '@react-three/xr';
 import {
 	LucideChevronDown,
 	LucideChevronUp,
@@ -11,7 +11,7 @@ import {
 	LucideNavigation2,
 	LucideShrink
 } from 'lucide-react';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	BackSide,
 	EquirectangularReflectionMapping,
@@ -29,29 +29,35 @@ import { captures } from '~/db/schema';
 
 function MovementController(props: {
 	hand: 'left' | 'right';
-	on0?: () => void;
-	on1?: () => void;
-	on5?: () => void;
-	on2Right?: () => void;
-	on2Left?: () => void;
-	on3Fwd?: () => void;
-	on3Bwd?: () => void;
+	on0: () => void;
+	on1: () => void;
+	on5: () => void;
 }) {
-	const { player } = useXR();
-	const controller = useController(props.hand);
+	useXRControllerButtonEvent(
+		props.hand === 'left' ? 'y-button' : 'b-button',
+		(state) => {
+			if (state === 'pressed') props.on5();
+		},
+		props.hand
+	);
 
-	useFrame(() => {
-		if (controller && player) {
-			const gamepad = controller.inputSource?.gamepad;
+	useXRControllerButtonEvent(
+		'xr-standard-trigger',
+		(state) => {
+			if (state === 'pressed') props.on0();
+		},
+		props.hand
+	);
 
-			// Buttons
-			if (gamepad?.buttons[0].pressed) props.on0?.();
-			if (gamepad?.buttons[1].pressed) props.on1?.();
-			if (gamepad?.buttons[5].pressed) props.on5?.();
-		}
-	});
+	useXRControllerButtonEvent(
+		'xr-standard-squeeze',
+		(state) => {
+			if (state === 'pressed') props.on1();
+		},
+		props.hand
+	);
 
-	return <></>;
+	return null;
 }
 
 function Loader() {
@@ -141,11 +147,10 @@ export default function Viewer360({
 	const cameraControlsRef = useRef<CameraControls>(null);
 	const [hidden, setHidden] = useState(false);
 	const [fullscreen, setFullscreen] = useState(false);
-	const [vr, setVR] = useState(false);
-	const [input, setInput] = useState(false);
 	const [startingAngle, setStartingAngle] = useState(capture.heading ? Number(capture.heading) : 0);
 	const [rotation, setRotation] = useState(0);
 	const fullscreenRef = useRef<HTMLDivElement>(null);
+	const xrStore = useMemo(() => createXRStore(), []);
 
 	const toggleFullscreen = async () => {
 		if (fullscreen) {
@@ -169,20 +174,18 @@ export default function Viewer360({
 	};
 
 	useEffect(() => {
-		document.addEventListener('fullscreenchange', () => {
+		const onFullscreenChange = () => {
 			setFullscreen(document.fullscreenElement !== null);
-		});
+		};
 
+		document.addEventListener('fullscreenchange', onFullscreenChange);
 		document.addEventListener('keydown', toggleUI);
 
 		return () => {
-			document.removeEventListener('fullscreenchange', () => {
-				setFullscreen(document.fullscreenElement !== null);
-			});
-
+			document.removeEventListener('fullscreenchange', onFullscreenChange);
 			document.removeEventListener('keydown', toggleUI);
 		};
-	});
+	}, []);
 
 	useEffect(() => {
 		setStartingAngle(capture.heading ? Number(capture.heading) : 0);
@@ -277,7 +280,7 @@ export default function Viewer360({
 			<div className="absolute bottom-0 right-0 z-10 m-2 flex flex-row gap-4">
 				<button
 					onClick={() => {
-						setVR(!vr);
+						xrStore.enterVR();
 					}}
 					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
 				>
@@ -294,7 +297,6 @@ export default function Viewer360({
 					{fullscreen ? <LucideShrink /> : <LucideExpand />}
 				</button>
 			</div>
-			{vr ? <VRButton /> : null}
 			<Canvas className="touch-none">
 				<CameraControls
 					ref={cameraControlsRef}
@@ -322,32 +324,34 @@ export default function Viewer360({
 						setRotation(radToDeg(cameraControlsRef.current.azimuthAngle));
 					}}
 				/>
-				<XR>
+				<XR store={xrStore}>
 					<MovementController
 						hand="left"
 						on1={() => {
-							setInput(!input);
-							input ? onJumpPrevious?.() : undefined;
+							console.log('[VR 360 Viewer] Jump Backward');
+							onJumpPrevious();
 						}} // Left Grip (Jump Backward)
 						on0={() => {
-							setInput(!input);
-							input ? onPrevious?.() : undefined;
+							console.log('[VR 360 Viewer] Backward');
+							onPrevious();
 						}} // Left Trigger (Backward)
 						on5={() => {
+							console.log('[VR 360 Viewer] Before');
 							setCurrentImage('before');
 						}} // Y (Before)
 					/>
 					<MovementController
 						hand="right"
 						on1={() => {
-							setInput(!input);
-							input ? onJumpNext?.() : undefined;
+							console.log('[VR 360 Viewer] Jump Forward');
+							onJumpNext();
 						}} // Right Grip (Jump Forward)
 						on0={() => {
-							setInput(!input);
-							input ? onNext?.() : undefined;
+							console.log('[VR 360 Viewer] Forward');
+							onNext();
 						}} // Right Trigger (Forward)
 						on5={() => {
+							console.log('[VR 360 Viewer] After');
 							setCurrentImage('after');
 						}} // B (After)
 					/>

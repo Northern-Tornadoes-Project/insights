@@ -192,23 +192,23 @@ function CameraTransformDebug() {
 			<p className="text-sm font-semibold">Camera Transform</p>
 			<OptionRow type="row">
 				<p className="text-sm font-medium">Position</p>
-				<p className="flex flex-row gap-1 text-sm font-normal">
+				<div className="flex flex-row gap-1 text-sm font-normal">
 					{cameraPosition.map((coord, i) => (
 						<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
 							{coord.toFixed(2)}
 						</p>
 					))}
-				</p>
+				</div>
 			</OptionRow>
 			<OptionRow type="row">
 				<p className="text-sm font-medium">Rotation</p>
-				<p className="flex flex-row gap-1 text-sm font-normal">
+				<div className="flex flex-row gap-1 text-sm font-normal">
 					{cameraRotation.map((coord, i) => (
 						<p key={i} className="rounded-lg bg-muted px-2 py-1 text-sm font-medium">
 							{coord.toFixed(2)}
 						</p>
 					))}
-				</p>
+				</div>
 			</OptionRow>
 			<Button
 				variant="outline"

@@ -1,11 +1,14 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { createXRStore, XR } from '@react-three/xr';
+import { LucideGlasses } from 'lucide-react';
 import { PointSizeType, Potree, type PointCloudOctree } from 'potree-core';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Euler, Vector3 } from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { cn } from '~/lib/utils';
 import Earth from './navigation/earth';
 import Fly from './navigation/fly';
+import { XRControls } from './navigation/xr';
 import { useStore } from './store';
 
 const potree = new Potree();
@@ -119,14 +122,29 @@ function Renderer() {
 }
 
 export default function ({ className }: { className?: string }) {
+	const xrStore = useMemo(() => createXRStore(), []);
+
 	return (
 		<div className={cn('relative h-full w-full rounded-lg border bg-card shadow-sm', className)}>
 			<p className="absolute bottom-3 left-5 z-10 text-2xl">
 				<span className="font-bold">NTP</span> LiDAR
 			</p>
+			<div className="absolute bottom-0 right-0 z-10 m-2 flex flex-row gap-4">
+				<button
+					onClick={() => {
+						xrStore.enterVR();
+					}}
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
+				>
+					<LucideGlasses />
+				</button>
+			</div>
 			<Canvas id="potree-canvas">
-				<Renderer />
-				<DebugTools />
+				<XR store={xrStore}>
+					<XRControls />
+					<Renderer />
+					<DebugTools />
+				</XR>
 			</Canvas>
 		</div>
 	);

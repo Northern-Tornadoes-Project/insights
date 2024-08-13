@@ -110,8 +110,7 @@ function Renderer() {
 	// Overwrite the default render loop
 	useFrame(({ gl, camera }) => {
 		potree.updatePointClouds(pointClouds, camera, gl);
-		gl.render(scene, camera);
-	}, 1);
+	});
 
 	return (
 		<>

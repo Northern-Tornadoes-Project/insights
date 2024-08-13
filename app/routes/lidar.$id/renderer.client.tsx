@@ -3,7 +3,7 @@ import { createXRStore, XR } from '@react-three/xr';
 import { LucideGlasses } from 'lucide-react';
 import { PointSizeType, Potree, type PointCloudOctree } from 'potree-core';
 import { useEffect, useMemo, useState } from 'react';
-import { Euler, Vector3 } from 'three';
+import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { cn } from '~/lib/utils';
 import Earth from './navigation/earth';
@@ -29,8 +29,8 @@ function DebugTools() {
 		setFPS(Math.floor(1 / delta));
 
 		// Check if the camera has moved
-		const oldPosition = new Vector3(...cameraPosition);
-		const oldRotation = new Euler(...cameraRotation);
+		const oldPosition = new THREE.Vector3(...cameraPosition);
+		const oldRotation = new THREE.Euler(...cameraRotation);
 
 		if (!camera.position.equals(oldPosition)) {
 			setCameraPosition([camera.position.x, camera.position.y, camera.position.z]);
@@ -107,7 +107,6 @@ function Renderer() {
 		pointCloud.material.size = size;
 	}, [size, shape]);
 
-	// Overwrite the default render loop
 	useFrame(({ gl, camera }) => {
 		potree.updatePointClouds(pointClouds, camera, gl);
 	});

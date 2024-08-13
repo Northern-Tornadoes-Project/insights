@@ -12,16 +12,7 @@ import {
 	LucideShrink
 } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import {
-	BackSide,
-	EquirectangularReflectionMapping,
-	LinearFilter,
-	Mesh,
-	RepeatWrapping,
-	Texture,
-	TextureLoader,
-	Vector3
-} from 'three';
+import * as THREE from 'three';
 import { degToRad, radToDeg } from 'three/src/math/MathUtils.js';
 import { Label } from '~/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group';
@@ -90,27 +81,27 @@ function Loader() {
 }
 
 function StreetViewImage({ image, startingAngle }: { image: string; startingAngle: number }) {
-	const meshRef = useRef<Mesh>(null);
+	const meshRef = useRef<THREE.Mesh>(null);
 
-	let texture: Texture | null = null;
-	texture = useLoader(TextureLoader, image);
+	let texture: THREE.Texture | null = null;
+	texture = useLoader(THREE.TextureLoader, image);
 
 	if (!texture) return null;
 
 	useEffect(() => {
-		texture.mapping = EquirectangularReflectionMapping;
-		texture.minFilter = texture.magFilter = LinearFilter;
-		texture.wrapS = RepeatWrapping;
+		texture.mapping = THREE.EquirectangularReflectionMapping;
+		texture.minFilter = texture.magFilter = THREE.LinearFilter;
+		texture.wrapS = THREE.RepeatWrapping;
 		texture.repeat.x = -1;
 		texture.needsUpdate = true;
 
-		meshRef.current?.setRotationFromAxisAngle(new Vector3(0, 1, 0), -startingAngle);
+		meshRef.current?.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), -startingAngle);
 	}, [texture, startingAngle]);
 
 	return (
 		<mesh ref={meshRef}>
 			<sphereGeometry attach="geometry" args={[500, 60, 40, 90]} />
-			<meshBasicMaterial attach="material" map={texture} side={BackSide} />
+			<meshBasicMaterial attach="material" map={texture} side={THREE.BackSide} />
 		</mesh>
 	);
 }

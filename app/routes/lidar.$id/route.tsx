@@ -1,6 +1,7 @@
 import { ActionFunctionArgs } from '@remix-run/node';
 import { eq } from 'drizzle-orm';
 import { Suspense, lazy } from 'react';
+import { ClientOnly } from 'remix-utils/client-only';
 import { Skeleton } from '~/components/ui/skeleton';
 import { db } from '~/db/db.server';
 import { scans } from '~/db/schema';
@@ -8,7 +9,7 @@ import { protectedRoute } from '~/lib/auth.server';
 import { Options } from './options';
 import { actionSchema, viewerSettingsSchema } from './schema';
 
-const Renderer = lazy(() => import('./renderer'));
+const Renderer = lazy(() => import('./renderer.client'));
 
 export async function action({ params, request }: ActionFunctionArgs) {
 	await protectedRoute(request);
@@ -59,7 +60,7 @@ export default function () {
 		<main className="flex flex-col justify-between gap-2 xl:flex-row">
 			<div className="h-[500px] w-full xl:h-[1000px]">
 				<Suspense fallback={<Skeleton />}>
-					<Renderer />
+					<ClientOnly fallback={<Skeleton />}>{() => <Renderer />}</ClientOnly>
 				</Suspense>
 			</div>
 			<Options />

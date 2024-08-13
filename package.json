@@ -99,6 +99,9 @@
 		"vite-plugin-mkcert": "^1.17.5",
 		"vite-tsconfig-paths": "^4.2.1"
 	},
+	"resolutions": {
+		"three": "^0.167.1"
+	},
 	"engines": {
 		"node": ">=18.0.0"
 	}

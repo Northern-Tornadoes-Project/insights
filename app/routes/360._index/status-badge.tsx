@@ -3,7 +3,7 @@ import type { Path } from './columns';
 
 export function StatusBadge({ status }: { status: Path['status'] }) {
 	const variant =
-		status === 'completed'
+		status === 'complete'
 			? 'default'
 			: status === 'processing'
 				? 'secondary'

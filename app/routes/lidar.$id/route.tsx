@@ -1,10 +1,12 @@
-import { ActionFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import { Suspense, lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { Skeleton } from '~/components/ui/skeleton';
 import { db } from '~/db/db.server';
 import { scans } from '~/db/schema';
+import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { Options } from './options';
 import { actionSchema, viewerSettingsSchema } from './schema';
@@ -12,6 +14,8 @@ import { actionSchema, viewerSettingsSchema } from './schema';
 const Renderer = lazy(() => import('./renderer.client'));
 
 export async function action({ params, request }: ActionFunctionArgs) {
+	console.log(request.headers);
+
 	await protectedRoute(request);
 
 	const id = params.id;
@@ -23,6 +27,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
 	const { data, success, error } = actionSchema.safeParse(await request.json());
 
 	if (!success) {
+		console.error(`[LiDAR Action] Error has occurred`, error);
 		throw new Response(JSON.stringify(error), { status: 400 });
 	}
 
@@ -55,15 +60,57 @@ export async function action({ params, request }: ActionFunctionArgs) {
 	}
 }
 
+export async function loader({ params }: LoaderFunctionArgs) {
+	const id = params.id;
+
+	if (!id) {
+		throw new Response(null, { status: 404, statusText: 'Scan not found' });
+	}
+
+	const scan = await db.query.scans.findFirst({
+		columns: {
+			viewerSettings: true,
+			folderName: true
+		},
+		where: eq(scans.id, id)
+	});
+
+	if (!scan) {
+		throw new Response(null, { status: 404, statusText: 'Scan not found' });
+	}
+
+	const settings = viewerSettingsSchema.parse(scan.viewerSettings);
+	const url = `${env.PUBLIC_SCAN_DIRECTORY}/${scan.folderName}/output`;
+
+	return json({
+		url,
+		settings
+	});
+}
+
 export default function () {
+	const { url, settings } = useLoaderData<typeof loader>();
+
 	return (
-		<main className="flex flex-col justify-between gap-2 xl:flex-row">
-			<div className="h-[500px] w-full xl:h-[1000px]">
+		<main className="flex flex-col justify-between gap-2 lg:flex-row">
+			<div className="h-[300px] min-w-0 w-full lg:h-[500px] 2xl:h-[750px]">
 				<Suspense fallback={<Skeleton />}>
-					<ClientOnly fallback={<Skeleton />}>{() => <Renderer />}</ClientOnly>
+					<ClientOnly fallback={<Skeleton />}>
+						{() => (
+							<Renderer
+								url={url}
+								initialTransform={
+									settings as {
+										position: [number, number, number];
+										rotation: [number, number, number];
+									}
+								}
+							/>
+						)}
+					</ClientOnly>
 				</Suspense>
 			</div>
-			<Options />
+			<Options className="lg:min-w-96" />
 		</main>
 	);
 }

@@ -1,4 +1,4 @@
-import { useParams } from '@remix-run/react';
+import { useOutletContext, useParams } from '@remix-run/react';
 import { LucideBird, LucideCircle, LucideEarth, LucideSave, LucideSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -186,6 +186,12 @@ function CameraTransformDebug() {
 			cameraRotation: state.cameraRotation
 		}))
 	);
+	const userContext = useOutletContext<{
+		id: string;
+		email: string;
+		name: string;
+		imageUrl: string;
+	} | null>();
 
 	return (
 		<OptionRow type="column" className="gap-4">
@@ -210,49 +216,52 @@ function CameraTransformDebug() {
 					))}
 				</div>
 			</OptionRow>
-			<Button
-				variant="outline"
-				className="w-full gap-1"
-				onClick={async () => {
-					if (!id) return;
-					try {
-						const response = await fetch(`/lidar/${id}`, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								type: 'setTransform',
-								payload: {
-									cameraPosition: cameraPosition,
-									cameraRotation: cameraRotation
-								}
-							})
-						});
+			{userContext && (
+				<Button
+					variant="outline"
+					className="w-full gap-1"
+					onClick={async () => {
+						if (!id) return;
+						try {
+							const response = await fetch(`/lidar/${id}`, {
+								method: 'POST',
+								credentials: 'same-origin',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									type: 'setTransform',
+									payload: {
+										position: cameraPosition,
+										rotation: cameraRotation
+									}
+								})
+							});
 
-						if (!response.ok) {
+							if (!response.ok) {
+								toast.error('Failed to set default camera transform');
+								console.error(await response.json());
+								return;
+							}
+
+							toast.success('Successfully set default camera transform');
+						} catch (e) {
 							toast.error('Failed to set default camera transform');
-							console.error(await response.json());
-							return;
+							console.error(e);
 						}
-
-						toast.success('Successfully set default camera transform');
-					} catch (e) {
-						toast.error('Failed to set default camera transform');
-						console.error(e);
-					}
-				}}
-			>
-				<LucideSave size={16} />
-				Save Camera Transform
-			</Button>
+					}}
+				>
+					<LucideSave size={16} />
+					Save Camera Transform
+				</Button>
+			)}
 		</OptionRow>
 	);
 }
 
-export function Options() {
+export function Options({ className }: { className?: string }) {
 	return (
-		<Card className="min-w-96">
+		<Card className={className}>
 			<CardHeader>
 				<CardTitle>Options</CardTitle>
 				<CardDescription>Change the current LiDAR view.</CardDescription>

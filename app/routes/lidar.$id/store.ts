@@ -8,6 +8,10 @@ export const useStore = create<{
 	budget: number;
 	fps: number;
 	cameraControl: 'fly' | 'earth';
+	initialTransform: {
+		position: [number, number, number];
+		rotation: [number, number, number];
+	};
 	setShape: (shape: number) => void;
 	setSize: (size: number) => void;
 	setBudget: (budget: number) => void;
@@ -15,6 +19,10 @@ export const useStore = create<{
 	setCameraControl: (cameraControl: 'fly' | 'earth') => void;
 	setCameraPosition: (position: [number, number, number]) => void;
 	setCameraRotation: (rotation: [number, number, number]) => void;
+	setInitialTransform: (
+		position: [number, number, number],
+		rotation: [number, number, number]
+	) => void;
 }>((set) => ({
 	cameraPosition: [0, 0, 0],
 	cameraRotation: [0, 0, 0],
@@ -23,11 +31,17 @@ export const useStore = create<{
 	budget: 1_000_000,
 	fps: 0,
 	cameraControl: 'fly',
+	initialTransform: {
+		position: [0, 0, 0],
+		rotation: [0, 0, 0]
+	},
 	setShape: (shape: number) => set({ shape }),
 	setSize: (size: number) => set({ size }),
 	setFPS: (fps: number) => set({ fps }),
 	setBudget: (budget: number) => set({ budget }),
 	setCameraControl: (cameraControl: 'fly' | 'earth') => set({ cameraControl }),
 	setCameraPosition: (cameraPosition: [number, number, number]) => set({ cameraPosition }),
-	setCameraRotation: (cameraRotation: [number, number, number]) => set({ cameraRotation })
+	setCameraRotation: (cameraRotation: [number, number, number]) => set({ cameraRotation }),
+	setInitialTransform: (position: [number, number, number], rotation: [number, number, number]) =>
+		set({ initialTransform: { position, rotation } })
 }));

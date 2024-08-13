@@ -153,12 +153,6 @@ export default function Viewer360({
 		}
 	};
 
-	const toggleUI = (event: KeyboardEvent) => {
-		if (event.key.toLowerCase() === 'h') {
-			setHidden(!hidden);
-		}
-	};
-
 	const setCurrentImage = (value: 'before' | 'after') => {
 		if (value === 'before' && !pathProgress.hasBefore) return;
 		onCurrentStateChange(value);
@@ -167,6 +161,12 @@ export default function Viewer360({
 	useEffect(() => {
 		const onFullscreenChange = () => {
 			setFullscreen(document.fullscreenElement !== null);
+		};
+
+		const toggleUI = (event: KeyboardEvent) => {
+			if (event.key.toLowerCase() === 'h') {
+				setHidden(!hidden);
+			}
 		};
 
 		document.addEventListener('fullscreenchange', onFullscreenChange);

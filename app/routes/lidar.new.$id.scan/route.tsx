@@ -132,6 +132,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		}
 	}
 
+	await db
+		.update(scans)
+		.set({
+			status: env.SERVICE_LIDAR_ENABLED ? 'processing' : 'complete',
+			size: file.size
+		})
+		.where(eq(scans.id, id));
+
 	return redirect(`/lidar/${scan.id}`);
 }
 

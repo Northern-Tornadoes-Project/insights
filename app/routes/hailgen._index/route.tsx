@@ -4,12 +4,12 @@ import { count, eq } from 'drizzle-orm';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
 import { useState } from 'react';
+import { DataTable } from '~/components/table/data-table';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { Hailpad, columns } from './columns';
-import { DataTable } from './data-table';
 import { HailpadCard } from './hailpad-card';
 
 export const meta: MetaFunction = () => {

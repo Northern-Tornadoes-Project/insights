@@ -44,16 +44,18 @@ function DebugTools() {
 	return null;
 }
 
-function Renderer() {
-	const { size, shape, budget, cameraControl } = useStore(
+function Renderer({ pointCloudURL }: { pointCloudURL: string }) {
+	const { size, shape, budget, cameraControl, initialTransform } = useStore(
 		useShallow((state) => ({
 			size: state.size,
 			shape: state.shape,
 			budget: state.budget,
-			cameraControl: state.cameraControl
+			cameraControl: state.cameraControl,
+			initialTransform: state.initialTransform
 		}))
 	);
 	const scene = useThree((state) => state.scene);
+	const camera = useThree((state) => state.camera);
 	const [pointClouds, setPointClouds] = useState<PointCloudOctree[]>([]);
 
 	useEffect(() => {
@@ -64,7 +66,7 @@ function Renderer() {
 		(async () => {
 			const result = await potree.loadPointCloud(
 				'metadata.json',
-				(url) => `/scans/aceb_scan/output/${url}`
+				(url) => `${pointCloudURL}/${url}`
 			);
 
 			// Ensure the axes are aligned with the world axes
@@ -89,6 +91,15 @@ function Renderer() {
 			console.log('[LiDAR Renderer] Loaded point cloud!');
 		})();
 	}, []);
+
+	useEffect(() => {
+		console.log('[LiDAR Renderer] Setting initial camera transform...');
+
+		const { position, rotation } = initialTransform;
+
+		camera.position.set(position[0], position[1], position[2]);
+		camera.rotation.set(rotation[0], rotation[1], rotation[2]);
+	}, [initialTransform]);
 
 	useEffect(() => {
 		console.log('[LiDAR Renderer] Updating point budget...');
@@ -119,8 +130,26 @@ function Renderer() {
 	);
 }
 
-export default function ({ className }: { className?: string }) {
+export default function ({
+	url,
+	className,
+	initialTransform
+}: {
+	url: string;
+	className?: string;
+	initialTransform?: {
+		position: [number, number, number];
+		rotation: [number, number, number];
+	};
+}) {
 	const xrStore = useMemo(() => createXRStore(), []);
+	const setInitialTransform = useStore((state) => state.setInitialTransform);
+
+	useEffect(() => {
+		if (initialTransform) {
+			setInitialTransform(initialTransform.position, initialTransform.rotation);
+		}
+	}, [initialTransform]);
 
 	return (
 		<div className={cn('relative h-full w-full rounded-lg border bg-card shadow-sm', className)}>
@@ -140,7 +169,7 @@ export default function ({ className }: { className?: string }) {
 			<Canvas id="potree-canvas">
 				<XR store={xrStore}>
 					<XRControls />
-					<Renderer />
+					<Renderer pointCloudURL={url} />
 					<DebugTools />
 				</XR>
 			</Canvas>

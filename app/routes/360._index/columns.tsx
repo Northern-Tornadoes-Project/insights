@@ -1,8 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import type { SegmentPoint } from '~/components/path-map';
+import { DataTableColumnHeader } from '~/components/table/column-header';
 import { paths } from '~/db/schema';
 import { formatDate } from '~/lib/utils';
-import { DataTableColumnHeader } from './column-header';
 import { StatusBadge } from './status-badge';
 
 export type Path = {
@@ -10,7 +10,6 @@ export type Path = {
 	name: string;
 	eventDate: Date;
 	createdAt: Date;
-	updatedAt: Date;
 	status: (typeof paths.$inferSelect)['status'];
 	captures: number;
 	size: number;
@@ -37,13 +36,13 @@ export const columns: ColumnDef<Path>[] = [
 		cell: (cell) => <StatusBadge status={cell.getValue() as Path['status']} />
 	},
 	{
-		header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
-		accessorKey: 'created',
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Event Date" />,
+		accessorKey: 'eventDate',
 		cell: (cell) => formatDate(cell.getValue() as Date)
 	},
 	{
-		header: ({ column }) => <DataTableColumnHeader column={column} title="Modified" />,
-		accessorKey: 'modified',
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
+		accessorKey: 'createdAt',
 		cell: (cell) => formatDate(cell.getValue() as Date)
 	}
 ];

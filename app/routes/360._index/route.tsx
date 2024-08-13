@@ -3,12 +3,12 @@ import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remi
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { DataTable } from '~/components/table/data-table';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
 import { env } from '~/env.server';
 import { Path, columns } from './columns';
-import { DataTable } from './data-table';
 import { PathCard } from './path-card';
 
 export const meta: MetaFunction = () => {
@@ -26,7 +26,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			name: true,
 			eventDate: true,
 			createdAt: true,
-			updatedAt: true,
 			status: true,
 			size: true
 		},
@@ -66,7 +65,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				name: path.name,
 				eventDate: path.eventDate,
 				createdAt: path.createdAt,
-				updatedAt: path.updatedAt,
 				status: path.status,
 				size: path.size,
 				captures:
@@ -96,9 +94,8 @@ export default function () {
 		() =>
 			data.paths.map((path) => ({
 				...path,
-				createdAt: new Date(path.createdAt),
-				updatedAt: new Date(path.updatedAt),
 				eventDate: new Date(path.eventDate),
+				createdAt: new Date(path.createdAt),
 				size: path.size || 0,
 				segments: path.segments.map((segment) => ({
 					id: segment.id,
@@ -117,7 +114,7 @@ export default function () {
 	const [path, setPath] = useState<Path | null>(null);
 
 	return (
-		<div className="flex flex-col gap-4">
+		<main className="flex flex-col gap-4">
 			{userContext && (
 				<Link to="/360/new">
 					<Button className="max-w-32 gap-2" disabled={!userContext}>
@@ -151,6 +148,6 @@ export default function () {
 					/>
 				)}
 			</div>
-		</div>
+		</main>
 	);
 }

@@ -19,7 +19,7 @@ import { env } from '~/env.server';
 import { FrameposSchema } from '~/lib/framepos';
 import { FramePicker } from './frame-picker';
 
-const Viewer360 = lazy(() => import('./viewer-360'));
+const Viewer360 = lazy(() => import('./viewer-360.client'));
 const PathMap = lazy(() => import('~/components/path-map'));
 
 const JUMP_SIZE = 5;
@@ -150,31 +150,26 @@ export default function () {
 								currentState={data.path.currentState}
 								pathProgress={data.path.pathProgress}
 								onCurrentStateChange={(state) => {
-									console.log('state', state);
 									navigate({
 										search: `?index=${data.path.index}&state=${state}`
 									});
 								}}
 								onNext={() => {
-									console.log('next');
 									navigate({
 										search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
 									});
 								}}
 								onPrevious={() => {
-									console.log('prev');
 									navigate({
 										search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
 									});
 								}}
 								onJumpNext={() => {
-									console.log('jump next');
 									navigate({
 										search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
 									});
 								}}
 								onJumpPrevious={() => {
-									console.log('jump prev');
 									navigate({
 										search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
 									});

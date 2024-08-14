@@ -1,16 +1,15 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { env } from '~/env.server';
-
+import { protectedRoute } from '~/lib/auth.server';
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
-
-const HailpadMap = lazy(() => import('./hailpad-map'));
+import HailpadMap from './hailpad-map';
 
 interface HailpadDent {
 	// TODO: Use shared interface
@@ -49,7 +48,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const depthMapPath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}/${queriedHailpad.folderName}/dmap.png`;
 	const boxfit = queriedHailpad.boxfit;
-	const maxDepth = '0'; // TODO
+	const maxDepth = queriedHailpad.maxDepth;
 	const adaptiveBlockSize = queriedHailpad.adaptiveBlockSize;
 	const adaptiveC = queriedHailpad.adaptiveC;
 	const hailpadId = queriedHailpad.id;
@@ -67,41 +66,121 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	});
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	// const formData = await request.formData();
-	// const boxfit = formData.get('boxfit');
+export async function action({ request, params }: ActionFunctionArgs) {
+	if (!params.id) return;
 
-	const boxfitFetcher = useFetcher({ key: 'boxfit' });
+	const userId = await protectedRoute(request);
 
-	console.log('hello');
+	const formData = await request.formData();
+	const boxfit = formData.get('boxfit');
+	const maxDepth = formData.get('maxDepth');
+	const adaptiveBlock = formData.get('adaptiveBlock');
+	const adaptiveC = formData.get('adaptiveC');
 
-	const boxfit = await boxfitFetcher.formData?.get('boxfit');
-	// const boxfit = formData.get('boxfit');
+	if (boxfit) {
+		await db
+			.update(hailpad)
+			.set({
+				boxfit: boxfit.toString(),
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
+	} else if (maxDepth) {
+		await db
+			.update(hailpad)
+			.set({
+				maxDepth: maxDepth.toString(),
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
+	} else if (adaptiveBlock && adaptiveC) {
+		// Update hailpad with new adaptive block size and adaptive C-value
+		await db
+			.update(hailpad)
+			.set({
+				adaptiveBlockSize: adaptiveBlock.toString(),
+				adaptiveC: adaptiveC.toString(),
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
 
-	const hailpadId = useLoaderData<typeof loader>().hailpadId;
+		// Delete existing dents
+		await db.delete(dent).where(eq(dent.hailpadId, params.id));
 
-	console.log(boxfit);
+		// Get hailpad
+		const queriedHailpad = await db.query.hailpad.findFirst({
+			where: eq(hailpad.id, params.id)
+		});
 
-	if (!boxfit) return;
+		if (!queriedHailpad) return;
 
-	await db
-		.update(hailpad)
-		.set({
-			boxfit: boxfit.toString(),
-			// updatedBy: TODO,
-			updatedAt: new Date()
-		})
-		.where(eq(hailpad.id, hailpadId));
+		const filePath = `${env.HAILPAD_DIRECTORY}/${queriedHailpad.folderName}`;
+
+		// Invoke microservice for re-processing
+		// if (env.SERVICE_HAILGEN_ENABLED) {
+		const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				hailpad_id: params.id,
+				file_paths: [`${filePath}/hailpad.stl`],
+				adaptive_block: adaptiveBlock,
+				adaptive_c: adaptiveC
+			})
+		});
+
+		if (response.ok) {
+			// Save dents to db
+			const res = await response.json();
+			const dents = res.dents;
+
+			dents.forEach(async (hailpadDent: HailpadDent) => {
+				const newDent = await db
+					.insert(dent)
+					.values({
+						hailpadId: queriedHailpad.id,
+						angle: hailpadDent.angle,
+						majorAxis: hailpadDent.majorAxis,
+						minorAxis: hailpadDent.minorAxis,
+						centroidX: hailpadDent.centroidX,
+						centroidY: hailpadDent.centroidY
+						// TODO: Depth information
+					})
+					.returning();
+
+				if (newDent.length != 1) {
+					throw new Error('Error creating dent');
+				}
+			});
+		}
+	} // else if TODO dent updates
+
+	return null;
 }
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
-	// const fetcher = useFetcher();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
 	const [download, setDownload] = useState<boolean>(false);
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
+	const [filters, setFilters] = useState<{
+		minMinor: number;
+		maxMinor: number;
+		minMajor: number;
+		maxMajor: number;
+	}>({
+		minMinor: 0,
+		maxMinor: Infinity,
+		minMajor: 0,
+		maxMajor: Infinity
+	});
 
 	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName } = data;
 
@@ -116,8 +195,18 @@ export default function () {
 				minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit))
 			};
 		});
-		setDentData(scaledDents);
-	}, []);
+
+		// Filter dent data based on user input
+		const filteredDents = scaledDents.filter((dent: HailpadDent) => {
+			return (
+				Number(dent.minorAxis) >= filters.minMinor &&
+				Number(dent.minorAxis) <= filters.maxMinor &&
+				Number(dent.majorAxis) >= filters.minMajor &&
+				Number(dent.majorAxis) <= filters.maxMajor
+			);
+		});
+		setDentData(filteredDents);
+	}, [boxfit, maxDepth, filters]);
 
 	useEffect(() => {
 		if (download) {
@@ -179,8 +268,7 @@ export default function () {
 					maxDepth={maxDepth}
 					adaptiveBlockSize={adaptiveBlockSize}
 					adaptiveC={adaptiveC}
-					// fetcher={fetcher}
-					onFilterChange={() => {}} // TODO
+					onFilterChange={setFilters}
 					onShowCentroids={setShowCentroids}
 					onDownload={setDownload}
 				/>

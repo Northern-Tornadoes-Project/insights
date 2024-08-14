@@ -27,11 +27,9 @@ export default function HailpadMap({
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
-
 		if (!canvas) return;
 
 		const context = canvas.getContext('2d');
-
 		if (!context) return;
 
 		// Get depth map image from hailpad folder
@@ -46,15 +44,15 @@ export default function HailpadMap({
 				const x = Number(dent.centroidX);
 				const y = Number(dent.centroidY);
 
-				if (i === index && context) {
+				if (i === index) {
 					context.globalAlpha = 1;
 					context.beginPath();
 					context.ellipse(
 						x,
 						y,
-						(Number(dent.majorAxis) / 2) * 1.5,
-						(Number(dent.minorAxis) / 2) * 1.5,
-						Number(dent.angle),
+						Number(dent.majorAxis) * 1.25,
+						Number(dent.minorAxis) * 1.25,
+						Number(dent.angle) + Math.PI / 2,
 						0,
 						2 * Math.PI
 					);

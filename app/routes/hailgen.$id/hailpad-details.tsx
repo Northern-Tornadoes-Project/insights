@@ -1,24 +1,19 @@
 import { FormProvider, useForm } from '@conform-to/react';
-import { Form, useFetcher } from '@remix-run/react';
+import { parseWithZod } from '@conform-to/zod';
+import { Form } from '@remix-run/react';
 import { CornerDownLeft, FileSpreadsheet, Filter, FilterX, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Checkbox } from '~/components/ui/checkbox';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import Histogram from './histogram';
-// import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-// import { protectedRoute } from '~/lib/auth.server';
-import { parseWithZod } from '@conform-to/zod';
-import { z } from 'zod';
 import { Separator } from '~/components/ui/separator';
 import { Slider } from '~/components/ui/slider';
-// import { db } from '~/db/db.server';
-// import { hailpad } from '~/db/schema';
-// import { eq } from 'drizzle-orm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import Histogram from './histogram';
 
 interface HailpadDent {
 	// TODO: Use shared interface
@@ -52,7 +47,7 @@ function DetailSection({ min, max, avg }: { min: number; max: number; avg: numbe
 	);
 }
 
-function createSchema() {
+function createBoxfitSchema() {
 	return z.object({
 		boxfit: z.number().min(0, {
 			message: 'Box-fitting length must be positive.'
@@ -60,33 +55,51 @@ function createSchema() {
 	});
 }
 
-// export async function loader({ params, request }: LoaderFunctionArgs) {
-//     const { id } = params;
+function createMaxDepthSchema() {
+	return z.object({
+		maxDepth: z.number().min(0, {
+			message: 'Max. depth length must be positive.'
+		})
+	});
+}
 
-//     await protectedRoute(request);
-//     return id;
-// }
+function createThresholdSchema() {
+	// TODO: Remove schema (?)
+	return z.object({
+		adaptiveBlock: z.number().min(-25, {
+			message: 'Adaptive block size must be at least -25.'
+		}),
+		adaptiveC: z.number().min(-10, {
+			message: 'Adaptive C-value must be at least -10.'
+		})
+	});
+}
 
-// export async function action({ request }: ActionFunctionArgs) {
-//     const userId = await protectedRoute(request);
-//     const formData = await request.formData();
-//     const submission = await parseWithZod(formData, {
-//         schema: createSchema(),
-//         async: true
-//     });
-
-//     if (submission.status !== 'success') {
-//         return json(submission.reply());
-//     }
-
-//     const { boxfit } = submission.value;
-//     const id = useLoaderData<typeof loader>();
-
-//     await db
-//         .update(hailpad)
-//         .set({ boxfit: Number(boxfit).toString(), updatedBy: userId })
-//         .where(eq(hailpad.id, id));
-// }
+function createFilterSchema() {
+	return z
+		.object({
+			minMinor: z.number().min(0, {
+				message: 'Lower bound of minor axis must be positive.'
+			}),
+			maxMinor: z.number().min(0, {
+				message: 'Upper bound of minor axis must be greater than lower bound.'
+			}),
+			minMajor: z.number().min(0, {
+				message: 'Lower bound of major axis must be positive.'
+			}),
+			maxMajor: z.number().min(0, {
+				message: 'Upper bound of major axis must be greater than lower bound.'
+			})
+		})
+		.refine((data) => data.maxMinor > data.minMinor, {
+			path: ['maxMinor'], // path to the error
+			message: 'Upper bound of minor axis must be greater than lower bound.'
+		})
+		.refine((data) => data.maxMajor > data.minMajor, {
+			path: ['maxMajor'], // path to the error
+			message: 'Upper bound of major axis must be greater than lower bound.'
+		});
+}
 
 export default function HailpadDetails({
 	dentData,
@@ -94,10 +107,8 @@ export default function HailpadDetails({
 	maxDepth,
 	adaptiveBlockSize,
 	adaptiveC,
-	// fetcher,
 	onFilterChange,
 	onShowCentroids,
-	// onBoxfitChange,
 	onDownload
 }: {
 	dentData: HailpadDent[];
@@ -105,8 +116,12 @@ export default function HailpadDetails({
 	maxDepth: string;
 	adaptiveBlockSize: string;
 	adaptiveC: string;
-	// fetcher: any;
-	onFilterChange: (value: object) => void; // TODO: Define interface
+	onFilterChange: (value: {
+		minMinor: number;
+		maxMinor: number;
+		minMajor: number;
+		maxMajor: number;
+	}) => void;
 	onShowCentroids: (value: boolean) => void;
 	onDownload: (value: boolean) => void;
 }) {
@@ -124,48 +139,55 @@ export default function HailpadDetails({
 
 	const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
-	// const lastResult = useActionData<typeof action>();
-	// const [boxfitForm, boxfitFields] = useForm({
-	//     lastResult,
-	//     onValidate({ formData }) {
-	//         return parseWithZod(formData, { schema: createSchema() });
-	//     }
-	// });
-
-	// const [boxfitForm, boxfitFields] = useForm({
-	//     onValidate({ formData }) {
-	//         return parseWithZod(formData, { schema: createSchema() });
-	//     },
-	//     onSubmit(event: React.FormEvent<HTMLFormElement>) {
-	//         event.preventDefault();
-	//         const formData = new FormData(event.target as HTMLFormElement);
-	//         const boxfit = Number(formData.get(boxfitFields.boxfit.name));
-	//         onBoxfitChange(Number(boxfit));
-	//     }
-	// });
-
-	const [maxDepthForm, maxDepthFields] = useForm({}); // TODO
-	const [thresholdForm, thresholdFields] = useForm({}); // TODO
-	const [filterForm, filterFields] = useForm({}); // TODO
-
-	// const submit = useSubmit();
-
-	const boxfitFetcher = useFetcher({ key: 'boxfit' });
-
+	// TODO: Minimize code duplication (?)
 	const [boxfitForm, boxfitFields] = useForm({
 		onValidate({ formData }) {
-			return parseWithZod(formData, { schema: createSchema() });
+			return parseWithZod(formData, { schema: createBoxfitSchema() });
 		},
 		onSubmit() {
 			const formData = new FormData();
 			formData.append(boxfitFields.boxfit.name, boxfitFields.boxfit.value || '');
-			console.log(formData);
-			boxfitFetcher.submit(formData);
 		}
 	});
 
-	// const formData = new FormData();
-	// fetcher.submit(event.currentTarget.form, { method: "post" });
+	const [maxDepthForm, maxDepthFields] = useForm({
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema: createMaxDepthSchema() });
+		},
+		onSubmit() {
+			const formData = new FormData();
+			formData.append(maxDepthFields.maxDepth.name, maxDepthFields.maxDepth.value || '');
+		}
+	});
+
+	const [thresholdForm, thresholdFields] = useForm({
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema: createThresholdSchema() });
+		},
+		onSubmit() {
+			const formData = new FormData();
+			formData.append(
+				thresholdFields.adaptiveBlock.name,
+				thresholdFields.adaptiveBlock.value || ''
+			);
+			formData.append(thresholdFields.adaptiveC.name, thresholdFields.adaptiveC.value || '');
+		}
+	});
+
+	const [filterForm, filterFields] = useForm({
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema: createFilterSchema() });
+		},
+		onSubmit() {
+			// TODO: Don't create needless query params
+			onFilterChange({
+				minMinor: Number(filterFields.minMinor.value) || 0,
+				maxMinor: Number(filterFields.maxMinor.value) || Infinity,
+				minMajor: Number(filterFields.minMajor.value) || 0,
+				maxMajor: Number(filterFields.maxMajor.value) || Infinity
+			});
+		}
+	});
 
 	useEffect(() => {
 		setMinMinor(Math.min(...dentData.map((dent) => Number(dent.minorAxis))));
@@ -219,14 +241,10 @@ export default function HailpadDetails({
 										</Label>
 									</div>
 									<FormProvider context={boxfitForm.context}>
-										<boxfitFetcher.Form
-											method="post"
-											id={boxfitForm.id}
-											onSubmit={boxfitForm.onSubmit}
-										>
+										<Form method="post" id={boxfitForm.id} onSubmit={boxfitForm.onSubmit}>
 											<div className="mt-1 flex flex-row items-center">
 												<div className="mr-4 w-48">
-													<Label htmlFor={boxfitFields.boxfit.id}>Box-fitting Length (mm)</Label>
+													<Label>Box-fitting Length (mm)</Label>
 												</div>
 												<Input
 													className="mr-4 h-8 w-20"
@@ -242,20 +260,20 @@ export default function HailpadDetails({
 												</Button>
 											</div>
 											<p className="text-sm text-primary/60">{boxfitFields.boxfit.errors}</p>
-										</boxfitFetcher.Form>
+										</Form>
 									</FormProvider>
 									<FormProvider context={maxDepthForm.context}>
-										<Form id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
+										<Form method="post" id={maxDepthForm.id} onSubmit={maxDepthForm.onSubmit}>
 											<div className="mt-1 flex flex-row items-center">
 												<div className="mr-4 w-48">
-													<Label htmlFor={maxDepthFields.boxfit.id}>Maximum Depth (mm)</Label>
+													<Label htmlFor={maxDepthFields.maxDepth.id}>Maximum Depth (mm)</Label>
 												</div>
 												<Input
 													className="mr-4 h-8 w-20"
 													type="number"
 													key={maxDepthFields.maxDepth.key}
 													name={maxDepthFields.maxDepth.name}
-													// defaultValue={maxDepthFields.maxDepth.initialValue} TODO
+													defaultValue={maxDepthFields.maxDepth.initialValue}
 													placeholder={maxDepth}
 													step="any"
 												/>
@@ -274,15 +292,17 @@ export default function HailpadDetails({
 										</CardDescription>
 									</div>
 									<FormProvider context={thresholdForm.context}>
-										<Form id={thresholdForm.id} onSubmit={boxfitForm.onSubmit}>
+										<Form id={thresholdForm.id} method="post" onSubmit={thresholdForm.onSubmit}>
 											<div className="mb-2 mt-6 flex flex-row justify-between">
-												<Label htmlFor={thresholdFields.adaptiveBlockSize.id}>
+												<Label htmlFor={thresholdFields.adaptiveBlock.id}>
 													Adaptive Block Size
 												</Label>
 												<CardDescription>{adaptiveBlockSliderValue}</CardDescription>
 											</div>
 											<Slider
 												defaultValue={[Number(adaptiveBlockSize)]}
+												key={thresholdFields.adaptiveBlock.key}
+												name={thresholdFields.adaptiveBlock.name}
 												min={-25}
 												max={25}
 												step={1}
@@ -296,6 +316,8 @@ export default function HailpadDetails({
 											</div>
 											<Slider
 												defaultValue={[Number(adaptiveC)]}
+												key={thresholdFields.adaptiveC.key}
+												name={thresholdFields.adaptiveC.name}
 												min={-10}
 												max={10}
 												step={1}
@@ -349,14 +371,25 @@ export default function HailpadDetails({
 											</CardDescription>
 										</div>
 										<FormProvider context={filterForm.context}>
-											<Form id={filterForm.id} onSubmit={filterForm.onSubmit}>
+											<Form
+												id={filterForm.id}
+												onReset={() => {
+													onFilterChange({
+														minMinor: 0,
+														maxMinor: Infinity,
+														minMajor: 0,
+														maxMajor: Infinity
+													});
+												}}
+												onSubmit={filterForm.onSubmit}
+											>
 												<div className="mt-1 flex flex-row items-center justify-between text-sm">
 													<Input
 														className="h-8 w-20"
 														type="number"
 														key={filterFields.minMinor.key}
 														name={filterFields.minMinor.name}
-														// defaultValue={filterFields.minMinor.initialValue} TODO
+														defaultValue={filterFields.minMinor.initialValue}
 														placeholder="Min."
 														step="any"
 													/>
@@ -368,7 +401,7 @@ export default function HailpadDetails({
 														type="number"
 														key={filterFields.maxMinor.key}
 														name={filterFields.maxMinor.name}
-														// defaultValue={filterFields.maxMinor.initialValue} TODO
+														defaultValue={filterFields.maxMinor.initialValue}
 														placeholder="Max."
 														step="any"
 													/>
@@ -379,7 +412,7 @@ export default function HailpadDetails({
 														type="number"
 														key={filterFields.minMajor.key}
 														name={filterFields.minMajor.name}
-														// defaultValue={filterFields.minMajor.initialValue} TODO
+														defaultValue={filterFields.minMajor.initialValue}
 														placeholder="Min."
 														step="any"
 													/>
@@ -391,7 +424,7 @@ export default function HailpadDetails({
 														type="number"
 														key={filterFields.maxMajor.key}
 														name={filterFields.maxMajor.name}
-														// defaultValue={filterFields.maxMajor.initialValue} TODO
+														defaultValue={filterFields.maxMajor.initialValue}
 														placeholder="Max."
 														step="any"
 													/>

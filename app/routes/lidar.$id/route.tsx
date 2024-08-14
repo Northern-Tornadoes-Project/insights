@@ -9,13 +9,11 @@ import { scans } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { Options } from './options';
-import { actionSchema, viewerSettingsSchema } from './schema';
+import { actionSchema, ViewerSettings, viewerSettingsSchema } from './schema';
 
 const Renderer = lazy(() => import('./renderer.client'));
 
 export async function action({ params, request }: ActionFunctionArgs) {
-	console.log(request.headers);
-
 	await protectedRoute(request);
 
 	const id = params.id;
@@ -90,23 +88,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export default function () {
 	const { url, settings } = useLoaderData<typeof loader>();
+	const initialTransform: ViewerSettings = settings;
 
 	return (
 		<main className="flex flex-col justify-between gap-2 lg:flex-row">
-			<div className="h-[300px] min-w-0 w-full lg:h-[500px] 2xl:h-[750px]">
+			<div className="h-[300px] w-full min-w-0 lg:h-[500px] 2xl:h-[750px]">
 				<Suspense fallback={<Skeleton />}>
 					<ClientOnly fallback={<Skeleton />}>
-						{() => (
-							<Renderer
-								url={url}
-								initialTransform={
-									settings as {
-										position: [number, number, number];
-										rotation: [number, number, number];
-									}
-								}
-							/>
-						)}
+						{() => <Renderer url={url} initialTransform={initialTransform} />}
 					</ClientOnly>
 				</Suspense>
 			</div>

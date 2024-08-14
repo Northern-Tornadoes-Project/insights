@@ -9,6 +9,7 @@ import { cn } from '~/lib/utils';
 import Earth from './navigation/earth';
 import Fly from './navigation/fly';
 import { XRControls } from './navigation/xr';
+import { ViewerSettings } from './schema';
 import { useStore } from './store';
 
 const potree = new Potree();
@@ -137,17 +138,17 @@ export default function ({
 }: {
 	url: string;
 	className?: string;
-	initialTransform?: {
-		position: [number, number, number];
-		rotation: [number, number, number];
-	};
+	initialTransform: ViewerSettings;
 }) {
 	const xrStore = useMemo(() => createXRStore(), []);
 	const setInitialTransform = useStore((state) => state.setInitialTransform);
 
 	useEffect(() => {
 		if (initialTransform) {
-			setInitialTransform(initialTransform.position, initialTransform.rotation);
+			setInitialTransform(
+				[initialTransform.position[0], initialTransform.position[1], initialTransform.position[2]],
+				[initialTransform.rotation[0], initialTransform.rotation[1], initialTransform.rotation[2]]
+			);
 		}
 	}, [initialTransform]);
 

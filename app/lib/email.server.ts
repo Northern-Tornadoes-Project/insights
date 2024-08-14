@@ -18,3 +18,18 @@ export async function sendCode(body: { to: string; code: string; magicLink: stri
 		`
 	});
 }
+
+export async function sendInviteNotification(body: { to: string }) {
+	await resend.emails.send({
+		from: `NTP Insights <${env.RESEND_EMAIL}>`,
+		to: body.to,
+		subject: 'You have been invited to NTP Insights',
+		html: `
+			<div>
+				<h1>You have been invited to NTP Insights</h1>
+				<p>Click the link below to create your account:</p>
+				<p><a href="${env.BASE_URL}/auth/login">Login</a></p>
+			</div>
+		`
+	});
+}

@@ -18,7 +18,7 @@ authenticator.use(
 					where: eq(validEmails.email, email)
 				});
 
-				if (validEmail) {
+				if (validEmail && validEmail.enabled) {
 					return true;
 				}
 

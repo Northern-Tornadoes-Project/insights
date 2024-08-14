@@ -54,7 +54,7 @@ export default function () {
 	return (
 		<main className="flex flex-col gap-4">
 			{userContext && (
-				<Link to="/360/new">
+				<Link to="/lidar/new">
 					<Button className="max-w-32 gap-2" disabled={!userContext}>
 						<LucidePlus size={16} />
 						New Scan

@@ -66,7 +66,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Check key
 	if (key !== env.SERVICE_360_KEY) {
-		return new Response(null, { status: 401 });
+		return new Response(null, { status: 401, statusText: 'Invalid key' });
 	}
 
 	const submission = parseWithZod(await request.json(), {
@@ -74,7 +74,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	});
 
 	if (submission.status !== 'success') {
-		return new Response(null, { status: 400 });
+		return json(submission.reply());
 	}
 
 	const update = await db

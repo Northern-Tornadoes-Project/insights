@@ -37,7 +37,7 @@ export const env = createEnv({
 		SERVICE_LIDAR_DIRECTORY: z.string(),
 		SERVICE_LIDAR_KEY: z.string(),
 		SCAN_DIRECTORY: z.string(),
-		PUBLIC_SCAN_DIRECTORY: z.string(),
+		PUBLIC_SCAN_DIRECTORY: z.string()
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true

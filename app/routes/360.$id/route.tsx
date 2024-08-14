@@ -2,6 +2,7 @@ import { json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { and, eq } from 'drizzle-orm';
 import { lazy, Suspense } from 'react';
+import { ClientOnly } from 'remix-utils/client-only';
 import { z } from 'zod';
 import {
 	Card,
@@ -18,7 +19,7 @@ import { env } from '~/env.server';
 import { FrameposSchema } from '~/lib/framepos';
 import { FramePicker } from './frame-picker';
 
-const Viewer360 = lazy(() => import('./viewer-360'));
+const Viewer360 = lazy(() => import('./viewer-360.client'));
 const PathMap = lazy(() => import('~/components/path-map'));
 
 const JUMP_SIZE = 5;
@@ -119,6 +120,16 @@ function CaptureDetail({ label, value }: { label: string; value: string }) {
 	);
 }
 
+function ViewerFallback() {
+	return (
+		<div className="overflow-hidden rounded-md">
+			<div className="flex h-full flex-col items-center justify-center">
+				<div className="text-2xl font-bold">Loading</div>
+			</div>
+		</div>
+	);
+}
+
 export default function () {
 	const navigate = useNavigate();
 	const data = useLoaderData<typeof loader>();
@@ -126,52 +137,48 @@ export default function () {
 	return (
 		<div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
 			<div className="row-span-2 rounded-lg border bg-card p-6 text-card-foreground shadow-sm lg:col-span-2">
-				<Suspense
-					fallback={
-						<div className="overflow-hidden rounded-md">
-							<div className="flex h-full flex-col items-center justify-center">
-								<div className="text-2xl font-bold">Loading</div>
-							</div>
-						</div>
-					}
-				>
-					<Viewer360
-						capture={{
-							...data.path.capture,
-							uploadedAt: new Date(data.path.capture.uploadedAt),
-							takenAt: new Date(data.path.capture.takenAt)
-						}}
-						captureURL={data.path.captureURL}
-						currentState={data.path.currentState}
-						pathProgress={data.path.pathProgress}
-						onCurrentStateChange={(state) => {
-							navigate({
-								search: `?index=${data.path.index}&state=${state}`
-							});
-						}}
-						onNext={() => {
-							navigate({
-								search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
-							});
-						}}
-						onPrevious={() => {
-							navigate({
-								search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
-							});
-						}}
-						onJumpNext={() => {
-							navigate({
-								search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
-							});
-						}}
-						onJumpPrevious={() => {
-							navigate({
-								search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
-							});
-						}}
-						// Scale based on the height of the card
-						className="relative h-full min-h-96 overflow-hidden rounded-md"
-					/>
+				<Suspense fallback={<ViewerFallback />}>
+					<ClientOnly fallback={<ViewerFallback />}>
+						{() => (
+							<Viewer360
+								capture={{
+									...data.path.capture,
+									uploadedAt: new Date(data.path.capture.uploadedAt),
+									takenAt: new Date(data.path.capture.takenAt)
+								}}
+								captureURL={data.path.captureURL}
+								currentState={data.path.currentState}
+								pathProgress={data.path.pathProgress}
+								onCurrentStateChange={(state) => {
+									navigate({
+										search: `?index=${data.path.index}&state=${state}`
+									});
+								}}
+								onNext={() => {
+									navigate({
+										search: `?index=${data.path.index + 1}&state=${data.path.currentState}`
+									});
+								}}
+								onPrevious={() => {
+									navigate({
+										search: `?index=${data.path.index - 1}&state=${data.path.currentState}`
+									});
+								}}
+								onJumpNext={() => {
+									navigate({
+										search: `?index=${data.path.index + JUMP_SIZE}&state=${data.path.currentState}`
+									});
+								}}
+								onJumpPrevious={() => {
+									navigate({
+										search: `?index=${data.path.index - JUMP_SIZE}&state=${data.path.currentState}`
+									});
+								}}
+								// Scale based on the height of the card
+								className="relative h-full min-h-96 overflow-hidden rounded-md"
+							/>
+						)}
+					</ClientOnly>
 				</Suspense>
 			</div>
 			<Card>

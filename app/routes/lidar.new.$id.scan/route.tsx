@@ -110,6 +110,36 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('File not found after uploading...');
 	}
 
+	if (env.SERVICE_LIDAR_ENABLED) {
+		try {
+			const response = await fetch(new URL(`${env.SERVICE_LIDAR_URL}/${scan.id}/process`), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${env.SERVICE_LIDAR_KEY}`
+				},
+				body: JSON.stringify({
+					input: `${env.SERVICE_LIDAR_DIRECTORY}/${scan.folderName}/scan.${file.name.split('.').pop()}`,
+					output: `${env.SERVICE_LIDAR_DIRECTORY}/${scan.folderName}/output`
+				})
+			});
+
+			if (!response.ok) {
+				console.error('Failed to connect to LiDAR service', response.statusText);
+			}
+		} catch (error) {
+			console.error('Unable to connect to LiDAR service', error);
+		}
+	}
+
+	await db
+		.update(scans)
+		.set({
+			status: env.SERVICE_LIDAR_ENABLED ? 'processing' : 'complete',
+			size: file.size
+		})
+		.where(eq(scans.id, id));
+
 	return redirect(`/lidar/${scan.id}`);
 }
 
@@ -124,12 +154,12 @@ export default function () {
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>{scan.name}</CardTitle>
-					<CardDescription>Upload the images captured from the camera.</CardDescription>
+					<CardDescription>Upload the scan LAZ or LAS..</CardDescription>
 				</CardHeader>
 				<Form method="post" encType="multipart/form-data">
 					<CardContent>
 						<fieldset className="grid gap-2" disabled={navigation.state === 'submitting'}>
-							<Label htmlFor="images">Images</Label>
+							<Label htmlFor="images">Scan File</Label>
 							<Input
 								type="file"
 								key="scan"

@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import { LucideTornado } from 'lucide-react';
 import cssl from '~/assets/cssl.svg';
 import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
@@ -21,7 +20,7 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				'sticky top-0 mb-2 z-20 flex items-center justify-between gap-4 border-b bg-background px-4 py-4 md:px-6',
+				'sticky top-0 z-20 mb-2 flex items-center justify-between gap-4 border-b bg-background px-4 py-4 md:px-6',
 				className
 			)}
 		>

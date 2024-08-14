@@ -25,7 +25,7 @@ import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { env } from '~/env.server';
-import { authenticator, protectedRoute } from '~/lib/auth.server';
+import { protectedRoute } from '~/lib/auth.server';
 
 interface HailpadDent {
 	// TODO: Use shared interface
@@ -113,51 +113,51 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Invoke microservice with uploaded file path for processing
 	// if (env.SERVICE_HAILGEN_ENABLED) {
-		const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				hailpad_id: params.id,
-				file_paths: [`${filePath}/hailpad.stl`],
-				adaptive_block: queriedHailpad.adaptiveBlockSize,
-				adaptive_c: queriedHailpad.adaptiveC
-			})
+	const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			hailpad_id: params.id,
+			file_paths: [`${filePath}/hailpad.stl`],
+			adaptive_block: queriedHailpad.adaptiveBlockSize,
+			adaptive_c: queriedHailpad.adaptiveC
+		})
+	});
+
+	if (response.ok) {
+		// Save dents to db
+		const res = await response.json();
+		const dents = res.dents;
+		const maxDepthLocation = res.maxDepthLocation;
+
+		dents.forEach(async (hailpadDent: HailpadDent) => {
+			const newDent = await db
+				.insert(dent)
+				.values({
+					hailpadId: queriedHailpad.id,
+					angle: hailpadDent.angle,
+					majorAxis: hailpadDent.majorAxis,
+					minorAxis: hailpadDent.minorAxis,
+					centroidX: hailpadDent.centroidX,
+					centroidY: hailpadDent.centroidY
+					// TODO: Depth information
+				})
+				.returning();
+
+			if (newDent.length != 1) {
+				throw new Error('Error creating dent');
+			}
 		});
 
-		if (response.ok) {
-			// Save dents to db
-			const res = await response.json();
-			const dents = res.dents;
-			const maxDepthLocation = res.maxDepthLocation;
-
-			dents.forEach(async (hailpadDent: HailpadDent) => {
-				const newDent = await db
-					.insert(dent)
-					.values({
-						hailpadId: queriedHailpad.id,
-						angle: hailpadDent.angle,
-						majorAxis: hailpadDent.majorAxis,
-						minorAxis: hailpadDent.minorAxis,
-						centroidX: hailpadDent.centroidX,
-						centroidY: hailpadDent.centroidY
-						// TODO: Depth information
-					})
-					.returning();
-
-				if (newDent.length != 1) {
-					throw new Error('Error creating dent');
-				}
-			});
-
-			// Get location for max. depth
-			console.log("max depth location is: " + maxDepthLocation);
-			depthX = Number(maxDepthLocation[0]);
-			depthY = Number(maxDepthLocation[1]);
-		} else {
-			console.error('Error invoking Hailgen service');
-		}
+		// Get location for max. depth
+		console.log('max depth location is: ' + maxDepthLocation);
+		depthX = Number(maxDepthLocation[0]);
+		depthY = Number(maxDepthLocation[1]);
+	} else {
+		console.error('Error invoking Hailgen service');
+	}
 	// } else {
 	// 	console.log('Hailgen service is disabled');
 	// } // TODO: Uncomment

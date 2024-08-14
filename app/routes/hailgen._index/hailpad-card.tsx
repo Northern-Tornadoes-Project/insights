@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { LucideEdit, LucideX } from 'lucide-react';
+import { LucideX } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Hailpad } from './columns';

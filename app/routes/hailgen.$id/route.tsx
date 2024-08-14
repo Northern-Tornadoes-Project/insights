@@ -1,17 +1,15 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { env } from '~/env.server';
-
+import { protectedRoute } from '~/lib/auth.server';
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
-import { protectedRoute } from '~/lib/auth.server';
-
-const HailpadMap = lazy(() => import('./hailpad-map'));
+import HailpadMap from './hailpad-map';
 
 interface HailpadDent {
 	// TODO: Use shared interface
@@ -173,10 +171,10 @@ export default function () {
 	const [download, setDownload] = useState<boolean>(false);
 	const [dentData, setDentData] = useState<HailpadDent[]>([]);
 	const [filters, setFilters] = useState<{
-		minMinor: number,
-		maxMinor: number,
-		minMajor: number,
-		maxMajor: number
+		minMinor: number;
+		maxMinor: number;
+		minMajor: number;
+		maxMajor: number;
 	}>({
 		minMinor: 0,
 		maxMinor: Infinity,
@@ -184,14 +182,7 @@ export default function () {
 		maxMajor: Infinity
 	});
 
-	const { dents,
-		depthMapPath,
-		boxfit,
-		maxDepth,
-		adaptiveBlockSize,
-		adaptiveC,
-		hailpadName
-	} = data;
+	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName } = data;
 
 	useEffect(() => {
 		// Convert major and minor axes from px to mm based on boxfit length

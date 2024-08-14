@@ -1,14 +1,6 @@
 import { FormProvider, useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import {
-	ActionFunctionArgs,
-	LoaderFunctionArgs,
-	NodeOnDiskFile,
-	json,
-	redirect,
-	unstable_createFileUploadHandler,
-	unstable_parseMultipartFormData
-} from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { useEffect, useRef } from 'react';
@@ -25,9 +17,9 @@ import {
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { db } from '~/db/db.server';
-import { dent, hailpad } from '~/db/schema';
+import { hailpad } from '~/db/schema';
 import { env } from '~/env.server';
-import { authenticator, protectedRoute } from '~/lib/auth.server';
+import { protectedRoute } from '~/lib/auth.server';
 
 // Instead of sharing a schema, prepare a schema creator
 function createSchema() {
@@ -60,8 +52,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return json({
 		queriedHailpad,
 		depthMapPath,
-		x: url.searchParams.get("x"),
-		y: url.searchParams.get("y")
+		x: url.searchParams.get('x'),
+		y: url.searchParams.get('y')
 	});
 }
 
@@ -139,13 +131,16 @@ export default function () {
 			<Card className="sm:min-w-[500px]">
 				<CardHeader>
 					<CardTitle>{queriedHailpad.name}</CardTitle>
-					<CardDescription>The following region was identified to contain the greatest depth relative to the rest of the hailpad. Enter the mm measurement of this depth.</CardDescription>
+					<CardDescription>
+						The following region was identified to contain the greatest depth relative to the rest
+						of the hailpad. Enter the mm measurement of this depth.
+					</CardDescription>
 				</CardHeader>
 				<div className="flex flex-col gap-4">
 					<canvas ref={canvasRef} width={1000} height={1000} />
 					<FormProvider context={form.context}>
 						<Form method="post" id={form.id} onSubmit={form.onSubmit}>
-							<CardContent className="flex flex-row gap-4 items-center">
+							<CardContent className="flex flex-row items-center gap-4">
 								<div>
 									<Label htmlFor={fields.depth.id}>Maximum Depth</Label>
 									<Input

@@ -13,7 +13,7 @@ import {
 	TableHeader,
 	TableRow
 } from '~/components/ui/table';
-import { DataTablePagination } from './pagination';
+import { DataTablePagination } from '../../routes/hailgen._index/pagination';
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];

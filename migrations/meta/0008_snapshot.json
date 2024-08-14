@@ -1,7 +1,5 @@
 {
-  "id": "eb446d64-446c-4c8d-8f4e-92c458771831",
-  "prevId": "b6430c38-25a7-426d-ae60-d9c9b0c8cd24",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.captures": {
@@ -155,15 +153,15 @@
         "dent_hailpad_id_hailpad_id_fk": {
           "name": "dent_hailpad_id_hailpad_id_fk",
           "tableFrom": "dent",
-          "tableTo": "hailpad",
           "columnsFrom": [
             "hailpad_id"
           ],
+          "tableTo": "hailpad",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -249,45 +247,45 @@
         "hailpad_created_by_users_id_fk": {
           "name": "hailpad_created_by_users_id_fk",
           "tableFrom": "hailpad",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "hailpad_updated_by_users_id_fk": {
           "name": "hailpad_updated_by_users_id_fk",
           "tableFrom": "hailpad",
-          "tableTo": "users",
           "columnsFrom": [
             "updated_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "hailpad_name_unique": {
           "name": "hailpad_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "name"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "hailpad_folder_name_unique": {
           "name": "hailpad_folder_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "folder_name"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -353,41 +351,41 @@
         "path_segments_path_id_paths_id_fk": {
           "name": "path_segments_path_id_paths_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "paths",
           "columnsFrom": [
             "path_id"
           ],
+          "tableTo": "paths",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "path_segments_capture_id_captures_id_fk": {
           "name": "path_segments_capture_id_captures_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "captures",
           "columnsFrom": [
             "capture_id"
           ],
+          "tableTo": "captures",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "path_segments_street_view_id_captures_id_fk": {
           "name": "path_segments_street_view_id_captures_id_fk",
           "tableFrom": "path_segments",
-          "tableTo": "captures",
           "columnsFrom": [
             "street_view_id"
           ],
+          "tableTo": "captures",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -486,45 +484,45 @@
         "paths_created_by_users_id_fk": {
           "name": "paths_created_by_users_id_fk",
           "tableFrom": "paths",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "paths_updated_by_users_id_fk": {
           "name": "paths_updated_by_users_id_fk",
           "tableFrom": "paths",
-          "tableTo": "users",
           "columnsFrom": [
             "updated_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "paths_name_unique": {
           "name": "paths_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "name"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "paths_folder_name_unique": {
           "name": "paths_folder_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "folder_name"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -622,45 +620,45 @@
         "scans_created_by_users_id_fk": {
           "name": "scans_created_by_users_id_fk",
           "tableFrom": "scans",
-          "tableTo": "users",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "scans_updated_by_users_id_fk": {
           "name": "scans_updated_by_users_id_fk",
           "tableFrom": "scans",
-          "tableTo": "users",
           "columnsFrom": [
             "updated_by"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "scans_name_unique": {
           "name": "scans_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "name"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "scans_folder_name_unique": {
           "name": "scans_folder_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "folder_name"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -741,10 +739,10 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -820,8 +818,10 @@
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "eb446d64-446c-4c8d-8f4e-92c458771831",
+  "prevId": "b6430c38-25a7-426d-ae60-d9c9b0c8cd24"
 }

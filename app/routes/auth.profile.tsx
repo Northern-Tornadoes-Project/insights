@@ -41,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	});
 
 	if (submission.status !== 'success') {
-		return submission.reply();
+		return json(submission.reply());
 	}
 
 	// Update the user's profile

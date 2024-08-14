@@ -1,4 +1,3 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
 import { count, eq } from 'drizzle-orm';
 import { motion } from 'framer-motion';
@@ -16,11 +15,7 @@ export const meta: MetaFunction = () => {
 	return [{ title: 'NHP Insights - Hailgen' }];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	const url = new URL(request.url);
-	const limit = Number(url.searchParams.get('limit')) || 10;
-	const page = Number(url.searchParams.get('page')) || 1;
-
+export async function loader() {
 	return json({
 		hailpads: await db
 			.select({
@@ -32,8 +27,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			})
 			.from(hailpad)
 			.leftJoin(dent, eq(hailpad.id, dent.hailpadId))
-			.limit(limit)
-			.offset((page - 1) * limit)
 			.groupBy(hailpad.id)
 	});
 }

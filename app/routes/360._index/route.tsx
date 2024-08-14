@@ -1,4 +1,3 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
@@ -15,11 +14,7 @@ export const meta: MetaFunction = () => {
 	return [{ title: 'NTP Insights - 360' }];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	const url = new URL(request.url);
-	const limit = Number(url.searchParams.get('limit')) || 10;
-	const page = Number(url.searchParams.get('page')) || 1;
-
+export async function loader() {
 	const paths = await db.query.paths.findMany({
 		columns: {
 			id: true,
@@ -50,9 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 					}
 				}
 			}
-		},
-		limit,
-		offset: (page - 1) * limit
+		}
 	});
 
 	return json({

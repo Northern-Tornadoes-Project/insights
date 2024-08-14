@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import { Link, useLoaderData, useOutletContext } from '@remix-run/react';
 import { LucidePlus } from 'lucide-react';
 import { useMemo } from 'react';
@@ -8,26 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 import { db } from '~/db/db.server';
 import { columns, Scan } from './columns';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	const url = new URL(request.url);
-	const limit = Number(url.searchParams.get('limit')) || 10;
-	const page = Number(url.searchParams.get('page')) || 1;
-
-	const scans = await db.query.scans.findMany({
-		columns: {
-			id: true,
-			name: true,
-			eventDate: true,
-			captureDate: true,
-			status: true,
-			size: true
-		},
-		limit,
-		offset: (page - 1) * limit
-	});
-
+export async function loader() {
 	return json({
-		scans
+		scans: await db.query.scans.findMany({
+			columns: {
+				id: true,
+				name: true,
+				eventDate: true,
+				captureDate: true,
+				status: true,
+				size: true
+			}
+		})
 	});
 }
 

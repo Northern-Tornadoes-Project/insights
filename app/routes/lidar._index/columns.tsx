@@ -26,8 +26,9 @@ export const columns: ColumnDef<Scan>[] = [
 		)
 	},
 	{
-		header: ({ column }) => <DataTableColumnHeader column={column} title="Size" />,
-		accessorKey: 'size'
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Size (MB)" />,
+		accessorKey: 'size',
+		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2)
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Event Date" />,

@@ -13,7 +13,7 @@ import {
 	TableHeader,
 	TableRow
 } from '~/components/ui/table';
-import { DataTablePagination } from '../../routes/hailgen._index/pagination';
+import { DataTablePagination } from './pagination';
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -30,8 +30,7 @@ export function DataTable<TData, TValue>({
 		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		manualPagination: true
+		getPaginationRowModel: getPaginationRowModel()
 	});
 
 	return (

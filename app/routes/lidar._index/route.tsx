@@ -56,7 +56,7 @@ export default function () {
 			<div className="grid min-h-0 min-w-0 gap-4 xl:grid-flow-col">
 				<Card>
 					<CardHeader>
-						<CardTitle>Scans</CardTitle>
+						<CardTitle>LiDAR Scans</CardTitle>
 						<CardDescription>Explore the different scans available to you.</CardDescription>
 					</CardHeader>
 					<CardContent>

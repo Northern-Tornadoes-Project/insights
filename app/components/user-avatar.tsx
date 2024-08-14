@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react';
-import { Github, LifeBuoy, LogOut, Moon, Sun, User } from 'lucide-react';
+import { Github, LifeBuoy, LogOut, MailCheck, Moon, Sun, User } from 'lucide-react';
 import { useMemo } from 'react';
 import { Theme, useTheme } from 'remix-themes';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -46,6 +46,12 @@ export function UserAvatar(props: {
 					<DropdownMenuItem>
 						<User className="mr-2 h-4 w-4" />
 						<span>Profile</span>
+					</DropdownMenuItem>
+				</Link>
+				<Link to="/auth/new">
+					<DropdownMenuItem>
+						<MailCheck className="mr-2 h-4 w-4" />
+						<span>Invite</span>
 					</DropdownMenuItem>
 				</Link>
 				<DropdownMenuSeparator />

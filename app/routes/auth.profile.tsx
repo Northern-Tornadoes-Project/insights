@@ -64,7 +64,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 
 	const data = await db.query.users.findFirst({
-		where: eq(users.id, id)
+		where: eq(users.id, id),
+		columns: {
+			name: true,
+			imageUrl: true
+		}
 	});
 
 	if (!data) {
@@ -77,7 +81,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	});
 }
 
-export default function Profile() {
+export default function () {
 	const { name, image_url } = useLoaderData<typeof loader>();
 	const lastResult = useActionData<typeof action>();
 	const [form, fields] = useForm({

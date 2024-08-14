@@ -6,7 +6,7 @@ import { WesternEngineeringLogo } from '~/components/western-eng-logo';
 export default function Auth() {
 	return (
 		<div className="grid h-screen lg:grid-cols-2">
-			<div className="flex flex-col items-center justify-center">
+			<div className="flex flex-col items-center justify-center mx-2">
 				<Outlet />
 			</div>
 			<div className="relative hidden lg:block">

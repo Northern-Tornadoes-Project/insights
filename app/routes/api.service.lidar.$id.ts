@@ -2,10 +2,10 @@ import { parseWithZod } from '@conform-to/zod';
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
 import { eq } from 'drizzle-orm';
 import { db } from '~/db/db.server';
-import { paths } from '~/db/schema';
+import { scans } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
-import { StatusResponseSchema, StatusUpdateSchema } from '~/lib/service-360';
+import { StatusResponseSchema, StatusUpdateSchema } from '~/lib/service-lidar';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const id = params.id;
@@ -17,29 +17,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	await protectedRoute(request);
 
 	try {
-		const path = await db.query.paths.findFirst({
-			where: eq(paths.id, id)
+		const scan = await db.query.scans.findFirst({
+			where: eq(scans.id, id),
+			columns: {
+				id: true
+			}
 		});
 
-		if (!path) {
-			return new Response(null, { status: 404, statusText: 'Could not find the requested path' });
-		}
+		if (!scan)
+			return new Response(null, { status: 404, statusText: 'Could not find the requested scan' });
 
 		if (!env.SERVICE_360_ENABLED)
 			return new Response(null, { status: 400, statusText: 'Service not enabled' });
 
-		const response = await fetch(new URL(`${env.SERVICE_360_URL}/${path.id}/status`));
+		const response = await fetch(new URL(`${env.SERVICE_LIDAR_URL}/${scan.id}/status`));
 
-		if (!response.ok) {
+		if (!response.ok)
 			return new Response(null, { status: 500, statusText: 'Service failed to respond' });
-		}
 
 		const status = StatusResponseSchema.parse(await response.json());
 
-		return json({
-			completed: status.task_status.completed,
-			progress: status.task_status.progress
-		});
+		return json(status);
 	} catch (error) {
 		return new Response(null, { status: 500, statusText: 'Internal server error' });
 	}
@@ -55,38 +53,40 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const authHeader = request.headers.get('Authorization');
 
 	if (!authHeader) {
+		console.log(`[LiDAR Service] Unauthorized access attempt with no header`);
 		return new Response(null, { status: 401 });
 	}
 
-	if (!authHeader.startsWith('Bearer ')) {
+	const authParts = authHeader.split(' ');
+
+	if (authParts.length !== 2) {
+		console.log(
+			`[LiDAR Service] Unauthorized access attempt with header not containing 2 parts: ${authHeader}`
+		);
 		return new Response(null, { status: 401 });
 	}
 
-	const key = authHeader.split(' ')[1];
-
-	// Check key
-	if (key !== env.SERVICE_360_KEY) {
-		return new Response(null, { status: 401, statusText: 'Invalid key' });
+	if (authParts[0] !== 'Bearer' && authParts[1] !== env.SERVICE_LIDAR_KEY) {
+		console.log(`[LiDAR Service] Unauthorized access attempt with key: ${authParts[1]}`);
+		return new Response(null, { status: 401 });
 	}
 
 	const submission = parseWithZod(await request.json(), {
 		schema: StatusUpdateSchema
 	});
 
-	if (submission.status !== 'success') {
-		return json(submission.reply());
-	}
+	if (submission.status !== 'success') return json(submission.reply());
+
+	const status = submission.value.status !== 'pending' ? submission.value.status : 'processing';
 
 	const update = await db
-		.update(paths)
+		.update(scans)
 		.set({
-			status: submission.value.status
+			status
 		})
-		.where(eq(paths.id, id));
+		.where(eq(scans.id, id));
 
-	if (update.rowCount !== 1) {
-		return new Response(null, { status: 404 });
-	}
+	if (update.rowCount !== 1) return new Response(null, { status: 404 });
 
 	return new Response(null, { status: 200 });
 }

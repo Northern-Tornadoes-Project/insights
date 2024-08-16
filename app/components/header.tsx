@@ -1,8 +1,8 @@
 import { Link } from '@remix-run/react';
-import cssl from '~/assets/cssl.svg';
 import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 import { UserAvatar } from './user-avatar';
+import { CsslLogo } from './cssl-logo';
 
 export function Header({
 	title,
@@ -29,7 +29,7 @@ export function Header({
 					<Button variant="outline" size="icon">
 						{/* <LucideTornado size={24} /> */}
 						{/* TODO: idk I thought I'd try it for fun */}
-						<img src={cssl} className="p-2" />
+						<CsslLogo size={24} />
 					</Button>
 				</Link>
 				<h1 className="text-xl font-bold">

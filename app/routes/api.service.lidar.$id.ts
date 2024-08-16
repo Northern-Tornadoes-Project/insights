@@ -1,4 +1,3 @@
-import { parseWithZod } from '@conform-to/zod';
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
 import { eq } from 'drizzle-orm';
 import { db } from '~/db/db.server';
@@ -71,13 +70,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return new Response(null, { status: 401 });
 	}
 
-	const submission = parseWithZod(await request.json(), {
-		schema: StatusUpdateSchema
-	});
+	const { data, error, success } = StatusUpdateSchema.safeParse(await request.json());
 
-	if (submission.status !== 'success') return json(submission.reply());
+	if (!success)
+		return json(
+			{
+				error
+			},
+			{ status: 400 }
+		);
 
-	const status = submission.value.status !== 'pending' ? submission.value.status : 'processing';
+	const status = data.status !== 'pending' ? data.status : 'processing';
 
 	const update = await db
 		.update(scans)

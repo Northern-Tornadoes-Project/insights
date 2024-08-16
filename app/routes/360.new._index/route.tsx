@@ -23,7 +23,10 @@ import { paths } from '~/db/schema';
 import { protectedRoute } from '~/lib/auth.server';
 
 // Instead of sharing a schema, prepare a schema creator
-function createSchema(options?: { isFolderNameUnique: (folderName: string) => Promise<boolean> }) {
+function createSchema(options?: {
+	isFolderNameUnique: (folderName: string) => Promise<boolean>;
+	isNameUnique: (name: string) => Promise<boolean>;
+}) {
 	return z.object({
 		name: z
 			.string()
@@ -32,7 +35,32 @@ function createSchema(options?: { isFolderNameUnique: (folderName: string) => Pr
 			})
 			.max(255, {
 				message: 'Name must be between 3 and 255 characters.'
-			}),
+			})
+			.pipe(
+				z.string().superRefine((name, ctx) => {
+					// This makes Conform to fallback to server validation
+					// by indicating that the validation is not defined
+					if (typeof options?.isNameUnique !== 'function') {
+						ctx.addIssue({
+							code: 'custom',
+							message: conformZodMessage.VALIDATION_UNDEFINED,
+							fatal: true
+						});
+						return;
+					}
+
+					// If it reaches here, then it must be validating on the server
+					// Return the result as a promise so Zod knows it's async instead
+					return options.isNameUnique(name).then((isUnique) => {
+						if (!isUnique) {
+							ctx.addIssue({
+								code: 'custom',
+								message: 'Name is already used'
+							});
+						}
+					});
+				})
+			),
 		folderName: z
 			.string()
 			.min(3, {
@@ -87,6 +115,12 @@ export async function action({ request }: ActionFunctionArgs) {
 			async isFolderNameUnique(folderName) {
 				const path = await db.query.paths.findFirst({
 					where: eq(paths.folderName, folderName)
+				});
+				return !path;
+			},
+			async isNameUnique(name) {
+				const path = await db.query.paths.findFirst({
+					where: eq(paths.name, name)
 				});
 				return !path;
 			}

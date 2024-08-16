@@ -150,7 +150,7 @@ export default function () {
 				</Button>
 			</Link>
 			<Card className="w-full md:w-3/4 xl:w-3/5">
-				<CardHeader>
+				<CardHeader className="pb-4">
 					<CardTitle>Invite</CardTitle>
 					<CardDescription>Invite new users to the platform.</CardDescription>
 				</CardHeader>

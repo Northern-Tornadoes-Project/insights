@@ -1,7 +1,7 @@
-import { LngLatBounds } from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMemo, useRef } from 'react';
-import Map, { Layer, MapRef, Marker, Source } from 'react-map-gl';
+import { Layer, Map, MapRef, Marker, Source } from 'react-map-gl';
 import { Theme, useTheme } from 'remix-themes';
 
 export type SegmentPoint = {
@@ -24,7 +24,7 @@ export default function ({
 	const [theme, _] = useTheme();
 
 	const bounds = useMemo(() => {
-		const bounds = new LngLatBounds();
+		const bounds = new mapboxgl.LngLatBounds();
 		segments.forEach((segment) => {
 			bounds.extend([segment.lng, segment.lat]);
 		});

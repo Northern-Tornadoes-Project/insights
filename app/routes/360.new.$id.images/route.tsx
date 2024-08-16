@@ -159,7 +159,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Send files to microservice
 	if (env.SERVICE_360_ENABLED)
-		await fetch(`${process.env.SERVICE_360_URL}/process_images`, {
+		await fetch(new URL(`${process.env.SERVICE_360_URL}/process_images`), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

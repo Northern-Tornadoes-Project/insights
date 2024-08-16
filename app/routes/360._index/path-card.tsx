@@ -27,9 +27,9 @@ export function PathCard({
 	useEffect(() => {
 		if (path.status !== 'processing') return;
 
-		// Pull data from /360/service/:id to update the status
+		// Pull data from /api/service/360/:id to update the status
 		const interval = setInterval(async () => {
-			const response = await fetch(`/360/service/${path.id}/status`);
+			const response = await fetch(`/api/service/360/${path.id}`);
 
 			if (!response.ok) {
 				clearInterval(interval);

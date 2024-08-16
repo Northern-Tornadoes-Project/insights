@@ -113,7 +113,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Invoke microservice with uploaded file path for processing
 	// if (env.SERVICE_HAILGEN_ENABLED) {
-	const response = await fetch(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`, {
+	const response = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

@@ -65,7 +65,7 @@ authenticator.use(
 	)
 );
 
-export const protectedRoute = async (request: Request) => {
+export async function protectedRoute(request: Request) {
 	const userId = await authenticator.isAuthenticated(request);
 
 	if (!userId) {
@@ -76,4 +76,4 @@ export const protectedRoute = async (request: Request) => {
 	}
 
 	return userId;
-};
+}

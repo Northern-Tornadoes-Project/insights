@@ -9,7 +9,7 @@ const regex = /callbackfunc\((.*)\)/;
 
 export async function getStreetViewImage(position: Position) {
 	const url = `https://maps.googleapis.com/maps/api/js/GeoPhotoService.SingleImageSearch?pb=!1m5!1sapiv3!5sUS!11m2!1m1!1b0!2m4!1m2!3d${position.lat}!4d${position.lng}!2d50!3m10!2m2!1sen!2sGB!9m1!1e2!11m4!1m3!1e2!2b1!3e2!4m10!1e1!1e2!1e3!1e4!1e8!1e6!5m1!1e2!6m1!1e2&callback=callbackfunc`;
-	const response = await fetch(url);
+	const response = await fetch(new URL(url));
 
 	if (!response.ok) {
 		throw new Error('Failed to fetch image');

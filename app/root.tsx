@@ -15,6 +15,7 @@ import clsx from 'clsx';
 import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from 'remix-themes';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Toaster } from '~/components/ui/sonner';
+import '~/components/ui/sonner.css';
 import { themeSessionResolver } from '~/lib/sessions.server';
 import '~/tailwind.css';
 import { Header } from './components/header';

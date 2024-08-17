@@ -3,6 +3,7 @@ import { LucideBird, LucideCircle, LucideEarth, LucideSave, LucideSquare } from 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useShallow } from 'zustand/react/shallow';
+import { useStore } from '~/components/lidar/store';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Label } from '~/components/ui/label';
@@ -11,7 +12,6 @@ import { Slider } from '~/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group';
 import { cn } from '~/lib/utils';
-import { useStore } from './store';
 
 function OptionRow({
 	children,

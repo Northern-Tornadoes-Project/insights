@@ -3,15 +3,15 @@ import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { lazy, Suspense } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
-import { Skeleton } from '~/components/ui/skeleton';
+import { Fallback } from '~/components/fallback';
+import { actionSchema, ViewerSettings, viewerSettingsSchema } from '~/components/lidar/schema';
 import { db } from '~/db/db.server';
 import { scans } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { Options } from './options';
-import { actionSchema, ViewerSettings, viewerSettingsSchema } from './schema';
 
-const Renderer = lazy(() => import('./renderer.client'));
+const Renderer = lazy(() => import('~/components/lidar/renderer.client'));
 
 export async function action({ params, request }: ActionFunctionArgs) {
 	await protectedRoute(request);
@@ -93,9 +93,9 @@ export default function () {
 	return (
 		<main className="flex flex-col justify-between gap-2 lg:flex-row">
 			<div className="h-[300px] w-full min-w-0 lg:h-[500px] 2xl:h-[750px]">
-				<Suspense fallback={<Skeleton />}>
-					<ClientOnly fallback={<Skeleton />}>
-						{() => <Renderer url={url} initialTransform={initialTransform} />}
+				<Suspense fallback={<Fallback />}>
+					<ClientOnly fallback={<Fallback />}>
+						{() => <Renderer url={url} initialTransform={initialTransform} debug={true} />}
 					</ClientOnly>
 				</Suspense>
 			</div>

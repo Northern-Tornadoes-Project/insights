@@ -18,8 +18,9 @@ import { paths, pathSegments } from '~/db/schema';
 import { env } from '~/env.server';
 import { FrameposSchema } from '~/lib/framepos';
 import { FramePicker } from './frame-picker';
+import { Fallback } from '~/components/fallback';
 
-const Viewer360 = lazy(() => import('./viewer-360.client'));
+const Viewer360 = lazy(() => import('~/components/360/viewer-360.client'));
 const PathMap = lazy(() => import('~/components/path-map'));
 
 const JUMP_SIZE = 5;
@@ -123,9 +124,7 @@ function CaptureDetail({ label, value }: { label: string; value: string }) {
 function ViewerFallback() {
 	return (
 		<div className="overflow-hidden rounded-md">
-			<div className="flex h-full flex-col items-center justify-center">
-				<div className="text-2xl font-bold">Loading</div>
-			</div>
+			<Fallback />
 		</div>
 	);
 }

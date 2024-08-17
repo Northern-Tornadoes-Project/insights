@@ -1,8 +1,8 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { createXRStore, XR } from '@react-three/xr';
-import { LucideGlasses } from 'lucide-react';
+import { LucideExpand, LucideGlasses, LucideShrink } from 'lucide-react';
 import { PointSizeType, Potree, type PointCloudOctree } from 'potree-core';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { cn } from '~/lib/utils';
@@ -134,15 +134,29 @@ function Renderer({ pointCloudURL }: { pointCloudURL: string }) {
 export default function ({
 	url,
 	className,
-	initialTransform
+	initialTransform,
+	debug
 }: {
 	url: string;
 	className?: string;
 	initialTransform: ViewerSettings;
+	debug?: boolean;
 }) {
+	const fullscreenRef = useRef<HTMLDivElement>(null);
+	const [fullscreen, setFullscreen] = useState(false);
 	const xrStore = useMemo(() => createXRStore(), []);
 	const setInitialTransform = useStore((state) => state.setInitialTransform);
 
+	// Listen for fullscreen changes
+	useEffect(() => {
+		const handleFullscreenChange = () => {
+			setFullscreen(!!document.fullscreenElement);
+		};
+
+		document.addEventListener('fullscreenchange', handleFullscreenChange);
+	}, []);
+
+	// Set initial transform
 	useEffect(() => {
 		if (initialTransform) {
 			setInitialTransform(
@@ -153,7 +167,10 @@ export default function ({
 	}, [initialTransform]);
 
 	return (
-		<div className={cn('relative h-full w-full rounded-lg border bg-card shadow-sm', className)}>
+		<div
+			className={cn('relative h-full w-full rounded-lg border bg-card shadow-sm', className)}
+			ref={fullscreenRef}
+		>
 			<p className="absolute bottom-3 left-5 z-10 text-2xl">
 				<span className="font-bold">NTP</span> LiDAR
 			</p>
@@ -166,12 +183,23 @@ export default function ({
 				>
 					<LucideGlasses />
 				</button>
+				<button
+					onClick={() => {
+						void (async () => {
+							if (fullscreen) await document.exitFullscreen();
+							else await fullscreenRef.current?.requestFullscreen();
+						})();
+					}}
+					className="rounded-lg bg-background/60 p-2 backdrop-blur transition hover:cursor-pointer hover:bg-foreground/40 hover:text-background disabled:pointer-events-none disabled:opacity-50"
+				>
+					{fullscreen ? <LucideShrink /> : <LucideExpand />}
+				</button>
 			</div>
 			<Canvas id="potree-canvas">
 				<XR store={xrStore}>
 					<XRControls />
 					<Renderer pointCloudURL={url} />
-					<DebugTools />
+					{debug && <DebugTools />}
 				</XR>
 			</Canvas>
 		</div>

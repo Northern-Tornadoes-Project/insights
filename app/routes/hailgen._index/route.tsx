@@ -26,6 +26,7 @@ export async function loader() {
 				updatedAt: hailpad.updatedAt
 			})
 			.from(hailpad)
+			.where(eq(hailpad.hidden, false))
 			.leftJoin(dent, eq(hailpad.id, dent.hailpadId))
 			.groupBy(hailpad.id)
 	});

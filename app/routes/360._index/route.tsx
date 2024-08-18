@@ -1,4 +1,5 @@
 import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remix-run/react';
+import { eq } from 'drizzle-orm';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -6,6 +7,7 @@ import { DataTable } from '~/components/table/data-table';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
+import { paths } from '~/db/schema';
 import { env } from '~/env.server';
 import { Path, columns } from './columns';
 import { PathCard } from './path-card';
@@ -15,44 +17,45 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader() {
-	const paths = await db.query.paths.findMany({
-		columns: {
-			id: true,
-			name: true,
-			eventDate: true,
-			createdAt: true,
-			status: true,
-			size: true
-		},
-		with: {
-			segments: {
-				columns: {
-					id: true,
-					index: true
-				},
-				with: {
-					capture: {
-						columns: {
-							id: true,
-							lng: true,
-							lat: true
-						}
-					},
-					streetView: {
-						columns: {
-							id: true
-						}
-					}
-				}
-			}
-		}
-	});
-
 	return json({
 		ENV: {
 			MAPBOX_KEY: env.MAPBOX_KEY
 		},
-		paths: paths.map((path) => {
+		paths: (
+			await db.query.paths.findMany({
+				columns: {
+					id: true,
+					name: true,
+					eventDate: true,
+					createdAt: true,
+					status: true,
+					size: true
+				},
+				where: eq(paths.hidden, false),
+				with: {
+					segments: {
+						columns: {
+							id: true,
+							index: true
+						},
+						with: {
+							capture: {
+								columns: {
+									id: true,
+									lng: true,
+									lat: true
+								}
+							},
+							streetView: {
+								columns: {
+									id: true
+								}
+							}
+						}
+					}
+				}
+			})
+		).map((path) => {
 			return {
 				id: path.id,
 				name: path.name,

@@ -76,6 +76,7 @@ export const paths = pgTable('paths', {
 	status: pathInitializationStatus('status').default('framepos').notNull(),
 	size: integer('size'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
+	hidden: boolean('hidden').default(false).notNull(),
 	updatedAt: timestamp('updated_at')
 		.defaultNow()
 		.notNull()

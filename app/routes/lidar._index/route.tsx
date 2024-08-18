@@ -1,11 +1,13 @@
 import { json } from '@remix-run/node';
 import { Link, useLoaderData, useOutletContext } from '@remix-run/react';
+import { eq } from 'drizzle-orm';
 import { LucidePlus } from 'lucide-react';
 import { useMemo } from 'react';
 import { DataTable } from '~/components/table/data-table';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { db } from '~/db/db.server';
+import { scans } from '~/db/schema';
 import { columns, Scan } from './columns';
 
 export async function loader() {
@@ -18,7 +20,8 @@ export async function loader() {
 				captureDate: true,
 				status: true,
 				size: true
-			}
+			},
+			where: eq(scans.hidden, false)
 		})
 	});
 }

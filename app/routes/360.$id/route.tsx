@@ -123,7 +123,7 @@ function CaptureDetail({ label, value }: { label: string; value: string }) {
 
 function ViewerFallback() {
 	return (
-		<div className="overflow-hidden rounded-md">
+		<div className="overflow-hidden rounded-md w-full h-full">
 			<Fallback />
 		</div>
 	);

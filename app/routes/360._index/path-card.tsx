@@ -1,11 +1,13 @@
 import { Link } from '@remix-run/react';
 import { LucideEdit, LucideX } from 'lucide-react';
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { Progress } from '~/components/ui/progress';
 import { Skeleton } from '~/components/ui/skeleton';
 import { Spinner } from '~/components/ui/spinner';
+import { Actions } from './actions';
 import { Path } from './columns';
 import { StatusBadge } from './status-badge';
 
@@ -22,6 +24,7 @@ export function PathCard({
 	loggedIn?: boolean;
 	onClose: () => void;
 }) {
+	const [failedFetch, setFailedFetch] = useState(false);
 	const [progress, setProgress] = useState<number | null>(null);
 
 	useEffect(() => {
@@ -33,6 +36,7 @@ export function PathCard({
 
 			if (!response.ok) {
 				clearInterval(interval);
+				setFailedFetch(true);
 				return;
 			}
 
@@ -57,10 +61,22 @@ export function PathCard({
 			<div className="flex flex-row items-center justify-between pr-6">
 				<CardHeader>
 					<CardTitle>{path.name}</CardTitle>
-					<StatusBadge status={path.status} />
+					<div className="flex flex-row items-center gap-2">
+						<StatusBadge status={path.status} />
+						{path.status === 'processing' && (
+							<>
+								{!failedFetch && !progress && (
+									<Badge variant="outline" className="flex flex-row items-center gap-1">
+										<Spinner size={12} /> Fetching service status...
+									</Badge>
+								)}
+								{failedFetch && <Badge variant="outline">Service is offline</Badge>}
+							</>
+						)}
+					</div>
 				</CardHeader>
 				<div className="flex flex-row items-center gap-2">
-					{loggedIn && (
+					{loggedIn && (path.status === 'framepos' || path.status === 'uploading') && (
 						<Button
 							variant="secondary"
 							size="icon"
@@ -69,12 +85,12 @@ export function PathCard({
 									window.location.href = `/360/new/${path.id}/framepos`;
 								else if (path.status === 'uploading')
 									window.location.href = `/360/new/${path.id}/images`;
-								else window.location.href = `/360/${path.id}`;
 							}}
 						>
 							<LucideEdit />
 						</Button>
 					)}
+					<Actions id={path.id} hidden={path.hidden} />
 					<Button variant="outline" size="icon" onClick={onClose}>
 						<LucideX />
 					</Button>
@@ -83,15 +99,10 @@ export function PathCard({
 			<CardContent>
 				{path.status === 'processing' && (
 					<div className="flex flex-row items-center gap-2 pb-4">
-						{!!progress ? (
+						{!failedFetch && !!progress && (
 							<>
 								<p>Processing {progress.toFixed(1)}%</p>
 								<Progress value={progress} />
-							</>
-						) : (
-							<>
-								<Spinner />
-								<p>Fetching processing service...</p>
 							</>
 						)}
 					</div>

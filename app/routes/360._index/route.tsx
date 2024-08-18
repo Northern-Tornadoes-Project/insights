@@ -29,7 +29,8 @@ export async function loader() {
 					eventDate: true,
 					createdAt: true,
 					status: true,
-					size: true
+					size: true,
+					hidden: true
 				},
 				where: eq(paths.hidden, false),
 				with: {
@@ -63,6 +64,7 @@ export async function loader() {
 				createdAt: path.createdAt,
 				status: path.status,
 				size: path.size,
+				hidden: path.hidden,
 				captures:
 					new Set(path.segments.map((segment) => segment.capture.id)).size +
 					new Set(

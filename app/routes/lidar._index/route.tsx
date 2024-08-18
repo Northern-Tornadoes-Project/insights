@@ -19,6 +19,7 @@ export async function loader() {
 				eventDate: true,
 				captureDate: true,
 				status: true,
+				hidden: true,
 				size: true
 			},
 			where: eq(scans.hidden, false)

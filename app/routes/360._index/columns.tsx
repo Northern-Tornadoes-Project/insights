@@ -13,6 +13,7 @@ export type Path = {
 	status: (typeof paths.$inferSelect)['status'];
 	captures: number;
 	size: number;
+	hidden: boolean;
 	segments: SegmentPoint[];
 };
 

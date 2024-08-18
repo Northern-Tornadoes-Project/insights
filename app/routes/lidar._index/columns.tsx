@@ -5,10 +5,12 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { scans } from '~/db/schema';
 import { formatDate } from '~/lib/utils';
+import { Actions } from './actions';
 
 export type Scan = {
 	id: string;
 	name: string;
+	hidden: boolean;
 	eventDate: Date;
 	captureDate: Date;
 	status: (typeof scans.$inferSelect)['status'];
@@ -60,5 +62,10 @@ export const columns: ColumnDef<Scan>[] = [
 				</Badge>
 			);
 		}
+	},
+	{
+		header: () => null,
+		accessorKey: 'id',
+		cell: (cell) => <Actions id={cell.getValue() as string} hidden={cell.row.original.hidden} />
 	}
 ];

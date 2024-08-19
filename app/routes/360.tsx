@@ -5,7 +5,7 @@ import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - 360' }];
+	return [{ title: 'CSSL Insights - 360' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

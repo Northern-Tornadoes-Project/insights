@@ -10,7 +10,7 @@ import { paths, pathSegments } from '~/db/schema';
 import { env } from '~/env.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - 360 iFrame View' }];
+	return [{ title: 'CSSL Insights - 360 iFrame View' }];
 };
 
 const Viewer360 = lazy(() => import('~/components/360/viewer-360.client'));

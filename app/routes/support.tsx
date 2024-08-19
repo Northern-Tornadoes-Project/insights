@@ -22,7 +22,7 @@ import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - Support' }];
+	return [{ title: 'CSSL Insights - Support' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

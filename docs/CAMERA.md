@@ -1,4 +1,4 @@
-# Creating and Uploading Event Path Panorama Captures Using the `iSTAR Pulsar Camera` and `NTP 360`
+# Creating and Uploading Event Path Panorama Captures Using the `iSTAR Pulsar Camera` and `CSSL 360`
 
 ## Operating the `iSTAR Pulsar Camera`
 
@@ -14,7 +14,7 @@ For more information on setting up the camera hardware, including mounting the d
 
 To connect to the `iSTAR Pulsar Camera`’s local network, navigate to `Settings > Network & internet > Internet`. Select the `pulsar-*****` network, and enter `pulsar-1234` as the password.
 
-The camera is controlled using the `iSTAR Pulsar` app, available on `Android` devices. Making sure you are connected to the `pulsar-*****` network, navigate to `Network Connection` in the `iSTAR Pulsar` app. Press `Select a network > Refresh Network List` and select the hotspot name (e.g., for NTP's Pixel 7a, the hotspot name is `NTP Pixel`). Enter the hotspot password and press `Join network` (do not enable `Upload on this network`).
+The camera is controlled using the `iSTAR Pulsar` app, available on `Android` devices. Making sure you are connected to the `pulsar-*****` network, navigate to `Network Connection` in the `iSTAR Pulsar` app. Press `Select a network > Refresh Network List` and select the hotspot name (e.g., for CSSL's Pixel 7a, the hotspot name is `CSSL Pixel`). Enter the hotspot password and press `Join network` (do not enable `Upload on this network`).
 
 <img width="200" src="../assets/images/pixel-hotspot.png"/>
 
@@ -36,11 +36,11 @@ Under the `Options` dropdown, change the number of frames to process from `-1` t
 
 > `01` Overview
 
-`NTP 360` allows users to upload older street-level imagery from `Google Street View` to create before/after comparisons on damage sites. After uploading a set of panoramas, `NTP 360` creates a copyable or downloadable list of panorama IDs based on the closest locations to the `iSTAR Pulsar` panorama uploads. `Street View Download 360` is a desktop application that can process these panorama IDs in bulk and export a folder of comparison panoramas.
+`CSSL 360` allows users to upload older street-level imagery from `Google Street View` to create before/after comparisons on damage sites. After uploading a set of panoramas, `CSSL 360` creates a copyable or downloadable list of panorama IDs based on the closest locations to the `iSTAR Pulsar` panorama uploads. `Street View Download 360` is a desktop application that can process these panorama IDs in bulk and export a folder of comparison panoramas.
 
 > `02` Configuring the Street View Download 360 Settings
 
-Before your first export, it is important to ensure that your file name settings are configured correctly, as `NTP 360` uses the panorama ID in the file name to appropriately match up before/after panoramas.
+Before your first export, it is important to ensure that your file name settings are configured correctly, as `CSSL 360` uses the panorama ID in the file name to appropriately match up before/after panoramas.
 
 Navigate to `Settings > Saving panoramas > Custom filename`. In the `Filename` text input field, enter `%p%`. This will name each image file after its panorama ID.
 
@@ -50,6 +50,6 @@ Back in `Panorama Download`, set the desired file path to export to, select `Mul
 
 ![Download Settings](../assets/images/download_settings.png)
 
-## Creating a New Event Path in `NTP 360`
+## Creating a New Event Path in `CSSL 360`
 
-Learn more about uploading to NTP 360 [here](../README.md/#ntp-360).
+Learn more about uploading to CSSL 360 [here](../README.md/#ntp-360).

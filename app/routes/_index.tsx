@@ -2,7 +2,7 @@ import tornado from '~/assets/bnr-tornado.jpg';
 
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Link, json, useLoaderData } from '@remix-run/react';
-import { Axis3D, CircleDotDashed, Droplet, LucideLifeBuoy, Rotate3D } from 'lucide-react';
+import { Axis3D, CircleDotDashed, CloudLightning, LucideLifeBuoy, Rotate3D } from 'lucide-react';
 import { version } from '~/../package.json';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
@@ -11,7 +11,7 @@ import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - Home' }];
+	return [{ title: 'CSSL Insights - Home' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -67,7 +67,7 @@ export default function Index() {
 				</header>
 				<main className="flex h-screen flex-col justify-center gap-8 p-6 lg:p-16">
 					<h1 className="text-7xl">
-						<b>NTP</b> Insights
+						<b>CSSL</b> Insights
 					</h1>
 					<h3 className="text-2xl font-semibold">{`v${version}`}</h3>
 					<nav className="flex flex-col gap-2">
@@ -89,9 +89,9 @@ export default function Index() {
 							</Link>
 						</div>
 						<div className="flex flex-row gap-2">
-							<Link to="https://raindrop.ntpinsights.ca/">
+							<Link to="https://meso.cssl.ca/">
 								<Button className="gap-2" variant="secondary">
-									<Droplet /> Raindrop
+									<CloudLightning /> Mesonet
 								</Button>
 							</Link>
 						</div>

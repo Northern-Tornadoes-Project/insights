@@ -13,7 +13,7 @@ import { Path, columns } from './columns';
 import { PathCard } from './path-card';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - 360' }];
+	return [{ title: 'CSSL Insights - 360' }];
 };
 
 export async function loader() {

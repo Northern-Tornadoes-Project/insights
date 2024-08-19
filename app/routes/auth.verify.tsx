@@ -9,7 +9,7 @@ import { authenticator } from '~/lib/auth.server';
 import { authSessionResolver } from '~/lib/sessions.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - Verify' }];
+	return [{ title: 'CSSL Insights - Verify' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

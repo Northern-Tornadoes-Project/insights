@@ -172,7 +172,7 @@ export default function ({
 			ref={fullscreenRef}
 		>
 			<p className="absolute bottom-3 left-5 z-10 text-2xl">
-				<span className="font-bold">NTP</span> LiDAR
+				<span className="font-bold">CSSL</span> LiDAR
 			</p>
 			<div className="absolute bottom-0 right-0 z-10 m-2 flex flex-row gap-4">
 				<button

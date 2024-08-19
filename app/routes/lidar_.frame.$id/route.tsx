@@ -10,7 +10,7 @@ import { scans } from '~/db/schema';
 import { env } from '~/env.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - LiDAR iFrame View' }];
+	return [{ title: 'CSSL Insights - LiDAR iFrame View' }];
 };
 
 const Renderer = lazy(() => import('~/components/lidar/renderer.client'));

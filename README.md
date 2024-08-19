@@ -1,12 +1,12 @@
-![NTP Insights](./assets/images/NTP_Insights_GIF.gif)
+![CSSL Insights](./assets/images/NTP_Insights_GIF.gif)
 
-## 🌪 A Rundown on NTP Insights
+## 🌪 A Rundown on CSSL Insights
 
-**NTP Insights** is a web application platform developed by Western Engineering research interns to support the <a href="https://www.uwo.ca/ntp/">Northern Tornadoes Project</a>'s capacity in collecting, analyzing, and sharing important research data in a meaningful way.
+**CSSL Insights** is a web application platform developed by Western Engineering research interns to support the <a href="https://www.uwo.ca/ntp/">Northern Tornadoes Project</a>'s capacity in collecting, analyzing, and sharing important research data in a meaningful way.
 
 > `01` **Sign-in Process**
 
-Users can create an NTP Insights account using one of two methods: by entering their email address or by linking their Discord account. If using an email address, a verification email will be sent with a link to proceed. If using a Discord account, a pop-up will prompt the user to authorize the account.
+Users can create an CSSL Insights account using one of two methods: by entering their email address or by linking their Discord account. If using an email address, a verification email will be sent with a link to proceed. If using a Discord account, a pop-up will prompt the user to authorize the account.
 
 <img width="400" src="./assets/images/Signin.png" />
 
@@ -18,17 +18,17 @@ Upon initial account creation, the user will be prompted to set their profile se
 
 > `03` **Authentication**
 
-For full access to the NTP Insights feature set, a user must be `NTP Authenticated`. Any currently authenticated user can authenticate other users by navigating to `Settings > Authenticate Users`.
+For full access to the CSSL Insights feature set, a user must be `CSSL Authenticated`. Any currently authenticated user can authenticate other users by navigating to `Settings > Authenticate Users`.
 
 > `04` **Main Dashboard and Navigation**
 
-The main dashboard provides quick access to the three NTP Insights software tools. The navigation bar at the top persists on every NTP Insights page and includes a main dropdown with access to all NTP Insights pages and a button to configure the website theme.
+The main dashboard provides quick access to the three CSSL Insights software tools. The navigation bar at the top persists on every CSSL Insights page and includes a main dropdown with access to all CSSL Insights pages and a button to configure the website theme.
 
 <img width="400" src="./assets/images/ntp_home.png" />
 
-## NTP Social
+## CSSL Social
 
-NTP Social is a social media scrapping tool that utilized LLMs to scrape social media posts from Twitter, with the ability to add more sites. It will take these posts and grade them based on a classification model running on `co:here` that will determine the relevance of the post to the NTP. The user can then view the posts and their grades, and can then choose to contact that user if future information is needed.
+CSSL Social is a social media scrapping tool that utilized LLMs to scrape social media posts from Twitter, with the ability to add more sites. It will take these posts and grade them based on a classification model running on `co:here` that will determine the relevance of the post to the CSSL. The user can then view the posts and their grades, and can then choose to contact that user if future information is needed.
 
 > `01` Social Dashboard
 
@@ -64,9 +64,9 @@ By downloading the posts, you can continue to train the ML model for the app or 
 
 <img width="400" src="./assets/images/download-posts.png" alt="Download Posts" />
 
-## NTP 360
+## CSSL 360
 
-NTP 360 enables the uploading, viewing, and sharing of 360-degree panorama captures taken on severe storm damage surveys on-screen and in virtual reality (VR) using `React Three XR` (based on `WebXR`). Users can move through and around the street-level imagery and toggle between `Before` and `After` to compare changes that occurred from the storm.
+CSSL 360 enables the uploading, viewing, and sharing of 360-degree panorama captures taken on severe storm damage surveys on-screen and in virtual reality (VR) using `React Three XR` (based on `WebXR`). Users can move through and around the street-level imagery and toggle between `Before` and `After` to compare changes that occurred from the storm.
 
 > `01` 360 Dashboard
 
@@ -78,21 +78,21 @@ The 360 dashboard allows users to create a new event path upload and access the 
 
 After providing event details such as the event name, folder name, and date, the upload process is broken into 3 distinct uploads: the `framepos.txt` file, the event panoramas, and the comparison panoramas.
 
-**_Uploading the framepos file._** NTP 360 is designed around the `NCTech iSTAR Pulsar` camera workflow. Once data formation through `NCTech Immersive Studio` is complete, a `framepos` text file is created, storing all of the necessary geospatial data for each photo. NTP 360 parses this data and uses it to plot map points, populate a `Details` pane alongside the 360 view, and more.
+**_Uploading the framepos file._** CSSL 360 is designed around the `NCTech iSTAR Pulsar` camera workflow. Once data formation through `NCTech Immersive Studio` is complete, a `framepos` text file is created, storing all of the necessary geospatial data for each photo. CSSL 360 parses this data and uses it to plot map points, populate a `Details` pane alongside the 360 view, and more.
 
 <img width="400" src="./assets/images/360_upload1.png" />
 
-**_Uploading the event panoramas._** After counting the number of data entries in the `framepos.txt` file, NTP 360 determines the number of panoramas that it expects to be uploaded. Note that only numerically chronological file names, i.e., `0000000000`, `0000000001`, `0000000002`, etc. are accepted.
+**_Uploading the event panoramas._** After counting the number of data entries in the `framepos.txt` file, CSSL 360 determines the number of panoramas that it expects to be uploaded. Note that only numerically chronological file names, i.e., `0000000000`, `0000000001`, `0000000002`, etc. are accepted.
 
 <img width="400" src="./assets/images/360_upload2.png" />
 
-**_Uploading the comparison panoramas._** NTP 360 references the latitude and longitude values for each panorama and uses the `Google Street View API` to fetch the closest available panorama for each of the uploaded `iSTAR Pulsar` panoramas. A copyable/downloadable list of panorama IDs is then given to be entered into `Street View Download 360` for exporting. Note that each comparison panorama file must be named after its panorama ID.
+**_Uploading the comparison panoramas._** CSSL 360 references the latitude and longitude values for each panorama and uses the `Google Street View API` to fetch the closest available panorama for each of the uploaded `iSTAR Pulsar` panoramas. A copyable/downloadable list of panorama IDs is then given to be entered into `Street View Download 360` for exporting. Note that each comparison panorama file must be named after its panorama ID.
 
 <img width="400" src="./assets/images/360_upload3.png" />
 
 > `03` Viewing Event Path Uploads (Screen and VR)
 
-NTP 360 uses `Three.js` to create a spherical texture map view of each panorama and `CameraControls` to look around the view. The following are the controls for the 360 view:
+CSSL 360 uses `Three.js` to create a spherical texture map view of each panorama and `CameraControls` to look around the view. The following are the controls for the 360 view:
 
 <img width="800" src="./assets/images/NTP_360_controls.png">
 
@@ -108,11 +108,11 @@ From the 360 dashboard, users can copy a shareable public link that leads direct
 
 [Click here](docs/CAMERA.md) to learn more about using the `iSTAR Pulsar camera` and `Street View Download 360`.
 
-## NTP LiDAR
+## CSSL LiDAR
 
 Another way to capture visual data from a storm survey is in the form of LiDAR pointclouds. In conjunction with images from ground/aerial photography, LiDAR data can be used to identify failure modes of natural and man-made structures.
 
-NTP LiDAR is a way to quickly view LiDAR pointcloud scans without having to download a standalone program. Just upload your `.las` or `.laz` file and you're off to the races!
+CSSL LiDAR is a way to quickly view LiDAR pointcloud scans without having to download a standalone program. Just upload your `.las` or `.laz` file and you're off to the races!
 
 > `01` LiDAR Dashboard
 

@@ -58,7 +58,7 @@ function createSchema(options?: { isEmailUnique: (email: string) => Promise<bool
 }
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - New Users' }];
+	return [{ title: 'CSSL Insights - New Users' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

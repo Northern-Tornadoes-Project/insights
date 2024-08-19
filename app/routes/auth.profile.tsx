@@ -26,7 +26,7 @@ const profileFormSchema = z.object({
 });
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NTP Insights - Edit Profile' }];
+	return [{ title: 'CSSL Insights - Edit Profile' }];
 };
 
 export async function action({ request }: ActionFunctionArgs) {

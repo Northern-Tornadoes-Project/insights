@@ -21,11 +21,12 @@ RUN yarn build
 FROM base as release
 ENV NODE_ENV="production"
 
-# RUN addgroup -g 1000 app \
-#     && adduser -G app -u 1000 app -D
-
 WORKDIR /app
 COPY --from=build /app/build ./build
+COPY --from=build /app/public ./public
+COPY --from=build /app/migrations ./migrations
+COPY --from=build /app/app/db/schema.ts ./app/db/schema.ts
+COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json
 

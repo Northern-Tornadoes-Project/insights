@@ -1,6 +1,6 @@
-FROM node:20.13-alpine as base
+FROM node:20.13-alpine AS base
 
-FROM base as deps
+FROM base AS deps
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ ADD yarn.lock ./
 
 RUN yarn install --frozen-lockfile
 
-FROM base as build
+FROM base AS build
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 ADD . .
 RUN yarn build
 
-FROM base as release
+FROM base AS release
 ENV NODE_ENV="production"
 
 WORKDIR /app

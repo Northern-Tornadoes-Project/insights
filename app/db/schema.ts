@@ -56,7 +56,15 @@ export const pathInitializationStatus = pgEnum('path_initialization_status', [
 	'complete',
 	'failed'
 ]);
+
 export const scanInitializationStatus = pgEnum('scan_initialization_status', [
+	'uploading',
+	'processing',
+	'complete',
+	'failed'
+]);
+
+export const hailpadInitializationStatus = pgEnum('hailpad_initialization_status', [
 	'uploading',
 	'processing',
 	'complete',
@@ -121,6 +129,7 @@ export const pathSegments = pgTable('path_segments', {
 		.defaultNow()
 		.notNull()
 		.$onUpdateFn(() => new Date()),
+	status: hailpadInitializationStatus('status').default('uploading').notNull(),
 	hidden: boolean('hidden').default(false).notNull()
 });
 

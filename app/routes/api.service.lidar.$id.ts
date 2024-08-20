@@ -26,7 +26,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		if (!scan)
 			return new Response(null, { status: 404, statusText: 'Could not find the requested scan' });
 
-		if (!env.SERVICE_360_ENABLED)
+		if (!env.SERVICE_LIDAR_ENABLED)
 			return new Response(null, { status: 400, statusText: 'Service not enabled' });
 
 		const response = await fetch(new URL(`${env.SERVICE_LIDAR_URL}/${scan.id}/status`));

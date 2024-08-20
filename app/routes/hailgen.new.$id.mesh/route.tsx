@@ -160,7 +160,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	}
 	// } else {
 	// 	console.log('Hailgen service is disabled');
-	// } // TODO: Uncomment
+	// } // TODO: Uncomment ???
 
 	return redirect(`/hailgen/new/${queriedHailpad.id}/depth?x=${depthX}&y=${depthY}`);
 }

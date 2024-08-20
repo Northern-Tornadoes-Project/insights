@@ -5,7 +5,7 @@ import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NHP Insights - Hailgen' }];
+	return [{ title: 'CSSL Insights - Hailgen' }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

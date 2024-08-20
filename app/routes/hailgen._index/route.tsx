@@ -12,7 +12,7 @@ import { Hailpad, columns } from './columns';
 import { HailpadCard } from './hailpad-card';
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'NHP Insights - Hailgen' }];
+	return [{ title: 'CSSL Insights - Hailgen' }];
 };
 
 export async function loader() {

@@ -34,12 +34,16 @@ function createUpdateSchema() {
 	return z
 		.object({
 			dentID: z.string(),
+			currentBoxfit: z.string(),
 			updatedMinor: z.number().min(0, {
 				message: 'Minor axis must be positive.'
 			}),
 			updatedMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
-			})
+			}),
+			updatedMaxDepth: z.number().min(0, {
+				message: 'Maximum depth must be positive.'
+			}),
 		})
 		.refine((data) => data.updatedMajor > data.updatedMinor, {
 			path: ['updatedMajor'],
@@ -50,14 +54,15 @@ function createUpdateSchema() {
 function createCreateSchema() {
 	return z
 		.object({
-			dentID: z.string(),
+			currentBoxfit: z.string(),
+			currentMaxDepth: z.string(),
 			createdMinor: z.number().min(0, {
 				message: 'Minor axis must be positive.'
 			}),
 			createdMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
 			}),
-			maxDepth: z.number().min(0, {
+			createdMaxDepth: z.number().min(0, {
 				message: 'Maximum depth must be positive.'
 			}),
 			createdLocation: z
@@ -96,12 +101,16 @@ function Detail({ label, value }: { label: string; value?: string }) {
 export default function DentDetails({
 	dentData,
 	index,
+	currentBoxfit,
+	currentMaxDepth,
 	onPrevious,
 	onNext,
 	onIndexChange
 }: {
 	dentData: HailpadDent[];
 	index: number;
+	currentBoxfit: string;
+	currentMaxDepth: string;
 	onPrevious?: () => void;
 	onNext?: () => void;
 	onIndexChange: (index: number) => void;
@@ -130,8 +139,11 @@ export default function DentDetails({
 		onSubmit() {
 			const formData = new FormData();
 			formData.append(updateFields.dentID.name, updateFields.dentID.value || '');
+			formData.append(updateFields.currentBoxfit.name, updateFields.currentBoxfit.value || '');
 			formData.append(updateFields.updatedMinor.name, updateFields.updatedMinor.value || '');
 			formData.append(updateFields.updatedMajor.name, updateFields.updatedMajor.value || '');
+			formData.append(updateFields.updatedMaxDepth.name, updateFields.updatedMaxDepth.value || '');
+
 		}
 	});
 
@@ -141,11 +153,12 @@ export default function DentDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append(createFields.dentID.name, createFields.dentID.value || '');
+			formData.append(createFields.currentBoxfit.name, createFields.currentBoxfit.value || '');
+			formData.append(createFields.currentMaxDepth.name, createFields.currentMaxDepth.value || '');
 			formData.append(createFields.createdMinor.name, createFields.createdMinor.value || '');
 			formData.append(createFields.createdMajor.name, createFields.createdMajor.value || '');
 			formData.append(createFields.createdLocation.name, createFields.createdLocation.value || '');
-			formData.append(createFields.maxDepth.name, createFields.maxDepth.value || '');
+			formData.append(createFields.createdMaxDepth.name, createFields.createdMaxDepth.value || '');
 		}
 	});
 
@@ -228,6 +241,12 @@ export default function DentDetails({
 														name={updateFields.dentID.name}
 														defaultValue={currentID || ''}
 													/>
+													<Input
+														type="hidden"
+														key={updateFields.currentBoxfit.key}
+														name={updateFields.currentBoxfit.name}
+														defaultValue={currentBoxfit || ''}
+													/>
 													<div className="mr-4 w-48">
 														<Label>Minor Axis (mm)</Label>
 													</div>
@@ -255,9 +274,24 @@ export default function DentDetails({
 														step="any"
 													/>
 												</div>
+												<div className="mt-2 flex flex-row items-center">
+													<div className="mr-4 w-48">
+														<Label>Maximum Depth (mm)</Label>
+													</div>
+													<Input
+														className="h-8 w-28"
+														type="number"
+														key={updateFields.updatedMaxDepth.key}
+														name={updateFields.updatedMaxDepth.name}
+														defaultValue={updateFields.updatedMaxDepth.initialValue}
+														placeholder={currentMaxDepth}
+														step="any"
+													/>
+												</div>
 												<div className="flex flex-row justify-end items-center">
 													<p className="text-sm text-primary/60">{updateFields.updatedMinor.errors}</p>
 													<p className="text-sm text-primary/60">{updateFields.updatedMajor.errors}</p>
+													<p className="text-sm text-primary/60">{updateFields.updatedMaxDepth.errors}</p>
 													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2 ml-4">
 														<CornerDownLeft />
 													</Button>
@@ -286,9 +320,15 @@ export default function DentDetails({
 												<div className="mt-1 flex flex-row items-center">
 													<Input
 														type="hidden"
-														key={updateFields.dentID.key}
-														name={updateFields.dentID.name}
-														defaultValue={currentID || ''}
+														key={createFields.currentBoxfit.key}
+														name={createFields.currentBoxfit.name}
+														defaultValue={currentBoxfit || ''}
+													/>
+													<Input
+														type="hidden"
+														key={createFields.currentMaxDepth.key}
+														name={createFields.currentMaxDepth.name}
+														defaultValue={currentMaxDepth || ''}
 													/>
 													<div className="mr-4 w-48">
 														<Label>Minor Axis (mm)</Label>
@@ -324,9 +364,9 @@ export default function DentDetails({
 													<Input
 														className="h-8 w-28"
 														type="number"
-														key={createFields.maxDepth.key}
-														name={createFields.maxDepth.name}
-														defaultValue={createFields.maxDepth.initialValue}
+														key={createFields.createdMaxDepth.key}
+														name={createFields.createdMaxDepth.name}
+														defaultValue={createFields.createdMaxDepth.initialValue}
 														placeholder="h"
 														step="any"
 													/>

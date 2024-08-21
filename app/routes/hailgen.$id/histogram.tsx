@@ -33,10 +33,14 @@ export default function Histogram({ data }: { data: number[] }) {
 		}
 
 		// Populate bins
-		data.forEach((num) => {
-			const binIndex = Math.floor(num / 5);
-			bins[binIndex - min / 5].count += 1;
-		});
+		try { // TODO
+			data.forEach((num) => {
+				const binIndex = Math.floor(num / 5);
+				bins[binIndex - min / 5].count += 1;
+			});
+		} catch (e) {
+			return;
+		}
 
 		setBinnedData(bins);
 	}, [data]);

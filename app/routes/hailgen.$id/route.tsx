@@ -87,13 +87,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Dent management fields
 	const dentID = formData.get('dentID');
+	const currentBoxfit = formData.get('currentBoxfit');
+	const currentMaxDepth = formData.get('currentMaxDepth');
 	const deleteDentID = formData.get('deleteDentID');
 	const updatedMinor = formData.get('updatedMinor');
 	const updatedMajor = formData.get('updatedMajor');
 	const createdMinor = formData.get('createdMinor');
 	const createdMajor = formData.get('createdMajor');
+	const createdMaxDepth = formData.get('createdMaxDepth');
 	const createdLocation = formData.get('createdLocation');
-
+	
 	// TODO: Replace with switch block
 	if (boxfit) {
 		await db
@@ -181,29 +184,53 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	} else if (deleteDentID) {
 		await db
 			.delete(dent)
-			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(deleteDentID))); // TODO: Update updatedBy and updatedAt
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(deleteDentID)));
+
+		await db
+			.update(hailpad)
+			.set({
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
 	} else if (dentID && updatedMinor && updatedMajor) {
 		await db
 			.update(dent)
 			.set({
-				minorAxis: String(Number(updatedMinor) * 1000 / Number(boxfit)), // TODO: Fix
-				majorAxis: String(Number(updatedMajor) * 1000 / Number(boxfit)),
+				minorAxis: String(Number(updatedMinor) * 1000 / Number(currentBoxfit)),
+				majorAxis: String(Number(updatedMajor) * 1000 / Number(currentBoxfit)),
 			})
-			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID))); // TODO: Update updatedBy and updatedAt
-	} else if (dentID && createdMinor && createdMajor && createdLocation) {
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)));
+
+		await db
+			.update(hailpad)
+			.set({
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
+	} else if (createdMinor && createdMajor && createdMaxDepth && createdLocation) {
 		const [x, y] = String(createdLocation).slice(1, -1).split(',');
 		await db
 			.insert(dent)
 			.values({
 				hailpadId: params.id,
 				angle: null,
-				majorAxis: String(Number(createdMajor) * 1000 / Number(boxfit)),
-				minorAxis: String(Number(createdMinor) * 1000 / Number(boxfit)),
+				majorAxis: String(Number(createdMajor) * 1000 / Number(currentBoxfit)),
+				minorAxis: String(Number(createdMinor) * 1000 / Number(currentBoxfit)),
 				centroidX: x,
 				centroidY: y,
-				maxDepth: String(maxDepth)
+				maxDepth: String(Number(maxDepth) / Number(currentMaxDepth))
 			})
-			.returning(); // TODO: Update updatedBy and updatedAt
+			.returning();
+
+		await db
+			.update(hailpad)
+			.set({
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
 	}
 
 	return null;
@@ -326,6 +353,8 @@ export default function () {
 				<DentDetails
 					dentData={dentData}
 					index={currentIndex}
+					currentBoxfit={boxfit}
+					currentMaxDepth={maxDepth}
 					onPrevious={() => {
 						if (currentIndex - 1 >= 0) {
 							setCurrentIndex(currentIndex - 1);

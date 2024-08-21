@@ -352,7 +352,7 @@ export default function HailpadDetails({
 						<TabsList>
 							<TabsTrigger value="minor">Minor Axis</TabsTrigger>
 							<TabsTrigger value="major">Major Axis</TabsTrigger>
-							<TabsTrigger value="depth">Depth</TabsTrigger>
+							{/* <TabsTrigger value="depth">Depth</TabsTrigger> TODO */}
 							{/* <TabsTrigger value="3d" className="ml-8">3D</TabsTrigger> TODO */}
 						</TabsList>
 						<div className="flex flex-row space-x-2">
@@ -467,7 +467,7 @@ export default function HailpadDetails({
 					</TabsContent>
 					<TabsContent value="depth">
 						<DetailSection avg={depth} />
-						<Histogram data={dentData.map((dent) => Number(dent.maxDepth))} />
+						{/* <Histogram data={dentData.map((dent) => Number(dent.maxDepth))} /> */}
 					</TabsContent>
 				</Tabs>
 			</CardContent>

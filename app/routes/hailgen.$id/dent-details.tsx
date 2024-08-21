@@ -21,18 +21,26 @@ interface HailpadDent {
 }
 
 // TODO: Move to route
+function createDeleteSchema() {
+	return z
+		.object({
+			deleteDentID: z.string()
+		});
+}
+
 function createUpdateSchema() {
 	return z
 		.object({
-			minor: z.number().min(0, {
+			dentID: z.string(),
+			updatedMinor: z.number().min(0, {
 				message: 'Minor axis must be positive.'
 			}),
-			major: z.number().min(0, {
+			updatedMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
 			})
 		})
-		.refine((data) => data.major > data.minor, {
-			path: ['major'],
+		.refine((data) => data.updatedMajor > data.updatedMinor, {
+			path: ['updatedMajor'],
 			message: 'Major axis must be greater than minor axis.'
 		});
 }
@@ -40,13 +48,14 @@ function createUpdateSchema() {
 function createCreateSchema() {
 	return z
 		.object({
-			minor: z.number().min(0, {
+			dentID: z.string(),
+			createdMinor: z.number().min(0, {
 				message: 'Minor axis must be positive.'
 			}),
-			major: z.number().min(0, {
+			createdMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
 			}),
-			location: z
+			createdLocation: z
 				.string()
 				.refine(
 					(value) => {
@@ -64,8 +73,8 @@ function createCreateSchema() {
 					return [parseFloat(match[1]), parseFloat(match[3])];
 				})
 		})
-		.refine((data) => data.major > data.minor, {
-			path: ['major'],
+		.refine((data) => data.createdMajor > data.createdMinor, {
+			path: ['createdMajor'],
 			message: 'Major axis must be greater than minor axis.'
 		});
 }
@@ -96,11 +105,15 @@ export default function DentDetails({
 	const [major, setMajor] = useState<number>(0);
 
 	const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+	const [currentID, setCurrentID] = useState<string | null>(null);
 
 	const [deleteForm, deleteFields] = useForm({
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema: createDeleteSchema() });
+		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append('deleteDentID', dentData[index].id);
+			formData.append(deleteFields.deleteDentID.name, deleteFields.deleteDentID.value || '');
 		}
 	});
 
@@ -110,9 +123,9 @@ export default function DentDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			// formData.append('dentID', dentData[index].id);
-			formData.append('updatedMinor', updateFields.minor.value || '');
-			formData.append('updatedMajor', updateFields.major.value || '');
+			formData.append(updateFields.dentID.name, updateFields.dentID.value || '');
+			formData.append(updateFields.updatedMinor.name, updateFields.updatedMinor.value || '');
+			formData.append(updateFields.updatedMajor.name, updateFields.updatedMajor.value || '');
 		}
 	});
 
@@ -122,10 +135,10 @@ export default function DentDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append('dentID', dentData[index].id);
-			formData.append('createdMinor', createFields.minor.value || '');
-			formData.append('createdMajor', createFields.major.value || '');
-			formData.append('createdLocation', createFields.location.value || '');
+			formData.append(createFields.dentID.name, createFields.dentID.value || '');
+			formData.append(createFields.createdMinor.name, createFields.createdMinor.value || '');
+			formData.append(createFields.createdMajor.name, createFields.createdMajor.value || '');
+			formData.append(createFields.createdLocation.name, createFields.createdLocation.value || '');
 		}
 	});
 
@@ -133,6 +146,8 @@ export default function DentDetails({
 		if (dentData.length === 0) return;
 		setMinor(Number(dentData[index].minorAxis));
 		setMajor(Number(dentData[index].majorAxis));
+
+		setCurrentID(dentData[index].id);
 	}, [dentData, index]);
 
 	return (
@@ -162,6 +177,12 @@ export default function DentDetails({
 										<FormProvider context={deleteForm.context}>
 											<Form method="post" id={deleteForm.id} onSubmit={deleteForm.onSubmit}>
 												<div className="flex flex-row">
+													<Input
+														type="hidden"
+														key={deleteFields.deleteDentID.key}
+														name={deleteFields.deleteDentID.name}
+														defaultValue={currentID || ''}
+													/>
 													<Button
 														type="submit"
 														variant="secondary"
@@ -193,15 +214,21 @@ export default function DentDetails({
 										<FormProvider context={updateForm.context}>
 											<Form method="post" id={updateForm.id} onSubmit={updateForm.onSubmit}>
 												<div className="mt-1 flex flex-row items-center">
+													<Input
+														type="hidden"
+														key={updateFields.dentID.key}
+														name={updateFields.dentID.name}
+														defaultValue={currentID || ''}
+													/>
 													<div className="mr-4 w-48">
 														<Label>Minor Axis (mm)</Label>
 													</div>
 													<Input
 														className="h-8 w-24"
 														type="number"
-														key={updateFields.minor.key}
-														name={updateFields.minor.name}
-														defaultValue={updateFields.minor.initialValue}
+														key={updateFields.updatedMinor.key}
+														name={updateFields.updatedMinor.name}
+														defaultValue={updateFields.updatedMinor.initialValue}
 														placeholder={minor.toFixed(2)}
 														step="any"
 													/>
@@ -213,16 +240,16 @@ export default function DentDetails({
 													<Input
 														className="h-8 w-24"
 														type="number"
-														key={updateFields.major.key}
-														name={updateFields.major.name}
-														defaultValue={updateFields.major.initialValue}
+														key={updateFields.updatedMajor.key}
+														name={updateFields.updatedMajor.name}
+														defaultValue={updateFields.updatedMajor.initialValue}
 														placeholder={major.toFixed(2)}
 														step="any"
 													/>
 												</div>
 												<div className="flex flex-row justify-end items-center">
-													<p className="text-sm text-primary/60">{updateFields.minor.errors}</p>
-													<p className="text-sm text-primary/60">{updateFields.major.errors}</p>
+													<p className="text-sm text-primary/60">{updateFields.updatedMinor.errors}</p>
+													<p className="text-sm text-primary/60">{updateFields.updatedMajor.errors}</p>
 													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2 ml-4">
 														<CornerDownLeft />
 													</Button>
@@ -249,15 +276,21 @@ export default function DentDetails({
 										<FormProvider context={createForm.context}>
 											<Form method="post" id={createForm.id} onSubmit={createForm.onSubmit}>
 												<div className="mt-1 flex flex-row items-center">
+													<Input
+														type="hidden"
+														key={updateFields.dentID.key}
+														name={updateFields.dentID.name}
+														defaultValue={currentID || ''}
+													/>
 													<div className="mr-4 w-48">
 														<Label>Minor Axis (mm)</Label>
 													</div>
 													<Input
 														className="h-8 w-28"
 														type="number"
-														key={createFields.minor.key}
-														name={createFields.minor.name}
-														defaultValue={createFields.minor.initialValue}
+														key={createFields.createdMinor.key}
+														name={createFields.createdMinor.name}
+														defaultValue={createFields.createdMinor.initialValue}
 														placeholder="b"
 														step="any"
 													/>
@@ -269,9 +302,9 @@ export default function DentDetails({
 													<Input
 														className="h-8 w-28"
 														type="number"
-														key={createFields.major.key}
-														name={createFields.major.name}
-														defaultValue={createFields.major.initialValue}
+														key={createFields.createdMajor.key}
+														name={createFields.createdMajor.name}
+														defaultValue={createFields.createdMajor.initialValue}
 														placeholder="a"
 														step="any"
 													/>
@@ -283,17 +316,17 @@ export default function DentDetails({
 													<Input
 														className="h-8 w-28"
 														type="string"
-														key={createFields.location.key}
-														name={createFields.location.name}
-														defaultValue={createFields.location.initialValue}
+														key={createFields.createdLocation.key}
+														name={createFields.createdLocation.name}
+														defaultValue={createFields.createdLocation.initialValue}
 														placeholder="(x, y)"
 														step="any"
 													/>
 												</div>
 												<div className="flex flex-row justify-end items-center">
-													<p className="text-sm text-primary/60">{createFields.minor.errors}</p>
-													<p className="text-sm text-primary/60">{createFields.major.errors}</p>
-													<p className="text-sm text-primary/60">{createFields.location.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.createdMinor.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.createdMajor.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.createdLocation.errors}</p>
 													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 ml-4 p-2">
 														<CornerDownLeft />
 													</Button>

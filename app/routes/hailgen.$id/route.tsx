@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, useEffect, useState } from 'react';
@@ -181,17 +181,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	} else if (deleteDentID) {
 		await db
 			.delete(dent)
-			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)))
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(deleteDentID))); // TODO: Update updatedBy and updatedAt
 	} else if (dentID && updatedMinor && updatedMajor) {
 		await db
 			.update(dent)
 			.set({
-				minorAxis: String(Number(updatedMinor) * 1000 / Number(boxfit)),
+				minorAxis: String(Number(updatedMinor) * 1000 / Number(boxfit)), // TODO: Fix
 				majorAxis: String(Number(updatedMajor) * 1000 / Number(boxfit)),
 			})
-			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)))
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID))); // TODO: Update updatedBy and updatedAt
 	} else if (dentID && createdMinor && createdMajor && createdLocation) {
-		const [x, y] = String(createdLocation).split(',');
+		const [x, y] = String(createdLocation).slice(1, -1).split(',');
 		await db
 			.insert(dent)
 			.values({
@@ -202,7 +202,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				centroidX: x,
 				centroidY: y
 			})
-			.returning();
+			.returning(); // TODO: Update updatedBy and updatedAt
 	}
 
 	return null;

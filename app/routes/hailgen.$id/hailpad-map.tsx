@@ -43,19 +43,25 @@ export default function HailpadMap({
 			dentData.forEach((dent: HailpadDent, i: number) => {
 				const x = Number(dent.centroidX);
 				const y = Number(dent.centroidY);
+				const defaultRadius = 20;
 
 				if (i === index) {
 					context.globalAlpha = 1;
 					context.beginPath();
-					context.ellipse(
-						x,
-						y,
-						Number(dent.majorAxis) * 1.5,
-						Number(dent.minorAxis) * 1.5,
-						Number(dent.angle) + Math.PI / 2,
-						0,
-						2 * Math.PI
-					);
+					if (dent.angle === null) {
+						context.arc(x, y, defaultRadius, 0, 2 * Math.PI);
+					} else {
+						context.ellipse(
+							x,
+							y,
+							Number(dent.majorAxis) * 1.5,
+							Number(dent.minorAxis) * 1.5,
+							Number(dent.angle) + Math.PI / 2,
+							0,
+							2 * Math.PI
+						);
+					}
+
 					context.strokeStyle = '#8F55E0'; // TODO: Use a theme color
 					context.lineWidth = 3;
 					context.setLineDash([7, 5]);

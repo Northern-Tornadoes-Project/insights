@@ -57,17 +57,15 @@ export default function () {
 					</Button>
 				</Link>
 			)}
-			<div className="grid min-h-0 min-w-0 gap-4 xl:grid-flow-col">
-				<Card>
-					<CardHeader>
-						<CardTitle>LiDAR Scans</CardTitle>
-						<CardDescription>Explore the different scans available to you.</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<DataTable columns={columns} data={data} />
-					</CardContent>
-				</Card>
-			</div>
+			<Card>
+				<CardHeader>
+					<CardTitle>LiDAR Scans</CardTitle>
+					<CardDescription>Explore the different scans available to you.</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<DataTable columns={columns} data={data} />
+				</CardContent>
+			</Card>
 		</main>
 	);
 }

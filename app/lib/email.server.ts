@@ -13,7 +13,7 @@ export async function sendCode(body: { to: string; code: string; magicLink: stri
 				<h1>Your verification code</h1>
 				<p>Your verification code is: <strong>${body.code}</strong></p>
 				<p>Click the link below to verify your account:</p>
-				<p><a href="${body.magicLink}">Verify</a></p>
+				<a href="${body.magicLink}">Verify</a>
 			</div>
 		`
 	});
@@ -28,7 +28,7 @@ export async function sendInviteNotification(body: { to: string }) {
 			<div>
 				<h1>You have been invited to CSSL Insights</h1>
 				<p>Click the link below to create your account:</p>
-				<p><a href="${env.BASE_URL}/auth/login">Login</a></p>
+				<a href="${env.BASE_URL}/auth/login">Login</a>
 			</div>
 		`
 	});

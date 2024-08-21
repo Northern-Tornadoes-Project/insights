@@ -34,7 +34,7 @@ export function DataTable<TData, TValue>({
 	});
 
 	return (
-		<div className="grid gap-2">
+		<div className="grid min-w-0 gap-2 overflow-x-auto">
 			<div className="rounded-md border">
 				<Table>
 					<TableHeader>

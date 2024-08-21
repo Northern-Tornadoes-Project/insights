@@ -51,7 +51,7 @@ export function App() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
 				<Links />
 			</head>
-			<body className="h-screen min-h-screen" suppressHydrationWarning>
+			<body className="h-screen min-h-screen pb-safe" suppressHydrationWarning>
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -85,11 +85,11 @@ function ErrorBody() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(theme)} />
 				<Links />
 			</head>
-			<body className="h-screen min-h-screen">
+			<body className="h-screen min-h-screen pb-safe">
 				<div className="absolute w-full">
 					<Header title="Error" />
 				</div>
-				<main className="flex h-full items-center justify-center">
+				<main className="flex h-full w-full items-center justify-center">
 					<Card className="sm:min-w-[500px]">
 						{isRouteErrorResponse(error) ? (
 							<CardHeader>

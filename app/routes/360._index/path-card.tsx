@@ -57,11 +57,11 @@ export function PathCard({
 	}, []);
 
 	return (
-		<Card className="h-min min-w-96">
+		<Card className="h-min min-w-72 sm:min-w-96">
 			<div className="flex flex-row items-center justify-between pr-6">
 				<CardHeader>
 					<CardTitle>{path.name}</CardTitle>
-					<div className="flex flex-row items-center gap-2">
+					<div className="flex flex-row flex-wrap items-center gap-2">
 						<StatusBadge status={path.status} />
 						{path.status === 'processing' && (
 							<>

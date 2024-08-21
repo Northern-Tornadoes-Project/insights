@@ -47,6 +47,7 @@ function DetailSection({ min, max, avg }: { min: number; max: number; avg: numbe
 	);
 }
 
+// TODO: Move to route
 function createBoxfitSchema() {
 	return z.object({
 		boxfit: z.number().min(0, {
@@ -64,7 +65,6 @@ function createMaxDepthSchema() {
 }
 
 function createThresholdSchema() {
-	// TODO: Remove schema (?)
 	return z.object({
 		adaptiveBlock: z.number().min(-25, {
 			message: 'Adaptive block size must be at least -25.'
@@ -139,7 +139,6 @@ export default function HailpadDetails({
 
 	const [isShowCentroidChecked, setIsShowCentroidChecked] = useState<boolean>(false);
 
-	// TODO: Minimize code duplication (?)
 	const [boxfitForm, boxfitFields] = useForm({
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: createBoxfitSchema() });
@@ -166,10 +165,7 @@ export default function HailpadDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append(
-				thresholdFields.adaptiveBlock.name,
-				thresholdFields.adaptiveBlock.value || ''
-			);
+			formData.append(thresholdFields.adaptiveBlock.name, thresholdFields.adaptiveBlock.value || '');
 			formData.append(thresholdFields.adaptiveC.name, thresholdFields.adaptiveC.value || '');
 		}
 	});
@@ -179,7 +175,6 @@ export default function HailpadDetails({
 			return parseWithZod(formData, { schema: createFilterSchema() });
 		},
 		onSubmit() {
-			// TODO: Don't create needless query params
 			onFilterChange({
 				minMinor: Number(filterFields.minMinor.value) || 0,
 				maxMinor: Number(filterFields.maxMinor.value) || Infinity,

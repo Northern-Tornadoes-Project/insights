@@ -13,6 +13,7 @@ import HailpadMap from './hailpad-map';
 
 interface HailpadDent {
 	// TODO: Use shared interface
+	id: string;
 	angle: string | null;
 	centroidX: string;
 	centroidY: string;
@@ -37,6 +38,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const dents = await db
 		.select({
+			id: dent.id,
 			angle: dent.angle,
 			centroidX: dent.centroidX,
 			centroidY: dent.centroidY,
@@ -72,11 +74,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const userId = await protectedRoute(request);
 
 	const formData = await request.formData();
+
+	// Measurement calibration fields
 	const boxfit = formData.get('boxfit');
 	const maxDepth = formData.get('maxDepth');
+
+	// Thresholding fields
 	const adaptiveBlock = formData.get('adaptiveBlock');
 	const adaptiveC = formData.get('adaptiveC');
 
+	// Dent management fields
+	const dentID = formData.get('dentID');
+	const deleteDentID = formData.get('deleteDentID');
+	const updatedMinor = formData.get('updatedMinor');
+	const updatedMajor = formData.get('updatedMajor');
+	const createdMinor = formData.get('createdMinor');
+	const createdMajor = formData.get('createdMajor');
+	const createdLocation = formData.get('createdLocation');
+
+	console.log(maxDepth, boxfit, adaptiveBlock, adaptiveC, dentID, deleteDentID, updatedMinor, updatedMajor, createdMinor, createdMajor, createdLocation);
+
+	// TODO: Replace with switch block
 	if (boxfit) {
 		await db
 			.update(hailpad)
@@ -96,6 +114,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			})
 			.where(eq(hailpad.id, params.id));
 	} else if (adaptiveBlock && adaptiveC) {
+		// TODO: Create status change and show in UI
+
 		// Update hailpad with new adaptive block size and adaptive C-value
 		await db
 			.update(hailpad)
@@ -158,7 +178,32 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				}
 			});
 		}
-	} // else if TODO dent updates
+	} else if (deleteDentID) {
+		await db
+			.delete(dent)
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)))
+	} else if (dentID && updatedMinor && updatedMajor) {
+		await db
+			.update(dent)
+			.set({
+				minorAxis: String(Number(updatedMinor) * 1000 / Number(boxfit)),
+				majorAxis: String(Number(updatedMajor) * 1000 / Number(boxfit)),
+			})
+			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)))
+	} else if (dentID && createdMinor && createdMajor && createdLocation) {
+		const [x, y] = String(createdLocation).split(',');
+		await db
+			.insert(dent)
+			.values({
+				hailpadId: params.id,
+				angle: null,
+				majorAxis: String(Number(createdMajor) * 1000 / Number(boxfit)),
+				minorAxis: String(Number(createdMinor) * 1000 / Number(boxfit)),
+				centroidX: x,
+				centroidY: y
+			})
+			.returning();
+	}
 
 	return null;
 }
@@ -188,6 +233,7 @@ export default function () {
 		// Convert major and minor axes from px to mm based on boxfit length
 		const scaledDents = dents.map((dent: HailpadDent) => {
 			return {
+				id: dent.id,
 				angle: dent.angle,
 				centroidX: dent.centroidX,
 				centroidY: dent.centroidY,

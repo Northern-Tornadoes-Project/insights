@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover
 
 interface HailpadDent {
 	// TODO: Use shared interface
+	id: string;
 	angle: string | null;
 	centroidX: string;
 	centroidY: string;
@@ -19,6 +20,7 @@ interface HailpadDent {
 	minorAxis: string;
 }
 
+// TODO: Move to route
 function createUpdateSchema() {
 	return z
 		.object({
@@ -77,15 +79,6 @@ function Detail({ label, value }: { label: string; value?: string }) {
 	);
 }
 
-// const getRotatedEllipseEquation = (a: number, b: number, angle: number) => {
-//     // Constants for the cos and sin of the angle
-//     const cosTheta = Math.cos(angle);
-//     const sinTheta = Math.sin(angle);
-
-//     const equation = `((${cosTheta.toFixed(2)}*x - ${sinTheta.toFixed(2)}*y)^2)/${a.toFixed(2)}^2 + ((${sinTheta.toFixed(2)}*x + ${cosTheta.toFixed(2)}*y)^2)/${b.toFixed(2)}^2 = 1`;
-//     return equation;
-// } TODO: TBD
-
 export default function DentDetails({
 	dentData,
 	index,
@@ -107,7 +100,7 @@ export default function DentDetails({
 	const [deleteForm, deleteFields] = useForm({
 		onSubmit() {
 			const formData = new FormData();
-			formData.append('index', String(index) || '');
+			formData.append('deleteDentID', dentData[index].id);
 		}
 	});
 
@@ -117,8 +110,9 @@ export default function DentDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append(updateFields.minor.name, updateFields.minor.value || '');
-			formData.append(updateFields.major.name, updateFields.major.value || '');
+			// formData.append('dentID', dentData[index].id);
+			formData.append('updatedMinor', updateFields.minor.value || '');
+			formData.append('updatedMajor', updateFields.major.value || '');
 		}
 	});
 
@@ -128,9 +122,10 @@ export default function DentDetails({
 		},
 		onSubmit() {
 			const formData = new FormData();
-			formData.append(createFields.minor.name, createFields.minor.value || '');
-			formData.append(createFields.major.name, createFields.major.value || '');
-			formData.append(createFields.location.name, createFields.location.value || '');
+			formData.append('dentID', dentData[index].id);
+			formData.append('createdMinor', createFields.minor.value || '');
+			formData.append('createdMajor', createFields.major.value || '');
+			formData.append('createdLocation', createFields.location.value || '');
 		}
 	});
 
@@ -165,7 +160,7 @@ export default function DentDetails({
 											</CardDescription>
 										</div>
 										<FormProvider context={deleteForm.context}>
-											<Form id={deleteForm.id} onSubmit={deleteForm.onSubmit}>
+											<Form method="post" id={deleteForm.id} onSubmit={deleteForm.onSubmit}>
 												<div className="flex flex-row">
 													<Button
 														type="submit"
@@ -225,13 +220,13 @@ export default function DentDetails({
 														step="any"
 													/>
 												</div>
-												<div className="flex flex-row justify-end">
-													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2">
+												<div className="flex flex-row justify-end items-center">
+													<p className="text-sm text-primary/60">{updateFields.minor.errors}</p>
+													<p className="text-sm text-primary/60">{updateFields.major.errors}</p>
+													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2 ml-4">
 														<CornerDownLeft />
 													</Button>
 												</div>
-												<p className="text-sm text-primary/60">{updateFields.minor.errors}</p>
-												<p className="text-sm text-primary/60">{updateFields.major.errors}</p>
 											</Form>
 										</FormProvider>
 									</div>
@@ -295,14 +290,15 @@ export default function DentDetails({
 														step="any"
 													/>
 												</div>
-												<div className="flex flex-row justify-end">
-													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2">
+												<div className="flex flex-row justify-end items-center">
+													<p className="text-sm text-primary/60">{createFields.minor.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.major.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.location.errors}</p>
+													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 ml-4 p-2">
 														<CornerDownLeft />
 													</Button>
 												</div>
-												<p className="text-sm text-primary/60">{createFields.minor.errors}</p>
-												<p className="text-sm text-primary/60">{createFields.major.errors}</p>
-												<p className="text-sm text-primary/60">{createFields.location.errors}</p>
+
 											</Form>
 										</FormProvider>
 									</div>
@@ -351,9 +347,6 @@ export default function DentDetails({
 					<Detail label="Minor Axis" value={`${minor.toFixed(2)} mm`} />
 					<Detail label="Major Axis" value={`${major.toFixed(2)} mm`} />
 					<Detail label="TODO" value={`TODO`} />
-					{/* {dentData[index].minorAxis && dentData[index].majorAxis && dentData[index].angle &&
-                        <Detail label="Ellipse Approximation" value={getRotatedEllipseEquation(Number(dentData[index].majorAxis), Number(dentData[index].minorAxis), Number(dentData[index].angle))} />
-                    } TODO: TBD */}
 				</div>
 			</CardContent>
 		</Card>

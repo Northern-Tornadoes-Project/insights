@@ -19,6 +19,7 @@ interface HailpadDent {
 	centroidY: string;
 	majorAxis: string;
 	minorAxis: string;
+	maxDepth: string;
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -43,7 +44,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			centroidX: dent.centroidX,
 			centroidY: dent.centroidY,
 			majorAxis: dent.majorAxis,
-			minorAxis: dent.minorAxis
+			minorAxis: dent.minorAxis,
+			maxDepth: dent.maxDepth
 		})
 		.from(dent)
 		.where(eq(dent.hailpadId, queriedHailpad.id));
@@ -91,8 +93,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	const createdMinor = formData.get('createdMinor');
 	const createdMajor = formData.get('createdMajor');
 	const createdLocation = formData.get('createdLocation');
-
-	console.log(maxDepth, boxfit, adaptiveBlock, adaptiveC, dentID, deleteDentID, updatedMinor, updatedMajor, createdMinor, createdMajor, createdLocation);
 
 	// TODO: Replace with switch block
 	if (boxfit) {
@@ -167,9 +167,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 						angle: hailpadDent.angle,
 						majorAxis: hailpadDent.majorAxis,
 						minorAxis: hailpadDent.minorAxis,
+						maxDepth: hailpadDent.maxDepth,
 						centroidX: hailpadDent.centroidX,
 						centroidY: hailpadDent.centroidY
-						// TODO: Depth information
 					})
 					.returning();
 
@@ -200,7 +200,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				majorAxis: String(Number(createdMajor) * 1000 / Number(boxfit)),
 				minorAxis: String(Number(createdMinor) * 1000 / Number(boxfit)),
 				centroidX: x,
-				centroidY: y
+				centroidY: y,
+				maxDepth: String(maxDepth)
 			})
 			.returning(); // TODO: Update updatedBy and updatedAt
 	}
@@ -231,6 +232,7 @@ export default function () {
 
 	useEffect(() => {
 		// Convert major and minor axes from px to mm based on boxfit length
+		// and max. depth from px to mm based on max. depth map depth
 		const scaledDents = dents.map((dent: HailpadDent) => {
 			return {
 				id: dent.id,
@@ -238,7 +240,8 @@ export default function () {
 				centroidX: dent.centroidX,
 				centroidY: dent.centroidY,
 				majorAxis: String((Number(dent.majorAxis) / 1000) * Number(boxfit)),
-				minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit))
+				minorAxis: String((Number(dent.minorAxis) / 1000) * Number(boxfit)),
+				maxDepth: String(Number(dent.maxDepth) * Number(maxDepth))
 			};
 		});
 

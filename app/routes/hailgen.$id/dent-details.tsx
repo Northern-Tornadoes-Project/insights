@@ -1,6 +1,7 @@
 import { FormProvider, useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Form } from '@remix-run/react';
+import { set } from 'date-fns';
 import { ChevronLeft, ChevronRight, CornerDownLeft, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
@@ -18,6 +19,7 @@ interface HailpadDent {
 	centroidY: string;
 	majorAxis: string;
 	minorAxis: string;
+	maxDepth: string;
 }
 
 // TODO: Move to route
@@ -54,6 +56,9 @@ function createCreateSchema() {
 			}),
 			createdMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
+			}),
+			maxDepth: z.number().min(0, {
+				message: 'Maximum depth must be positive.'
 			}),
 			createdLocation: z
 				.string()
@@ -103,6 +108,7 @@ export default function DentDetails({
 }) {
 	const [minor, setMinor] = useState<number>(0);
 	const [major, setMajor] = useState<number>(0);
+	const [depth, setDepth] = useState<number>(0);
 
 	const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 	const [currentID, setCurrentID] = useState<string | null>(null);
@@ -139,6 +145,7 @@ export default function DentDetails({
 			formData.append(createFields.createdMinor.name, createFields.createdMinor.value || '');
 			formData.append(createFields.createdMajor.name, createFields.createdMajor.value || '');
 			formData.append(createFields.createdLocation.name, createFields.createdLocation.value || '');
+			formData.append(createFields.maxDepth.name, createFields.maxDepth.value || '');
 		}
 	});
 
@@ -146,6 +153,7 @@ export default function DentDetails({
 		if (dentData.length === 0) return;
 		setMinor(Number(dentData[index].minorAxis));
 		setMajor(Number(dentData[index].majorAxis));
+		setDepth(Number(dentData[index].maxDepth));
 
 		setCurrentID(dentData[index].id);
 	}, [dentData, index]);
@@ -311,6 +319,20 @@ export default function DentDetails({
 												</div>
 												<div className="mt-2 flex flex-row items-center">
 													<div className="mr-4 w-48">
+														<Label>Maximum Depth (mm)</Label>
+													</div>
+													<Input
+														className="h-8 w-28"
+														type="number"
+														key={createFields.maxDepth.key}
+														name={createFields.maxDepth.name}
+														defaultValue={createFields.maxDepth.initialValue}
+														placeholder="h"
+														step="any"
+													/>
+												</div>
+												<div className="mt-2 flex flex-row items-center">
+													<div className="mr-4 w-48">
 														<Label>Dent Location</Label>
 													</div>
 													<Input
@@ -379,7 +401,7 @@ export default function DentDetails({
 				<div className="mt-4 grid grid-cols-3 gap-4">
 					<Detail label="Minor Axis" value={`${minor.toFixed(2)} mm`} />
 					<Detail label="Major Axis" value={`${major.toFixed(2)} mm`} />
-					<Detail label="TODO" value={`TODO`} />
+					<Detail label="Maximum Depth" value={`${depth.toFixed(2)} mm`} />
 				</div>
 			</CardContent>
 		</Card>

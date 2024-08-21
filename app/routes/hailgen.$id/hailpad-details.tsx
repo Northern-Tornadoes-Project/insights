@@ -1,7 +1,7 @@
 import { FormProvider, useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Form } from '@remix-run/react';
-import { CornerDownLeft, FileSpreadsheet, Filter, FilterX, Settings } from 'lucide-react';
+import { CornerDownLeft, Dot, FileSpreadsheet, Filter, FilterX, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -22,6 +22,7 @@ interface HailpadDent {
 	centroidY: string;
 	majorAxis: string;
 	minorAxis: string;
+	maxDepth: string;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
@@ -33,16 +34,21 @@ function Detail({ label, value }: { label: string; value: string }) {
 	);
 }
 
-function DetailSection({ min, max, avg }: { min: number; max: number; avg: number }) {
-	const minStr = min.toFixed(2).toString();
-	const maxStr = max.toFixed(2).toString();
-	const avgStr = avg.toFixed(2).toString();
+function DetailSection({ min, max, avg }: { min?: number; max?: number; avg?: number }) {
+
+	let minStr;
+	let maxStr;
+	let avgStr;
+
+	if (min) minStr = min.toFixed(2).toString();
+	if (max) maxStr = max.toFixed(2).toString();
+	if (avg) avgStr = avg.toFixed(2).toString();
 
 	return (
 		<div className="m-4 grid grid-cols-3 gap-4">
-			<Detail label="Minimum" value={`${minStr} mm`} />
-			<Detail label="Maximum" value={`${maxStr} mm`} />
-			<Detail label="Average" value={`${avgStr} mm`} />
+			{minStr && <Detail label="Minimum" value={`${minStr} mm`} />}
+			{maxStr && <Detail label="Maximum" value={`${maxStr} mm`} />}
+			{avgStr && <Detail label="Average" value={`${avgStr} mm`} />}
 		</div>
 	);
 }
@@ -134,6 +140,8 @@ export default function HailpadDetails({
 	const [avgMinor, setAvgMinor] = useState<number>(0);
 	const [avgMajor, setAvgMajor] = useState<number>(0);
 
+	const [depth, setDepth] = useState<number>(0);
+
 	const [adaptiveBlockSliderValue, setAdaptiveBlockSliderValue] = useState<number>(0);
 	const [adaptiveCSliderValue, setAdaptiveCSliderValue] = useState<number>(0);
 
@@ -193,6 +201,8 @@ export default function HailpadDetails({
 
 		setAvgMinor(dentData.reduce((acc, dent) => acc + Number(dent.minorAxis), 0) / dentData.length);
 		setAvgMajor(dentData.reduce((acc, dent) => acc + Number(dent.majorAxis), 0) / dentData.length);
+
+		setDepth(dentData.reduce((acc, dent) => acc + Number(dent.maxDepth), 0) / dentData.length);
 
 		setAdaptiveBlockSliderValue(Number(adaptiveBlockSize));
 		setAdaptiveCSliderValue(Number(adaptiveC));
@@ -342,6 +352,8 @@ export default function HailpadDetails({
 						<TabsList>
 							<TabsTrigger value="minor">Minor Axis</TabsTrigger>
 							<TabsTrigger value="major">Major Axis</TabsTrigger>
+							<TabsTrigger value="depth">Depth</TabsTrigger>
+							{/* <TabsTrigger value="3d" className="ml-8">3D</TabsTrigger> TODO */}
 						</TabsList>
 						<div className="flex flex-row space-x-2">
 							<Button
@@ -362,7 +374,7 @@ export default function HailpadDetails({
 										<div className="mb-6">
 											<p className="text-lg font-semibold">Filter</p>
 											<CardDescription className="text-sm">
-												Refine hailpad dent data.
+												Refine hailpad dent data by size.
 											</CardDescription>
 										</div>
 										<FormProvider context={filterForm.context}>
@@ -452,6 +464,10 @@ export default function HailpadDetails({
 					<TabsContent value="major">
 						<DetailSection min={minMajor} max={maxMajor} avg={avgMajor} />
 						<Histogram data={dentData.map((dent) => Number(dent.majorAxis))} />
+					</TabsContent>
+					<TabsContent value="depth">
+						<DetailSection avg={depth} />
+						<Histogram data={dentData.map((dent) => Number(dent.maxDepth))} />
 					</TabsContent>
 				</Tabs>
 			</CardContent>

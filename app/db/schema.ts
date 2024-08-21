@@ -165,6 +165,7 @@ export const dent = pgTable('dent', {
 	angle: decimal('angle'),
 	majorAxis: decimal('major_axis').notNull(),
 	minorAxis: decimal('minor_axis').notNull(),
+	maxDepth: decimal('max_depth').notNull(),
 	centroidX: decimal('centroid_x').notNull(),
 	centroidY: decimal('centroid_y').notNull()
 });

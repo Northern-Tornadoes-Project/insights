@@ -34,6 +34,7 @@ interface HailpadDent {
 	centroidY: string;
 	majorAxis: string;
 	minorAxis: string;
+	maxDepth: string;
 }
 
 const schema = z.object({
@@ -140,9 +141,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 					angle: hailpadDent.angle,
 					majorAxis: hailpadDent.majorAxis,
 					minorAxis: hailpadDent.minorAxis,
+					maxDepth: hailpadDent.maxDepth,
 					centroidX: hailpadDent.centroidX,
 					centroidY: hailpadDent.centroidY
-					// TODO: Depth information
 				})
 				.returning();
 

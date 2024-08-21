@@ -66,10 +66,10 @@ export default function Index() {
 					)}
 				</header>
 				<main className="flex h-screen flex-col justify-center gap-8 p-6 lg:p-16">
-					<h1 className="text-7xl">
-						<b>CSSL</b> Insights
+					<h1 className="text-6xl tracking-tight ">
+						CSSL <b>Insights</b>
 					</h1>
-					<h3 className="text-2xl font-semibold">{`v${version}`}</h3>
+					<h3 className="text-xl font-semibold">{`v${version}`}</h3>
 					<nav className="flex flex-col gap-2">
 						<div className="flex flex-row gap-2">
 							<Link to="/360">

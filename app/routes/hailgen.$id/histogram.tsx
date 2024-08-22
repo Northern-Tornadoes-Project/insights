@@ -10,7 +10,7 @@ import {
 const chartConfig = {
 	count: {
 		label: 'Count',
-		color: '#8F55E0'
+		color: '#8F55E0' // TODO: Use theme
 	}
 } satisfies ChartConfig;
 
@@ -18,13 +18,14 @@ export default function Histogram({ data }: { data: number[] }) {
 	const [binnedData, setBinnedData] = useState<{ bin: string; count: number }[]>([]);
 
 	useEffect(() => {
-		data = data.filter((val) => val <= 100); // TODO: Remove
+		// Filter out dents with axes greater than 100
+		data = data.filter((val) => val <= 100);
 
 		const bins: { bin: string; count: number }[] = [];
 
 		if (!data) return;
 
-		const min = Math.floor(Math.min(...data) / 5) * 5;
+		const min = 0;
 		const max = Math.ceil(Math.max(...data) / 5) * 5;
 
 		// Create bins in increments of 5
@@ -32,15 +33,19 @@ export default function Histogram({ data }: { data: number[] }) {
 			bins.push({ bin: `[${i}, ${i + 5})`, count: 0 });
 		}
 
-		// Populate bins
-		try { // TODO
-			data.forEach((num) => {
-				const binIndex = Math.floor(num / 5);
-				bins[binIndex - min / 5].count += 1;
-			});
-		} catch (e) {
-			return;
-		}
+		data.forEach((num) => {
+			const binIndex = Math.floor(num / 5);
+			if (binIndex < bins.length) {
+				bins[binIndex].count += 1;
+			} else {
+				// Calculate the start of the new bin range
+				const newBinStart = Math.floor(num / 5) * 5;
+				// Create a new bin for the out-of-bounds value
+				const newBin = { bin: `[${newBinStart}, ${newBinStart + 5})`, count: 1 };
+				// Add the new bin to the bins array
+				bins.push(newBin);
+			}
+		});
 
 		setBinnedData(bins);
 	}, [data]);

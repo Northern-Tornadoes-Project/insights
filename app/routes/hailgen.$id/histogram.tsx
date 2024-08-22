@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import {
 	type ChartConfig,
@@ -15,15 +15,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function Histogram({ data }: { data: number[] }) {
-	const [binnedData, setBinnedData] = useState<{ bin: string; count: number }[]>([]);
-
-	useEffect(() => {
+	const binnedData: { bin: string; count: number }[] = useMemo(() => {
 		// Filter out dents with axes greater than 100
 		data = data.filter((val) => val <= 100);
 
 		const bins: { bin: string; count: number }[] = [];
-
-		if (!data) return;
 
 		const min = 0;
 		const max = Math.ceil(Math.max(...data) / 5) * 5;
@@ -47,7 +43,7 @@ export default function Histogram({ data }: { data: number[] }) {
 			}
 		});
 
-		setBinnedData(bins);
+		return bins;
 	}, [data]);
 
 	return (

@@ -27,8 +27,6 @@ export function Header({
 			<div className="flex flex-row items-center gap-4">
 				<Link to="/">
 					<Button variant="outline" size="icon">
-						{/* <LucideTornado size={24} /> */}
-						{/* TODO: idk I thought I'd try it for fun */}
 						<CsslLogo size={24} />
 					</Button>
 				</Link>

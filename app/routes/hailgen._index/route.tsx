@@ -2,7 +2,7 @@ import { Link, MetaFunction, json, useLoaderData, useOutletContext } from '@remi
 import { count, eq } from 'drizzle-orm';
 import { motion } from 'framer-motion';
 import { LucidePlus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataTable } from '~/components/table/data-table';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -10,17 +10,21 @@ import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { Hailpad, columns } from './columns';
 import { HailpadCard } from './hailpad-card';
+import { env } from '~/env.server';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'CSSL Insights - Hailgen' }];
 };
 
 export async function loader() {
+	const basePath = `${env.BASE_URL}/${env.PUBLIC_HAILPAD_DIRECTORY}`;
+
 	return json({
 		hailpads: await db
 			.select({
 				id: hailpad.id,
 				name: hailpad.name,
+				folderName: hailpad.folderName,
 				dents: count(dent.id),
 				createdAt: hailpad.createdAt,
 				updatedAt: hailpad.updatedAt
@@ -28,7 +32,8 @@ export async function loader() {
 			.from(hailpad)
 			.where(eq(hailpad.hidden, false))
 			.leftJoin(dent, eq(hailpad.id, dent.hailpadId))
-			.groupBy(hailpad.id)
+			.groupBy(hailpad.id),
+		basePath: basePath
 	});
 }
 
@@ -41,6 +46,11 @@ export default function () {
 		imageUrl: string;
 	} | null>();
 	const [hailpad, setHailpad] = useState<Hailpad | null>(null);
+	const [depthMapPath, setDepthMapPath] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (hailpad) setDepthMapPath(`${data.basePath}/${hailpad.folderName}/dmap.png`);
+	}, [hailpad]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -84,11 +94,13 @@ export default function () {
 					</Card>
 				</motion.div>
 				{hailpad && (
+					<div className="h-full">
 					<HailpadCard
 						hailpad={hailpad}
-						loggedIn={userContext ? true : false}
+						depthMapPath={depthMapPath || ''}
 						onClose={() => setHailpad(null)}
 					/>
+					</div>
 				)}
 			</div>
 		</div>

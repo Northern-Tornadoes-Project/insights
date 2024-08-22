@@ -220,7 +220,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 				minorAxis: String(Number(createdMinor) * 1000 / Number(currentBoxfit)),
 				centroidX: x,
 				centroidY: y,
-				maxDepth: String(Number(maxDepth) / Number(currentMaxDepth))
+				maxDepth: String(Number(createdMaxDepth) / Number(currentMaxDepth))
 			})
 			.returning();
 

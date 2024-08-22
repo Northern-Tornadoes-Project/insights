@@ -5,6 +5,7 @@ import { formatDate } from '~/lib/utils';
 export type Hailpad = {
 	id: string;
 	name: string;
+	folderName: string;
 	dents: number;
 	createdAt: Date;
 	updatedAt: Date;

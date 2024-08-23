@@ -129,7 +129,6 @@ export const pathSegments = pgTable('path_segments', {
 		.defaultNow()
 		.notNull()
 		.$onUpdateFn(() => new Date()),
-	status: hailpadInitializationStatus('status').default('uploading').notNull(),
 	hidden: boolean('hidden').default(false).notNull()
 });
 
@@ -154,6 +153,7 @@ export const hailpad = pgTable('hailpad', {
 	updatedBy: integer('updated_by')
 		.references(() => users.id)
 		.notNull(),
+	status: hailpadInitializationStatus('status').default('uploading').notNull(),
 	hidden: boolean('hidden').default(false).notNull()
 });
 

@@ -51,7 +51,7 @@ export function App() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
 				<Links />
 			</head>
-			<body className="h-screen min-h-screen pb-safe" suppressHydrationWarning>
+			<body className="h-screen min-h-screen" suppressHydrationWarning>
 				<Outlet />
 				<Toaster />
 				<ScrollRestoration />
@@ -85,7 +85,7 @@ function ErrorBody() {
 				<PreventFlashOnWrongTheme ssrTheme={Boolean(theme)} />
 				<Links />
 			</head>
-			<body className="h-screen min-h-screen pb-safe">
+			<body className="h-screen min-h-screen">
 				<div className="absolute w-full">
 					<Header title="Error" />
 				</div>

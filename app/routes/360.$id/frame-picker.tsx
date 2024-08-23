@@ -21,6 +21,8 @@ export function FramePicker({
 				type="number"
 				placeholder={`${index}`}
 				value={value ?? ''}
+				min={1}
+				max={length}
 				onChange={(e) => setValue(parseInt(e.target.value))}
 			/>
 			<p>{`/ ${length}`}</p>

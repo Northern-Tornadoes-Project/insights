@@ -46,6 +46,7 @@ export function PathCard({
 			} = await response.json();
 
 			if (data.completed) {
+				setProgress(null);
 				clearInterval(interval);
 				return;
 			}

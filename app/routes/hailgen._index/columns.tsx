@@ -14,20 +14,24 @@ export type Hailpad = {
 export const columns: ColumnDef<Hailpad>[] = [
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-		accessorKey: 'name'
+		accessorKey: 'name',
+		sortingFn: 'text'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Dents" />,
-		accessorKey: 'dents'
+		accessorKey: 'dents',
+		sortingFn: 'auto'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
 		accessorKey: 'created',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Modified" />,
 		accessorKey: 'modified',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	}
 ];

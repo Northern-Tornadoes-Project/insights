@@ -20,30 +20,36 @@ export type Path = {
 export const columns: ColumnDef<Path>[] = [
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-		accessorKey: 'name'
+		accessorKey: 'name',
+		sortingFn: 'text'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Size (MB)" />,
 		accessorKey: 'size',
-		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2)
+		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2),
+		sortingFn: 'auto'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Captures" />,
-		accessorKey: 'captures'
+		accessorKey: 'captures',
+		sortingFn: 'auto'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
 		accessorKey: 'status',
-		cell: (cell) => <StatusBadge status={cell.getValue() as Path['status']} />
+		cell: (cell) => <StatusBadge status={cell.getValue() as Path['status']} />,
+		sortingFn: 'auto'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Event Date" />,
 		accessorKey: 'eventDate',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
 		accessorKey: 'createdAt',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	}
 ];

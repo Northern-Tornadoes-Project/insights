@@ -25,22 +25,26 @@ export const columns: ColumnDef<Scan>[] = [
 			<Link to={`/lidar/${cell.row.original.id}`}>
 				<Button variant="link">{cell.getValue() as string}</Button>
 			</Link>
-		)
+		),
+		sortingFn: 'text'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Size (MB)" />,
 		accessorKey: 'size',
-		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2)
+		cell: (cell) => ((cell.getValue() as number) / 1024 / 1024).toFixed(2),
+		sortingFn: 'auto'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Event Date" />,
 		accessorKey: 'eventDate',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Capture Date" />,
 		accessorKey: 'captureDate',
-		cell: (cell) => formatDate(cell.getValue() as Date)
+		cell: (cell) => formatDate(cell.getValue() as Date),
+		sortingFn: 'datetime'
 	},
 	{
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
@@ -61,11 +65,15 @@ export const columns: ColumnDef<Scan>[] = [
 					{status.charAt(0).toUpperCase() + status.slice(1)}
 				</Badge>
 			);
-		}
+		},
+		sortingFn: 'auto'
 	},
 	{
 		header: () => null,
 		accessorKey: 'id',
-		cell: (cell) => <Actions id={cell.getValue() as string} hidden={cell.row.original.hidden} />
+		cell: (cell) => <Actions id={cell.getValue() as string} hidden={cell.row.original.hidden} />,
+		enableSorting: false,
+		enableHiding: false,
+		enableGrouping: false
 	}
 ];

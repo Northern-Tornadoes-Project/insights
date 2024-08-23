@@ -54,7 +54,7 @@ export function PathCard({
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [path]);
 
 	return (
 		<Card className="h-min min-w-72 sm:min-w-96">

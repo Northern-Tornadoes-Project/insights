@@ -54,8 +54,8 @@ export default function HailpadMap({
 						context.ellipse(
 							x,
 							y,
-							Number(dent.majorAxis) * 1.5,
-							Number(dent.minorAxis) * 1.5,
+							Number(dent.majorAxis) * 1.25,
+							Number(dent.minorAxis) * 1.25,
 							Number(dent.angle) + Math.PI / 2,
 							0,
 							2 * Math.PI

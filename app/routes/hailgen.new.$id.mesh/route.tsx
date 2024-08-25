@@ -114,7 +114,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	// Invoke microservice with uploaded file path for processing
 	// if (env.SERVICE_HAILGEN_ENABLED) {
-	const response = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
+	const postResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -127,35 +127,55 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		})
 	});
 
-	if (response.ok) {
-		// Save dents to db
-		const res = await response.json();
-		const dents = res.dents;
-		const maxDepthLocation = res.maxDepthLocation;
+	if (postResponse.ok) {
+		// Poll the service until dents are processed
+		while (true) {
+			const getResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`), {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
 
-		dents.forEach(async (hailpadDent: HailpadDent) => {
-			const newDent = await db
-				.insert(dent)
-				.values({
-					hailpadId: queriedHailpad.id,
-					angle: hailpadDent.angle,
-					majorAxis: hailpadDent.majorAxis,
-					minorAxis: hailpadDent.minorAxis,
-					maxDepth: hailpadDent.maxDepth,
-					centroidX: hailpadDent.centroidX,
-					centroidY: hailpadDent.centroidY
-				})
-				.returning();
+			if (getResponse.ok) {
+				// Save dents to db
+				const res = await getResponse.json();
 
-			if (newDent.length != 1) {
-				throw new Error('Error creating dent');
+				if (res.status && res.status === "Queued") {
+					continue; // Poll again
+				}
+
+				const dents = res.dents;
+				const maxDepthLocation = res.maxDepthLocation;
+
+				dents.forEach(async (hailpadDent: HailpadDent) => {
+					const newDent = await db
+						.insert(dent)
+						.values({
+							hailpadId: queriedHailpad.id,
+							angle: hailpadDent.angle,
+							majorAxis: hailpadDent.majorAxis,
+							minorAxis: hailpadDent.minorAxis,
+							maxDepth: hailpadDent.maxDepth,
+							centroidX: hailpadDent.centroidX,
+							centroidY: hailpadDent.centroidY
+						})
+						.returning();
+
+					if (newDent.length != 1) {
+						throw new Error('Error creating dent');
+					}
+				});
+
+				depthX = Number(maxDepthLocation[0]);
+				depthY = Number(maxDepthLocation[1]);
+
+				break;
+			} else {
+				console.error('Error fetching results from Hailgen service');
+				break;
 			}
-		});
-
-		// Get location for max. depth
-		console.log('max depth location is: ' + maxDepthLocation);
-		depthX = Number(maxDepthLocation[0]);
-		depthY = Number(maxDepthLocation[1]);
+		}
 	} else {
 		console.error('Error invoking Hailgen service');
 	}

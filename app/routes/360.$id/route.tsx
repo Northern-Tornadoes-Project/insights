@@ -4,6 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import { lazy, Suspense } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { z } from 'zod';
+import { Fallback } from '~/components/fallback';
 import {
 	Card,
 	CardContent,
@@ -18,7 +19,6 @@ import { paths, pathSegments } from '~/db/schema';
 import { env } from '~/env.server';
 import { FrameposSchema } from '~/lib/framepos';
 import { FramePicker } from './frame-picker';
-import { Fallback } from '~/components/fallback';
 
 const Viewer360 = lazy(() => import('~/components/360/viewer-360.client'));
 const PathMap = lazy(() => import('~/components/path-map'));
@@ -98,7 +98,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 				})),
 			capture: capture,
 			captureURL: new URL(
-				`${env.BASE_URL}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}`
+				// Allow browser to cache the image but force refresh if the capture was updated
+				`${env.BASE_URL}/${env.PUBLIC_PATH_DIRECTORY}/${path.folderName}/${capture.file_name}?lastmod=${capture.uploadedAt.getTime()}`.replace(
+					// Fix double slashes
+					/([^:]\/)\/+/g,
+					'$1'
+				)
 			).href,
 			currentState: state.data,
 			pathProgress: {
@@ -123,7 +128,7 @@ function CaptureDetail({ label, value }: { label: string; value: string }) {
 
 function ViewerFallback() {
 	return (
-		<div className="overflow-hidden rounded-md w-full h-full">
+		<div className="h-full w-full overflow-hidden rounded-md">
 			<Fallback />
 		</div>
 	);

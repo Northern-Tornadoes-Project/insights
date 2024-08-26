@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { db } from '~/db/db.server';
-import { paths } from '~/db/schema';
+import { captures, paths, pathSegments } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
 import { StatusResponseSchema, StatusUpdateSchema } from '~/lib/service-360';
@@ -88,6 +88,37 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		.where(eq(paths.id, id));
 
 	if (update.rowCount !== 1) return new Response(null, { status: 404 });
+
+	if (data.status === 'complete') {
+		try {
+			// Update the updated_at field of the captures
+			const capturesToUpdate = await db
+				.update(pathSegments)
+				.set({
+					updateAt: new Date()
+				})
+				.where(eq(pathSegments.pathId, id))
+				.returning({
+					captureId: pathSegments.captureId
+				});
+
+			await db
+				.update(captures)
+				.set({
+					uploadedAt: new Date()
+				})
+				.where(
+					inArray(
+						captures.id,
+						capturesToUpdate.map((capture) => capture.captureId)
+					)
+				);
+		} catch (error) {
+			console.error(
+				`[360 Service] Failed to update the updated_at field of the captures: ${error}`
+			);
+		}
+	}
 
 	return new Response(null, { status: 200 });
 }

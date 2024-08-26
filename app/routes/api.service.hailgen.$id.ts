@@ -1,10 +1,12 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from '@remix-run/node';
 import { eq } from 'drizzle-orm';
 import { db } from '~/db/db.server';
-import { hailpad } from '~/db/schema';
+import { hailpad, dent } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
+import { uploadEventBus } from '~/lib/event-bus.server';
 import { StatusResponseSchema, StatusUpdateSchema } from '~/lib/service-hailgen';
+import { UploadStatusEvent } from './hailgen.new.$id.mesh/route';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const id = params.id;
@@ -70,26 +72,57 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		return new Response(null, { status: 401 });
 	}
 
-	const { data, error, success } = StatusUpdateSchema.safeParse(await request.json());
+	const data = await request.json();
 
-	if (!success)
-		return json(
-			{
-				error
-			},
-			{ status: 400 }
-		);
+	// const status = data.status !== 'pending' ? data.status : 'processing'; TODO: Remove
 
-	const status = data.status !== 'pending' ? data.status : 'processing';
+	// const update = await db
+	// 	.update(hailpad)
+	// 	.set({
+	// 		status
+	// 	})
+	// 	.where(eq(hailpad.id, id));
 
-	const update = await db
-		.update(hailpad)
-		.set({
-			status
-		})
-		.where(eq(hailpad.id, id));
+	interface HailpadDent {
+		// TODO: Use shared interface
+		id: string;
+		angle: string | null;
+		centroidX: string;
+		centroidY: string;
+		majorAxis: string;
+		minorAxis: string;
+		maxDepth: string;
+	}
 
-	if (update.rowCount !== 1) return new Response(null, { status: 404 });
+	const dents = data.dents;
+
+	dents.forEach(async (hailpadDent: HailpadDent) => {
+		const newDent = await db
+			.insert(dent)
+			.values({
+				hailpadId: id,
+				angle: hailpadDent.angle,
+				majorAxis: hailpadDent.majorAxis,
+				minorAxis: hailpadDent.minorAxis,
+				maxDepth: hailpadDent.maxDepth,
+				centroidX: hailpadDent.centroidX,
+				centroidY: hailpadDent.centroidY
+			})
+			.returning();
+
+		if (newDent.length != 1) {
+			throw new Error('Error creating dent');
+		}
+	});
+
+	// Emit an event to the status bus to notify the client of the status change
+	uploadEventBus.emit<UploadStatusEvent>({
+		id,
+		dents: data.dents,
+		maxDepthLocation: data.maxDepthLocation,
+	});
+
+	// if (update.rowCount !== 1) return new Response(null, { status: 404 });
 
 	return new Response(null, { status: 200 });
 }

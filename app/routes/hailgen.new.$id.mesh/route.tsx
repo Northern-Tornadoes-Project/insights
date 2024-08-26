@@ -9,7 +9,7 @@ import {
 	unstable_createFileUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -26,6 +26,15 @@ import { db } from '~/db/db.server';
 import { dent, hailpad } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
+import { useEventSource } from 'remix-utils/sse/react';
+import { useEffect } from 'react';
+import { useUploadStatus } from '~/lib/use-upload-status';
+
+export type UploadStatusEvent = Readonly<{
+	id: string;
+	dents: any[];
+	maxDepthLocation: number[];
+}>;
 
 interface HailpadDent {
 	// TODO: Use shared interface
@@ -109,95 +118,44 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		throw new Error('Could not read the file.');
 	}
 
-	let depthX;
-	let depthY;
-
 	// Invoke microservice with uploaded file path for processing
 	// if (env.SERVICE_HAILGEN_ENABLED) {
-	const postResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			hailpad_id: params.id,
-			file_paths: [`${env.SERVICE_HAILGEN_DIRECTORY}/${queriedHailpad.folderName}/hailpad.stl`],
-			adaptive_block: queriedHailpad.adaptiveBlockSize,
-			adaptive_c: queriedHailpad.adaptiveC
-		})
-	});
-
-	if (postResponse.ok) {
-		// Poll the service until dents are processed
-		while (true) {
-			const getResponse = await fetch(
-				new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				}
-			);
-
-			if (getResponse.ok) {
-				// Save dents to db
-				const res = await getResponse.json();
-
-				if (res.status && res.status === 'Queued') {
-					continue; // Poll again
-				}
-
-				const dents = res.dents;
-				const maxDepthLocation = res.maxDepthLocation;
-
-				dents.forEach(async (hailpadDent: HailpadDent) => {
-					const newDent = await db
-						.insert(dent)
-						.values({
-							hailpadId: queriedHailpad.id,
-							angle: hailpadDent.angle,
-							majorAxis: hailpadDent.majorAxis,
-							minorAxis: hailpadDent.minorAxis,
-							maxDepth: hailpadDent.maxDepth,
-							centroidX: hailpadDent.centroidX,
-							centroidY: hailpadDent.centroidY
-						})
-						.returning();
-
-					if (newDent.length != 1) {
-						throw new Error('Error creating dent');
-					}
-				});
-
-				depthX = Number(maxDepthLocation[0]);
-				depthY = Number(maxDepthLocation[1]);
-
-				break;
-			} else {
-				console.error('Error fetching results from Hailgen service');
-				break;
-			}
-		}
-	} else {
-		console.error('Error invoking Hailgen service');
+	try {
+		await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				hailpad_id: params.id,
+				file_paths: [`${env.SERVICE_HAILGEN_DIRECTORY}/${queriedHailpad.folderName}/hailpad.stl`],
+				adaptive_block: queriedHailpad.adaptiveBlockSize,
+				adaptive_c: queriedHailpad.adaptiveC
+			})
+		});
+	} catch (error) {
+		console.error(error);
 	}
-	// } else {
-	// 	console.log('Hailgen service is disabled');
-	// } // TODO: Uncomment ???
-
-	return redirect(`/hailgen/new/${queriedHailpad.id}/depth?x=${depthX}&y=${depthY}`);
+	
+	return new Response(null);
 }
 
 export default function () {
 	const navigation = useNavigation();
 	const hailpad = useLoaderData<typeof loader>();
 	const lastResult = useActionData<typeof action>();
+	const status = useUploadStatus<UploadStatusEvent>(hailpad.id);
 	const [form, fields] = useForm({
 		lastResult,
 		shouldValidate: 'onSubmit',
 		shouldRevalidate: 'onSubmit'
 	});
+
+	useEffect(() => {
+		if (status && status.success) {
+			window.location.href = `/hailgen/new/${hailpad.id}/depth?depthX=${status.event?.maxDepthLocation[0]}&depthY=${status.event?.maxDepthLocation[1]}`;
+		}
+	}, [status]);
 
 	return (
 		<main className="flex h-full items-center justify-center">

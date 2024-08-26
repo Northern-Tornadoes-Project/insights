@@ -11,6 +11,15 @@ import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
 import HailpadMap from './hailpad-map';
 
+import { useEventSource } from 'remix-utils/sse/react';
+import { useUploadStatus } from '~/lib/use-upload-status';
+
+export type UploadStatusEvent = Readonly<{
+	id: string;
+	dents: any[];
+	maxDepthLocation: number[];
+}>;
+
 interface HailpadDent {
 	// TODO: Use shared interface
 	id: string;
@@ -142,73 +151,93 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 		const filePath = `${env.SERVICE_HAILGEN_DIRECTORY}/${queriedHailpad.folderName}`;
 
+		// Invoke microservice with uploaded file path for processing
+		// if (env.SERVICE_HAILGEN_ENABLED) {
+		try {
+			await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					hailpad_id: params.id,
+					file_paths: [`${filePath}/hailpad.stl`],
+					adaptive_block: queriedHailpad.adaptiveBlockSize,
+					adaptive_c: queriedHailpad.adaptiveC
+				})
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
 		// Invoke microservice with uploaded file path for reprocessing
 		// if (env.SERVICE_HAILGEN_ENABLED) {
-		const postResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				hailpad_id: params.id,
-				file_paths: [`${filePath}/hailpad.stl`],
-				adaptive_block: queriedHailpad.adaptiveBlockSize,
-				adaptive_c: queriedHailpad.adaptiveC
-			})
-		});
+		// const postResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
+		// 	method: 'POST',
+		// 	headers: {
+		// 		'Content-Type': 'application/json'
+		// 	},
+		// 	body: JSON.stringify({
+		// 		hailpad_id: params.id,
+		// 		file_paths: [`${filePath}/hailpad.stl`],
+		// 		adaptive_block: queriedHailpad.adaptiveBlockSize,
+		// 		adaptive_c: queriedHailpad.adaptiveC
+		// 	})
+		// });
 
-		if (postResponse.ok) {
-			// Poll the service until dents are processed
-			while (true) {
-				const getResponse = await fetch(
-					new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
-					{
-						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json'
-						}
-					}
-				);
+		// if (postResponse.ok) {
+		// 	// Poll the service until dents are processed
+		// 	while (true) {
+		// 		const getResponse = await fetch(
+		// 			new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
+		// 			{
+		// 				method: 'GET',
+		// 				headers: {
+		// 					'Content-Type': 'application/json'
+		// 				}
+		// 			}
+		// 		);
 
-				if (getResponse.ok) {
-					// Save dents to db
-					const res = await getResponse.json();
+		// 		if (getResponse.ok) {
+		// 			// Save dents to db
+		// 			const res = await getResponse.json();
 
-					if (res.status && res.status === 'Queued') {
-						continue; // Poll again
-					}
+		// 			if (res.status && res.status === 'Queued') {
+		// 				continue; // Poll again
+		// 			}
 
-					const dents = res.dents;
-					const maxDepthLocation = res.maxDepthLocation;
+		// 			const dents = res.dents;
+		// 			const maxDepthLocation = res.maxDepthLocation;
 
-					dents.forEach(async (hailpadDent: HailpadDent) => {
-						const newDent = await db
-							.insert(dent)
-							.values({
-								hailpadId: queriedHailpad.id,
-								angle: hailpadDent.angle,
-								majorAxis: hailpadDent.majorAxis,
-								minorAxis: hailpadDent.minorAxis,
-								maxDepth: hailpadDent.maxDepth,
-								centroidX: hailpadDent.centroidX,
-								centroidY: hailpadDent.centroidY
-							})
-							.returning();
+		// 			dents.forEach(async (hailpadDent: HailpadDent) => {
+		// 				const newDent = await db
+		// 					.insert(dent)
+		// 					.values({
+		// 						hailpadId: queriedHailpad.id,
+		// 						angle: hailpadDent.angle,
+		// 						majorAxis: hailpadDent.majorAxis,
+		// 						minorAxis: hailpadDent.minorAxis,
+		// 						maxDepth: hailpadDent.maxDepth,
+		// 						centroidX: hailpadDent.centroidX,
+		// 						centroidY: hailpadDent.centroidY
+		// 					})
+		// 					.returning();
 
-						if (newDent.length != 1) {
-							throw new Error('Error creating dent');
-						}
-					});
+		// 				if (newDent.length != 1) {
+		// 					throw new Error('Error creating dent');
+		// 				}
+		// 			});
 
-					break;
-				} else {
-					console.error('Error fetching results from Hailgen service');
-					break;
-				}
-			}
-		} else {
-			console.error('Error invoking Hailgen service');
-		}
+		// 			break;
+		// 		} else {
+		// 			console.error('Error fetching results from Hailgen service');
+		// 			break;
+		// 		}
+		// 	}
+		// } else {
+		// 	console.error('Error invoking Hailgen service');
+		// }
+
 		// } else {
 		// 	console.log('Hailgen service is disabled');
 		// } // TODO: Uncomment
@@ -284,7 +313,16 @@ export default function () {
 		maxMajor: Infinity
 	});
 
-	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName } = data;
+	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName, hailpadId } = data;
+
+	const status = useUploadStatus<UploadStatusEvent>(hailpadId);
+
+	useEffect(() => {
+		// Reload window on successful upload and retreival of updated data from service
+		if (status && status.success) {
+			window.location.reload();
+		}
+	}, [status]);
 
 	useEffect(() => {
 		// Convert major and minor axes from px to mm based on boxfit length

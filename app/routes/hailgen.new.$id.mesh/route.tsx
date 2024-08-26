@@ -141,7 +141,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	} catch (error) {
 		console.error(error);
 	}
-	
+
 	return new Response(null);
 }
 

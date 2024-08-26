@@ -121,7 +121,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		},
 		body: JSON.stringify({
 			hailpad_id: params.id,
-			file_paths: [`${filePath}/hailpad.stl`],
+			file_paths: [`${env.SERVICE_HAILGEN_DIRECTORY}/${queriedHailpad.folderName}/hailpad.stl`],
 			adaptive_block: queriedHailpad.adaptiveBlockSize,
 			adaptive_c: queriedHailpad.adaptiveC
 		})
@@ -130,18 +130,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	if (postResponse.ok) {
 		// Poll the service until dents are processed
 		while (true) {
-			const getResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`), {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
+			const getResponse = await fetch(
+				new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
+				{
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json'
+					}
 				}
-			});
+			);
 
 			if (getResponse.ok) {
 				// Save dents to db
 				const res = await getResponse.json();
 
-				if (res.status && res.status === "Queued") {
+				if (res.status && res.status === 'Queued') {
 					continue; // Poll again
 				}
 

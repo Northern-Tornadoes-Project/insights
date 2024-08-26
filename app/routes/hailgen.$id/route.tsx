@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json, redirect } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, useEffect, useState } from 'react';
@@ -140,7 +140,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 		if (!queriedHailpad) return;
 
-		const filePath = `${env.HAILPAD_DIRECTORY}/${queriedHailpad.folderName}`;
+		const filePath = `${env.SERVICE_HAILGEN_DIRECTORY}/${queriedHailpad.folderName}`;
 
 		// Invoke microservice with uploaded file path for reprocessing
 		// if (env.SERVICE_HAILGEN_ENABLED) {
@@ -160,18 +160,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		if (postResponse.ok) {
 			// Poll the service until dents are processed
 			while (true) {
-				const getResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`), {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
+				const getResponse = await fetch(
+					new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
+					{
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json'
+						}
 					}
-				});
+				);
 
 				if (getResponse.ok) {
 					// Save dents to db
 					const res = await getResponse.json();
 
-					if (res.status && res.status === "Queued") {
+					if (res.status && res.status === 'Queued') {
 						continue; // Poll again
 					}
 
@@ -209,11 +212,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		// } else {
 		// 	console.log('Hailgen service is disabled');
 		// } // TODO: Uncomment
-
 	} else if (deleteDentID) {
-		await db
-			.delete(dent)
-			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(deleteDentID)));
+		await db.delete(dent).where(eq(dent.hailpadId, params.id) && eq(dent.id, String(deleteDentID)));
 
 		await db
 			.update(hailpad)
@@ -226,8 +226,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		await db
 			.update(dent)
 			.set({
-				minorAxis: String(Number(updatedMinor) * 1000 / Number(currentBoxfit)),
-				majorAxis: String(Number(updatedMajor) * 1000 / Number(currentBoxfit)),
+				minorAxis: String((Number(updatedMinor) * 1000) / Number(currentBoxfit)),
+				majorAxis: String((Number(updatedMajor) * 1000) / Number(currentBoxfit))
 			})
 			.where(eq(dent.hailpadId, params.id) && eq(dent.id, String(dentID)));
 
@@ -245,8 +245,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			.values({
 				hailpadId: params.id,
 				angle: null,
-				majorAxis: String(Number(createdMajor) * 1000 / Number(currentBoxfit)),
-				minorAxis: String(Number(createdMinor) * 1000 / Number(currentBoxfit)),
+				majorAxis: String((Number(createdMajor) * 1000) / Number(currentBoxfit)),
+				minorAxis: String((Number(createdMinor) * 1000) / Number(currentBoxfit)),
 				centroidX: x,
 				centroidY: y,
 				maxDepth: String(Number(createdMaxDepth) / Number(currentMaxDepth))

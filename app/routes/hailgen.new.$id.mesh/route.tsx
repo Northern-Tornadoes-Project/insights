@@ -26,7 +26,7 @@ import { db } from '~/db/db.server';
 import { hailpad } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUploadStatus } from '~/lib/use-upload-status';
 
 export type UploadStatusEvent = Readonly<{
@@ -156,11 +156,23 @@ export default function () {
 		shouldRevalidate: 'onSubmit'
 	});
 
+	const [performingAnalysis, setPerformingAnalysis] = useState<boolean>(false);
+
 	useEffect(() => {
 		if (status && status.success) {
 			window.location.href = `/hailgen/new/${hailpad.id}/depth?x=${status.event?.maxDepthLocation[0]}&y=${status.event?.maxDepthLocation[1]}`;
+			setPerformingAnalysis(false);
 		}
 	}, [status]);
+
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		// event.preventDefault(); // This line is often included to prevent the default form submission behavior
+		setPerformingAnalysis(true);
+
+		if (form.onSubmit) {
+			await form.onSubmit(event);
+		}
+	};
 
 	return (
 		<main className="flex h-full items-center justify-center">
@@ -173,7 +185,7 @@ export default function () {
 					method="post"
 					encType="multipart/form-data"
 					id={form.id}
-					onSubmit={form.onSubmit}
+					onSubmit={handleSubmit}
 					noValidate
 				>
 					<CardContent className="grid gap-2">
@@ -183,16 +195,16 @@ export default function () {
 							name={fields.mesh.name}
 							accept=".stl"
 							required
-							disabled={navigation.state === 'submitting'}
+							disabled={performingAnalysis}
 						/>
 						<p className="text-sm text-primary/60">{fields.mesh.errors}</p>
 					</CardContent>
 					<CardFooter>
 						<Button
 							type="submit"
-							disabled={!!fields.mesh.errors || navigation.state === 'submitting'}
+							disabled={!!fields.mesh.errors || performingAnalysis}
 						>
-							Next
+							{performingAnalysis ? "Creating and processing depth map..." : "Next"}
 						</Button>
 					</CardFooter>
 				</Form>

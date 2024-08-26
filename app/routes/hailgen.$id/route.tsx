@@ -1,5 +1,5 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { ActionFunctionArgs, LoaderFunctionArgs, createCookieSessionStorage, json } from '@remix-run/node';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { Suspense, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -10,8 +10,6 @@ import { protectedRoute } from '~/lib/auth.server';
 import DentDetails from './dent-details';
 import HailpadDetails from './hailpad-details';
 import HailpadMap from './hailpad-map';
-
-import { useEventSource } from 'remix-utils/sse/react';
 import { useUploadStatus } from '~/lib/use-upload-status';
 
 export type UploadStatusEvent = Readonly<{
@@ -93,6 +91,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	// Thresholding fields
 	const adaptiveBlock = formData.get('adaptiveBlock');
 	const adaptiveC = formData.get('adaptiveC');
+	let analysisStatus;
 
 	// Dent management fields
 	const dentID = formData.get('dentID');
@@ -153,6 +152,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 		// Invoke microservice with uploaded file path for processing
 		// if (env.SERVICE_HAILGEN_ENABLED) {
+		analysisStatus = true;
 		try {
 			await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
 				method: 'POST',
@@ -169,75 +169,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		} catch (error) {
 			console.error(error);
 		}
-
-		// Invoke microservice with uploaded file path for reprocessing
-		// if (env.SERVICE_HAILGEN_ENABLED) {
-		// const postResponse = await fetch(new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap`), {
-		// 	method: 'POST',
-		// 	headers: {
-		// 		'Content-Type': 'application/json'
-		// 	},
-		// 	body: JSON.stringify({
-		// 		hailpad_id: params.id,
-		// 		file_paths: [`${filePath}/hailpad.stl`],
-		// 		adaptive_block: queriedHailpad.adaptiveBlockSize,
-		// 		adaptive_c: queriedHailpad.adaptiveC
-		// 	})
-		// });
-
-		// if (postResponse.ok) {
-		// 	// Poll the service until dents are processed
-		// 	while (true) {
-		// 		const getResponse = await fetch(
-		// 			new URL(`${process.env.SERVICE_HAILGEN_URL}/hailgen/dmap/${queriedHailpad.id}`),
-		// 			{
-		// 				method: 'GET',
-		// 				headers: {
-		// 					'Content-Type': 'application/json'
-		// 				}
-		// 			}
-		// 		);
-
-		// 		if (getResponse.ok) {
-		// 			// Save dents to db
-		// 			const res = await getResponse.json();
-
-		// 			if (res.status && res.status === 'Queued') {
-		// 				continue; // Poll again
-		// 			}
-
-		// 			const dents = res.dents;
-		// 			const maxDepthLocation = res.maxDepthLocation;
-
-		// 			dents.forEach(async (hailpadDent: HailpadDent) => {
-		// 				const newDent = await db
-		// 					.insert(dent)
-		// 					.values({
-		// 						hailpadId: queriedHailpad.id,
-		// 						angle: hailpadDent.angle,
-		// 						majorAxis: hailpadDent.majorAxis,
-		// 						minorAxis: hailpadDent.minorAxis,
-		// 						maxDepth: hailpadDent.maxDepth,
-		// 						centroidX: hailpadDent.centroidX,
-		// 						centroidY: hailpadDent.centroidY
-		// 					})
-		// 					.returning();
-
-		// 				if (newDent.length != 1) {
-		// 					throw new Error('Error creating dent');
-		// 				}
-		// 			});
-
-		// 			break;
-		// 		} else {
-		// 			console.error('Error fetching results from Hailgen service');
-		// 			break;
-		// 		}
-		// 	}
-		// } else {
-		// 	console.error('Error invoking Hailgen service');
-		// }
-
 		// } else {
 		// 	console.log('Hailgen service is disabled');
 		// } // TODO: Uncomment
@@ -291,11 +222,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 			.where(eq(hailpad.id, params.id));
 	}
 
-	return null;
+	if (!analysisStatus) analysisStatus = false;
+
+	return { analysisStatus };
 }
 
 export default function () {
 	const data = useLoaderData<typeof loader>();
+	const actionData = useActionData<typeof action>();
 
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
@@ -316,11 +250,17 @@ export default function () {
 	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName, hailpadId } = data;
 
 	const status = useUploadStatus<UploadStatusEvent>(hailpadId);
+	const [performingAnalysis, setPerformingAnalysis] = useState<boolean>(actionData?.analysisStatus || false);
+
+	useEffect(() => {
+		setPerformingAnalysis(actionData?.analysisStatus || false);
+	}, [actionData])
 
 	useEffect(() => {
 		// Reload window on successful upload and retreival of updated data from service
 		if (status && status.success) {
 			window.location.reload();
+			setPerformingAnalysis(false);
 		}
 	}, [status]);
 
@@ -411,6 +351,7 @@ export default function () {
 					maxDepth={maxDepth}
 					adaptiveBlockSize={adaptiveBlockSize}
 					adaptiveC={adaptiveC}
+					performingAnalysis={performingAnalysis}
 					onFilterChange={setFilters}
 					onShowCentroids={setShowCentroids}
 					onDownload={setDownload}

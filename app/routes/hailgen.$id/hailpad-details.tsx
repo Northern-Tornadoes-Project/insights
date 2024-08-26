@@ -113,6 +113,7 @@ export default function HailpadDetails({
 	maxDepth,
 	adaptiveBlockSize,
 	adaptiveC,
+	performingAnalysis,
 	onFilterChange,
 	onShowCentroids,
 	onDownload
@@ -122,6 +123,7 @@ export default function HailpadDetails({
 	maxDepth: string;
 	adaptiveBlockSize: string;
 	adaptiveC: string;
+	performingAnalysis: boolean;
 	onFilterChange: (value: {
 		minMinor: number;
 		maxMinor: number;
@@ -329,14 +331,15 @@ export default function HailpadDetails({
 												onValueChange={(value: number[]) => setAdaptiveCSliderValue(value[0])}
 											/>
 											<div className="flex flex-row">
-												<Button
+												{<Button
+													disabled={performingAnalysis}
 													type="submit"
 													variant="secondary"
 													className="mt-6 flex h-8 w-full flex-row items-center justify-between space-x-2 p-4 px-3 pr-2 text-sm"
 												>
-													Perform new analysis
+													{performingAnalysis ? "Performing new analysis..." : "Perform new analysis"}
 													<CornerDownLeft className="h-4 w-4" />
-												</Button>
+												</Button>}
 											</div>
 										</Form>
 									</FormProvider>

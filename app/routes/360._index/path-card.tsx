@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react';
+import { Link, useRevalidator } from '@remix-run/react';
 import { LucideEdit, LucideX } from 'lucide-react';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Badge } from '~/components/ui/badge';
@@ -24,6 +24,7 @@ export function PathCard({
 	loggedIn?: boolean;
 	onClose: () => void;
 }) {
+	const revalidator = useRevalidator();
 	const [failedFetch, setFailedFetch] = useState(false);
 	const [progress, setProgress] = useState<number | null>(null);
 
@@ -48,6 +49,9 @@ export function PathCard({
 			if (data.completed) {
 				setProgress(null);
 				clearInterval(interval);
+
+				// Reload the page to update the status (run the loader again)
+				revalidator.revalidate();
 				return;
 			}
 

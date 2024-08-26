@@ -9,7 +9,7 @@ import {
 	unstable_createFileUploadHandler,
 	unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { Button } from '~/components/ui/button';
@@ -23,16 +23,21 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { db } from '~/db/db.server';
-import { dent, hailpad } from '~/db/schema';
+import { hailpad } from '~/db/schema';
 import { env } from '~/env.server';
 import { protectedRoute } from '~/lib/auth.server';
-import { useEventSource } from 'remix-utils/sse/react';
 import { useEffect } from 'react';
 import { useUploadStatus } from '~/lib/use-upload-status';
 
 export type UploadStatusEvent = Readonly<{
 	id: string;
-	dents: any[];
+	dents: {
+		angle: string | null;
+		majorAxis: string;
+		minorAxis: string;
+		centroidX: string;
+		centroidY: string;
+	}[];
 	maxDepthLocation: number[];
 }>;
 
@@ -153,7 +158,7 @@ export default function () {
 
 	useEffect(() => {
 		if (status && status.success) {
-			window.location.href = `/hailgen/new/${hailpad.id}/depth?depthX=${status.event?.maxDepthLocation[0]}&depthY=${status.event?.maxDepthLocation[1]}`;
+			window.location.href = `/hailgen/new/${hailpad.id}/depth?x=${status.event?.maxDepthLocation[0]}&y=${status.event?.maxDepthLocation[1]}`;
 		}
 	}, [status]);
 

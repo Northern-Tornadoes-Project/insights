@@ -74,15 +74,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	const data = await request.json();
 
-	// const status = data.status !== 'pending' ? data.status : 'processing'; TODO: Remove
-
-	// const update = await db
-	// 	.update(hailpad)
-	// 	.set({
-	// 		status
-	// 	})
-	// 	.where(eq(hailpad.id, id));
-
 	interface HailpadDent {
 		// TODO: Use shared interface
 		id: string;

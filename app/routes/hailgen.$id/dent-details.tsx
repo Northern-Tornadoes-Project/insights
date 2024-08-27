@@ -85,9 +85,9 @@ function createCreateSchema() {
 			message: 'Major axis must be greater than minor axis.'
 		})
 		.refine((data) => parseFloat(data.currentMaxDepth) >= data.createdMaxDepth, {
-            path: ['createdMaxDepth'],
-            message: 'Maximum depth must be less than or equal to the current overall maximum depth.'
-        });
+			path: ['createdMaxDepth'],
+			message: 'Maximum depth must be less than or equal to the current overall maximum depth.'
+		});
 }
 
 function Detail({ label, value }: { label: string; value?: string }) {
@@ -100,6 +100,7 @@ function Detail({ label, value }: { label: string; value?: string }) {
 }
 
 export default function DentDetails({
+	authenticated,
 	dentData,
 	index,
 	currentBoxfit,
@@ -108,6 +109,7 @@ export default function DentDetails({
 	onNext,
 	onIndexChange
 }: {
+	authenticated: boolean;
 	dentData: HailpadDent[];
 	index: number;
 	currentBoxfit: string;
@@ -178,7 +180,7 @@ export default function DentDetails({
 						<CardTitle className="mb-2">Dent Details</CardTitle>
 						<CardDescription>About the selected dent.</CardDescription>
 					</div>
-					<div className="flex flex-row justify-end space-x-4">
+					{authenticated && <div className="flex flex-row justify-end space-x-4">
 						<div className="space-x-2">
 							<Popover>
 								<PopoverTrigger>
@@ -378,7 +380,6 @@ export default function DentDetails({
 														<CornerDownLeft />
 													</Button>
 												</div>
-
 											</Form>
 										</FormProvider>
 									</div>
@@ -393,7 +394,7 @@ export default function DentDetails({
 								<ChevronRight />
 							</Button>
 						</div>
-					</div>
+					</div>}
 				</div>
 			</CardHeader>
 			<CardContent>

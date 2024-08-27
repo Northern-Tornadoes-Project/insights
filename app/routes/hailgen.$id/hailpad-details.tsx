@@ -108,6 +108,7 @@ function createFilterSchema() {
 }
 
 export default function HailpadDetails({
+	authenticated,
 	dentData,
 	boxfit,
 	maxDepth,
@@ -118,6 +119,7 @@ export default function HailpadDetails({
 	onShowCentroids,
 	onDownload
 }: {
+	authenticated: boolean;
 	dentData: HailpadDent[];
 	boxfit: string;
 	maxDepth: string;
@@ -218,7 +220,7 @@ export default function HailpadDetails({
 						<CardTitle className="mb-2">Hailpad Details</CardTitle>
 						<CardDescription>About the current hailpad view.</CardDescription>
 					</div>
-					<div className="justify-end">
+					{authenticated && <div className="justify-end">
 						<Popover>
 							<PopoverTrigger>
 								<Button asChild variant="outline" className="h-8 w-8 p-2">
@@ -346,7 +348,7 @@ export default function HailpadDetails({
 								</div>
 							</PopoverContent>
 						</Popover>
-					</div>
+					</div>}
 				</div>
 			</CardHeader>
 			<CardContent>

@@ -32,6 +32,8 @@ interface HailpadDent {
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params;
 
+	const userId = await protectedRoute(request);
+
 	if (!id) {
 		throw new Response(null, { status: 404, statusText: 'Hailpad not found' });
 	}
@@ -66,6 +68,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const hailpadName = queriedHailpad.name;
 
 	return json({
+		userId,
 		dents,
 		depthMapPath,
 		boxfit,
@@ -169,6 +172,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 		} catch (error) {
 			console.error(error);
 		}
+
+		await db
+			.update(hailpad)
+			.set({
+				updatedBy: userId,
+				updatedAt: new Date()
+			})
+			.where(eq(hailpad.id, params.id));
 		// } else {
 		// 	console.log('Hailgen service is disabled');
 		// } // TODO: Uncomment
@@ -231,6 +242,7 @@ export default function () {
 	const data = useLoaderData<typeof loader>();
 	const actionData = useActionData<typeof action>();
 
+	const [authenticated, setAuthenticated] = useState<boolean>(false);
 	const [currentIndex, setCurrentIndex] = useState<number>(0);
 	const [showCentroids, setShowCentroids] = useState<boolean>(false);
 	const [download, setDownload] = useState<boolean>(false);
@@ -247,7 +259,7 @@ export default function () {
 		maxMajor: Infinity
 	});
 
-	const { dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName, hailpadId } = data;
+	const { userId, dents, depthMapPath, boxfit, maxDepth, adaptiveBlockSize, adaptiveC, hailpadName, hailpadId } = data;
 
 	const status = useUploadStatus<UploadStatusEvent>(hailpadId);
 	const [performingAnalysis, setPerformingAnalysis] = useState<boolean>(actionData?.analysisStatus || false);
@@ -255,6 +267,10 @@ export default function () {
 	useEffect(() => {
 		setPerformingAnalysis(actionData?.analysisStatus || false);
 	}, [actionData])
+
+	useEffect(() => {
+		if (userId) setAuthenticated(true);
+	}, [userId]);
 
 	useEffect(() => {
 		// Reload window on successful upload and retreival of updated data from service
@@ -346,6 +362,7 @@ export default function () {
 			</Card>
 			<div className="lg:row-span-3">
 				<HailpadDetails
+					authenticated={authenticated}
 					dentData={dentData}
 					boxfit={boxfit}
 					maxDepth={maxDepth}
@@ -359,6 +376,7 @@ export default function () {
 			</div>
 			<div className="lg:row-span-2">
 				<DentDetails
+					authenticated={authenticated}
 					dentData={dentData}
 					index={currentIndex}
 					currentBoxfit={boxfit}

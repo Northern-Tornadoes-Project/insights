@@ -166,7 +166,6 @@ export default function () {
 	}, [status]);
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		// event.preventDefault(); // This line is often included to prevent the default form submission behavior
 		setPerformingAnalysis(true);
 
 		if (form.onSubmit) {

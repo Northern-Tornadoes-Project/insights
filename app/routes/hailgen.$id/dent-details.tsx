@@ -41,9 +41,6 @@ function createUpdateSchema() {
 			updatedMajor: z.number().min(0, {
 				message: 'Major axis must be greater than minor axis.'
 			}),
-			updatedMaxDepth: z.number().min(0, {
-				message: 'Maximum depth must be positive.'
-			}),
 		})
 		.refine((data) => data.updatedMajor > data.updatedMinor, {
 			path: ['updatedMajor'],
@@ -86,7 +83,11 @@ function createCreateSchema() {
 		.refine((data) => data.createdMajor > data.createdMinor, {
 			path: ['createdMajor'],
 			message: 'Major axis must be greater than minor axis.'
-		});
+		})
+		.refine((data) => parseFloat(data.currentMaxDepth) >= data.createdMaxDepth, {
+            path: ['createdMaxDepth'],
+            message: 'Maximum depth must be less than or equal to the current overall maximum depth.'
+        });
 }
 
 function Detail({ label, value }: { label: string; value?: string }) {
@@ -142,8 +143,6 @@ export default function DentDetails({
 			formData.append(updateFields.currentBoxfit.name, updateFields.currentBoxfit.value || '');
 			formData.append(updateFields.updatedMinor.name, updateFields.updatedMinor.value || '');
 			formData.append(updateFields.updatedMajor.name, updateFields.updatedMajor.value || '');
-			formData.append(updateFields.updatedMaxDepth.name, updateFields.updatedMaxDepth.value || '');
-
 		}
 	});
 
@@ -274,24 +273,9 @@ export default function DentDetails({
 														step="any"
 													/>
 												</div>
-												<div className="mt-2 flex flex-row items-center">
-													<div className="mr-4 w-48">
-														<Label>Maximum Depth (mm)</Label>
-													</div>
-													<Input
-														className="h-8 w-28"
-														type="number"
-														key={updateFields.updatedMaxDepth.key}
-														name={updateFields.updatedMaxDepth.name}
-														defaultValue={updateFields.updatedMaxDepth.initialValue}
-														placeholder={currentMaxDepth}
-														step="any"
-													/>
-												</div>
 												<div className="flex flex-row justify-end items-center">
 													<p className="text-sm text-primary/60">{updateFields.updatedMinor.errors}</p>
 													<p className="text-sm text-primary/60">{updateFields.updatedMajor.errors}</p>
-													<p className="text-sm text-primary/60">{updateFields.updatedMaxDepth.errors}</p>
 													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 p-2 ml-4">
 														<CornerDownLeft />
 													</Button>
@@ -388,6 +372,7 @@ export default function DentDetails({
 												<div className="flex flex-row justify-end items-center">
 													<p className="text-sm text-primary/60">{createFields.createdMinor.errors}</p>
 													<p className="text-sm text-primary/60">{createFields.createdMajor.errors}</p>
+													<p className="text-sm text-primary/60">{createFields.createdMaxDepth.errors}</p>
 													<p className="text-sm text-primary/60">{createFields.createdLocation.errors}</p>
 													<Button type="submit" variant="secondary" className="mt-4 h-8 w-8 ml-4 p-2">
 														<CornerDownLeft />

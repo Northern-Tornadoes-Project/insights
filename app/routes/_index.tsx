@@ -2,13 +2,14 @@ import tornado from '~/assets/bnr-tornado.jpg';
 
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { Link, json, useLoaderData } from '@remix-run/react';
-import { Axis3D, CircleDotDashed, CloudLightning, LucideLifeBuoy, Rotate3D } from 'lucide-react';
+import { Axis3D, CircleDotDashed, LucideLifeBuoy, Rotate3D } from 'lucide-react';
 import { version } from '~/../package.json';
 import { Button } from '~/components/ui/button';
 import { UserAvatar } from '~/components/user-avatar';
 import { WesternEngineeringLogo } from '~/components/western-eng-logo';
 import { getUser } from '~/db/db.server';
 import { authenticator } from '~/lib/auth.server';
+import { MesonetIcon } from '~/components/mesonet-icon';
 
 export const meta: MetaFunction = () => {
 	return [{ title: 'CSSL Insights - Home' }];
@@ -91,7 +92,7 @@ export default function Index() {
 						<div className="flex flex-row gap-2">
 							<Link to="https://meso.cssl.ca/">
 								<Button className="gap-2" variant="secondary">
-									<CloudLightning /> Mesonet
+									<MesonetIcon size={26} /> Mesonet
 								</Button>
 							</Link>
 						</div>
